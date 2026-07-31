@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:background="#F8FAFC">
+
+    <!-- Header Title -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="PixelGear Bank Listener"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="#0F172A"
+        android:gravity="center"
+        android:layout_marginBottom="15dp" />
+
+    <!-- Status Card -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#FFFFFF"
+        android:padding="16dp"
+        android:elevation="3dp"
+        android:layout_marginBottom="15dp">
+
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Trạng thái quyền: Chờ kiểm tra..."
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#334155"
+            android:layout_marginBottom="10dp" />
+
+        <Button
+            android:id="@+id/btnGrantPermission"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="CẤP QUYỀN ĐỌC THÔNG BÁO NGÂN HÀNG"
+            android:backgroundTint="#0284C7"
+            android:textColor="#FFFFFF" />
+    </LinearLayout>
+
+    <!-- Server URL Config -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#FFFFFF"
+        android:padding="16dp"
+        android:elevation="3dp"
+        android:layout_marginBottom="15dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Đường dẫn Server API (Webhook):"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="#475569"
+            android:layout_marginBottom="5dp" />
+
+        <EditText
+            android:id="@+id/etServerUrl"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="http://192.168.1.X:8080/pixelgear/api/bank_webhook.php"
+            android:inputType="textUri"
+            android:textSize="13sp"
+            android:padding="10dp"
+            android:background="#F1F5F9"
+            android:layout_marginBottom="10dp" />
+
+        <Button
+            android:id="@+id/btnSaveUrl"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="LƯU ĐƯỜNG DẪN SERVER"
+            android:backgroundTint="#16A34A"
+            android:textColor="#FFFFFF" />
+    </LinearLayout>
+
+    <!-- Test Send Button -->
+    <Button
+        android:id="@+id/btnTestSend"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="GỬI THỬ THÔNG BÁO TEST (DH 1)"
+        android:backgroundTint="#D97706"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="15dp" />
+
+    <!-- Live Log Console -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Nhật ký giao dịch thời gian thực:"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        android:textColor="#475569"
+        android:layout_marginBottom="5dp" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#1E293B"
+        android:padding="12dp">
+
+        <TextView
+            android:id="@+id/tvLogs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="System Ready. Waiting for bank notifications...\n"
+            android:textColor="#38BDF8"
+            android:fontFamily="monospace"
+            android:textSize="12sp" />
+    </ScrollView>
+
+</LinearLayout>

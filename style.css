@@ -1,0 +1,1048 @@
+:root {
+    --primary-color: #0e8543;
+    /* Minecraft Green */
+    --primary-hover: #109a4d;
+    --bg-color-dark: #121212;
+    --bg-color-light: #ffffff;
+    --bg-color-gray: #f8f8f8;
+    --text-color-dark: #333333;
+    --text-color-light: #ffffff;
+    --border-color: #e3e3e3;
+    --sale-color: #EB001B;
+    --font-main: 'Inter', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-main);
+    color: var(--text-color-dark);
+    background-color: var(--bg-color-gray);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+ul {
+    list-style: none;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Announcement Bar */
+.announcement-bar {
+    background-color: #0b0b0b;
+    color: var(--text-color-light);
+    text-align: center;
+    padding: 8px 0;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+    height: 36px;
+}
+
+.announcement-slider .slide {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+    margin: 0;
+    line-height: 20px;
+}
+
+.announcement-slider .slide.active {
+    display: block;
+    opacity: 1;
+}
+
+.announcement-slider strong {
+    color: #ffaa00;
+}
+
+/* Header */
+.site-header {
+    background-color: var(--primary-color);
+    border-bottom: 4px solid #0a5f2f;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Region & Currency Switcher */
+.region-switcher-container {
+    position: relative;
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.region-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: #ffffff !important;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.region-btn:hover {
+    background: rgba(255, 255, 255, 0.35);
+    border-color: #fff;
+}
+
+.flag-tag {
+    background: #ffaa00;
+    color: #111;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    line-height: 1;
+}
+
+.region-dropdown {
+    display: none;
+    position: absolute;
+    top: 110%;
+    right: 0;
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    width: 220px;
+    z-index: 9999;
+    padding: 6px 0;
+}
+
+.region-switcher-container:hover .region-dropdown {
+    display: block;
+    animation: fadeIn 0.2s ease;
+}
+
+.region-option {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 12px 16px !important;
+    color: #1e293b !important;
+    text-decoration: none !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    transition: background 0.2s !important;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.region-option:last-child {
+    border-bottom: none;
+}
+
+.region-option:hover {
+    background: #f0fdf4 !important;
+    color: #166534 !important;
+}
+
+.region-option.active {
+    font-weight: 700 !important;
+    color: #15803d !important;
+    background: #dcfce7 !important;
+}
+
+.logo h1 {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-color-light);
+    letter-spacing: -0.5px;
+    margin: 0;
+    text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3);
+    white-space: nowrap;
+}
+
+.main-nav ul {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.main-nav li {
+    display: flex;
+    align-items: center;
+}
+
+.main-nav a {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    height: 38px;
+    padding: 0 12px;
+    color: #e0f2e9;
+    transition: all 0.2s ease;
+    border-radius: 4px;
+    line-height: 1;
+    text-decoration: none;
+}
+
+.main-nav a:hover,
+.main-nav a.active {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.2);
+    box-shadow: inset 0 -3px 0 0 #ffaa00;
+}
+
+.header-icons {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.header-icons a {
+    font-size: 20px;
+    color: var(--text-color-light);
+    transition: transform 0.3s ease;
+}
+
+.header-icons a:hover {
+    transform: scale(1.1);
+}
+
+.cart-icon {
+    position: relative;
+}
+
+.cart-count {
+    position: absolute;
+    top: -8px;
+    right: -10px;
+    background-color: var(--sale-color);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.mobile-menu-btn {
+    display: none;
+    font-size: 24px;
+    color: white;
+    cursor: pointer;
+}
+
+/* Hero Section */
+.hero {
+    position: relative;
+    height: 500px;
+    background-image: url('images/minecraft_temple_bg.png');
+    /* Custom Minecraft style background */
+    background-size: cover;
+    background-position: center;
+    transition: background-image 0.8s ease-in-out;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: var(--text-color-light);
+    overflow: hidden;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.6) 100%);
+    z-index: 1;
+    pointer-events: none;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 800px;
+    padding: 0 20px;
+}
+
+.hero-content h2 {
+    font-size: 44px;
+    font-weight: 800;
+    margin-bottom: 15px;
+    letter-spacing: -1px;
+    text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.8);
+    text-transform: uppercase;
+}
+
+.hero-content p {
+    font-size: 18px;
+    margin-bottom: 30px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.hero-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    border: 2px solid rgba(255,255,255,0.6);
+    border-radius: 50%;
+    width: 55px;
+    height: 55px;
+    font-size: 22px;
+    cursor: pointer;
+    z-index: 20;
+    transition: all 0.25s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+}
+
+.hero-arrow:hover {
+    background: rgba(255, 160, 0, 0.85);
+    border-color: #ffaa00;
+    transform: translateY(-50%) scale(1.12);
+    box-shadow: 0 6px 20px rgba(255,170,0,0.5);
+}
+
+.hero-arrow-left {
+    left: 25px;
+}
+
+.hero-arrow-right {
+    right: 25px;
+}
+
+/* Buttons */
+.btn {
+    display: inline-block;
+    padding: 12px 28px;
+    font-weight: 700;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-align: center;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: var(--text-color-light);
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: var(--text-color-dark);
+    border: 2px solid var(--text-color-dark);
+}
+
+.btn-secondary:hover {
+    background-color: var(--text-color-dark);
+    color: var(--text-color-light);
+}
+
+/* Products Section */
+.collection {
+    padding: 60px 0;
+}
+
+.section-title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 40px;
+    letter-spacing: 1px;
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 30px;
+}
+
+.product-card {
+    background-color: var(--bg-color-light);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.product-image {
+    position: relative;
+    height: 260px;
+    overflow: hidden;
+    background-color: #eee;
+}
+
+.product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.product-card:hover .product-image img {
+    transform: scale(1.05);
+}
+
+.product-badge {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background-color: var(--primary-color);
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+.product-badge.sale {
+    background-color: var(--sale-color);
+}
+
+.add-to-cart-quick {
+    position: absolute;
+    bottom: -50px;
+    left: 0;
+    width: 100%;
+    padding: 12px 0;
+    background-color: rgba(14, 133, 67, 0.95);
+    color: white;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    transition: bottom 0.3s ease;
+}
+
+.product-card:hover .add-to-cart-quick {
+    bottom: 0;
+}
+
+.product-info {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.product-info h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+.price {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-top: auto;
+}
+
+.old-price {
+    font-size: 14px;
+    color: #888;
+    text-decoration: line-through;
+    margin-right: 8px;
+    font-weight: 400;
+}
+
+.view-all-container {
+    text-align: center;
+    margin-top: 50px;
+}
+
+/* Footer */
+.site-footer {
+    background-color: var(--bg-color-dark);
+    color: var(--text-color-light);
+    padding: 60px 0 20px;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 40px;
+    margin-bottom: 40px;
+}
+
+.footer-column h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: white;
+}
+
+.footer-column ul li {
+    margin-bottom: 10px;
+}
+
+.footer-column ul li a {
+    color: #ccc;
+    transition: color 0.3s ease;
+}
+
+.footer-column ul li a:hover {
+    color: white;
+}
+
+.newsletter p {
+    color: #ccc;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+.newsletter-form {
+    display: flex;
+}
+
+.newsletter-form input {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px 0 0 4px;
+    outline: none;
+    flex-grow: 1;
+}
+
+.newsletter-form button {
+    padding: 10px 20px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 0 4px 4px 0;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.footer-bottom {
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid #333;
+    color: #888;
+    font-size: 14px;
+}
+
+/* Toast Notification */
+.toast {
+    position: fixed;
+    bottom: -100px;
+    right: 20px;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 15px 25px;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    z-index: 1000;
+    transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.toast.show {
+    bottom: 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .header-container {
+        padding: 15px 20px;
+    }
+
+    .main-nav {
+        display: none;
+    }
+
+    .mobile-menu-btn {
+        display: block;
+    }
+
+    .hero-content h2 {
+        font-size: 32px;
+    }
+
+    .collection-layout {
+        flex-direction: column;
+    }
+
+    .filter-sidebar {
+        width: 100% !important;
+        margin-bottom: 20px;
+    }
+}
+
+/* ==========================================
+   MINECRAFT OFFICIAL SHOP REDESIGN STYLES
+   ========================================== */
+
+/* Minecraft Collection Header Banner */
+.mc-collection-banner {
+    background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 50%, #388e3c 100%);
+    color: white;
+    padding: 45px 0;
+    position: relative;
+    box-shadow: inset 0 -4px 0 rgba(0,0,0,0.2);
+    border-bottom: 4px solid #144017;
+}
+
+.mc-banner-accent {
+    position: absolute;
+    left: 20px;
+    bottom: 10px;
+    width: 60px;
+    height: 40px;
+    background-image: radial-gradient(#4caf50 20%, transparent 20%), radial-gradient(#81c784 20%, transparent 20%);
+    background-size: 16px 16px;
+    background-position: 0 0, 8px 8px;
+    opacity: 0.4;
+}
+
+.mc-banner-title {
+    font-family: 'Minecraft', 'Inter', sans-serif;
+    font-size: 36px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-shadow: 3px 3px 0px #000;
+    margin: 0;
+    color: #ffffff;
+}
+
+/* Breadcrumbs Bar */
+.mc-breadcrumb-bar {
+    background: #f4f4f4;
+    padding: 12px 0;
+    font-size: 13px;
+    color: #666;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.mc-breadcrumb-bar a {
+    color: #333;
+    text-decoration: none;
+}
+
+.mc-breadcrumb-bar a:hover {
+    color: #2e7d32;
+    text-decoration: underline;
+}
+
+/* Two-Column Collection Layout */
+.collection-layout {
+    display: flex;
+    gap: 30px;
+    padding: 30px 0;
+    align-items: flex-start;
+}
+
+/* Sidebar Filters */
+.filter-sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.filter-group {
+    margin-bottom: 25px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+}
+
+.filter-group:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.filter-title {
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #222;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    cursor: pointer;
+}
+
+.filter-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.filter-list li {
+    margin-bottom: 10px;
+}
+
+.filter-list label {
+    font-size: 13px;
+    color: #555;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.2s;
+}
+
+.filter-list label:hover {
+    color: #2e7d32;
+}
+
+.filter-list input[type="checkbox"] {
+    accent-color: #2e7d32;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+/* Main Collection Area */
+.collection-main {
+    flex-grow: 1;
+}
+
+/* Green QUICK VIEW Button on Product Cards */
+.btn-quick-view {
+    position: absolute;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background-color: #2e7d32;
+    color: #ffffff;
+    border: none;
+    padding: 10px 24px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 10px rgba(46, 125, 50, 0.4);
+}
+
+.product-card:hover .btn-quick-view {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.btn-quick-view:hover {
+    background-color: #1b5e20;
+    box-shadow: 0 6px 15px rgba(27, 94, 32, 0.6);
+}
+
+/* Quick View Modal Popup */
+.quick-view-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.quick-view-modal.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+}
+
+.modal-container {
+    position: relative;
+    z-index: 10000;
+    background: #ffffff;
+    width: 90%;
+    max-width: 900px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 8px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+    animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes modalPop {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.modal-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #666;
+    cursor: pointer;
+    z-index: 10001;
+    transition: color 0.2s;
+}
+
+.modal-close:hover {
+    color: #000;
+}
+
+.modal-body {
+    display: flex;
+    padding: 35px;
+    gap: 35px;
+}
+
+@media (max-width: 768px) {
+    .modal-body {
+        flex-direction: column;
+        padding: 20px;
+        gap: 20px;
+    }
+}
+
+.modal-left {
+    flex: 1;
+    display: flex;
+    gap: 15px;
+}
+
+.modal-thumbnails {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.modal-thumbnails img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border: 2px solid #e0e0e0;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.modal-thumbnails img.active {
+    border-color: #2e7d32;
+}
+
+.modal-main-img {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f9f9f9;
+    border-radius: 6px;
+    padding: 15px;
+}
+
+.modal-main-img img {
+    max-width: 100%;
+    max-height: 380px;
+    object-fit: contain;
+}
+
+.modal-right {
+    flex: 1;
+}
+
+.qv-title {
+    font-size: 22px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #111;
+    margin-bottom: 10px;
+    font-family: 'Minecraft', 'Inter', sans-serif;
+    letter-spacing: 0.5px;
+}
+
+.qv-price {
+    font-size: 26px;
+    font-weight: 800;
+    color: #2e7d32;
+    margin-bottom: 20px;
+}
+
+.qv-option-group {
+    margin-bottom: 20px;
+}
+
+.qv-option-group label {
+    display: block;
+    font-weight: 700;
+    font-size: 13px;
+    margin-bottom: 8px;
+    color: #444;
+}
+
+.qv-sizes {
+    display: flex;
+    gap: 10px;
+}
+
+.size-btn {
+    padding: 8px 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    background: #fff;
+    transition: all 0.2s;
+}
+
+.size-btn.active, .size-btn:hover {
+    border-color: #2e7d32;
+    background-color: #e8f5e9;
+    color: #1b5e20;
+}
+
+.qv-quantity-picker {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.qv-quantity-picker button {
+    width: 36px;
+    height: 36px;
+    background: #f0f0f0;
+    border: none;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.qv-quantity-picker button:hover {
+    background: #e0e0e0;
+}
+
+.qv-quantity-picker input {
+    width: 45px;
+    height: 36px;
+    border: none;
+    text-align: center;
+    font-size: 15px;
+    font-weight: bold;
+    outline: none;
+}
+
+.qv-shipping-note {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-add-to-cart-green {
+    width: 100%;
+    padding: 14px 20px;
+    background-color: #2e7d32;
+    color: white;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+}
+
+.btn-add-to-cart-green:hover {
+    background-color: #1b5e20;
+    transform: translateY(-2px);
+}
+
+.qv-details h4 {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.qv-details p {
+    font-size: 13px;
+    line-height: 1.6;
+    color: #666;
+}

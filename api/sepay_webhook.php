@@ -5,18 +5,35 @@ require_once '../config_payment.php';
 
 header('Content-Type: application/json');
 
-// 1. Đọc dữ liệu JSON gửi từ SePay
+// Bypass Localtunnel warning page
+header('bypass-tunnel-reminder: 1');
+
+// Hỗ trợ Thử nghiệm nhanh (GET request / Nút Giả lập trên Web)
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['order_id'])) {
+    $order_id = intval($_GET['order_id']);
+    if ($order_id > 0) {
+        $update = $pdo->prepare("UPDATE orders SET payment_status = 'Đã thanh toán', status = 'Đã xác nhận' WHERE id = ?");
+        $update->execute([$order_id]);
+        echo json_encode([
+            'success' => true,
+            'message' => 'Đã tự động xác nhận thanh toán giả lập cho đơn hàng #' . $order_id,
+            'order_id' => $order_id
+        ]);
+        exit;
+    }
+}
+
+// 1. Đọc dữ liệu JSON gửi từ SePay Webhook
 $rawInput = file_get_contents('php://input');
 $data = json_decode($rawInput, true);
 
 if (!$data) {
-    // Trả về lỗi nếu không có dữ liệu JSON
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'Dữ liệu webhook không hợp lệ']);
     exit;
 }
 
-// 2. Kiểm tra Token bảo mật (nếu được thiết lập trong config_payment.php)
+// 2. Kiểm tra Token bảo mật (nếu được thiết lập)
 $headers = getallheaders();
 $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
 

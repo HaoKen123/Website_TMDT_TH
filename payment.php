@@ -165,6 +165,13 @@ unset($_SESSION['momo_error']);
                 <i class="fas fa-sync fa-spin" style="margin-right: 8px;"></i> Hệ thống đang tự động kiểm tra giao dịch chuyển khoản 24/7 (Tự động chuyển trang khi nhận được tiền)...
             </div>
 
+            <!-- Nút Giả lập SePay Webhook Nhanh (Dành cho thử nghiệm Testmode) -->
+            <div style="margin-top: 15px; text-align: center;">
+                <button type="button" onclick="triggerTestPayment()" style="background: #f8fafc; border: 1px dashed #0284c7; color: #0284c7; padding: 10px 16px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer;">
+                    <i class="fas fa-bolt" style="color: #eab308; margin-right: 4px;"></i> ⚡ Giả lập SePay Bắn Webhook Nhanh (Thử Nghiệm Testmode)
+                </button>
+            </div>
+
             <div class="security-badge">
                 <i class="fas fa-shield-alt" style="color: #2e7d32;"></i> Thanh toán mã hóa bảo mật SSL 256-bit chuẩn quốc tế PCI-DSS.
             </div>
@@ -197,6 +204,14 @@ unset($_SESSION['momo_error']);
                 console.error('Lỗi tự động kiểm tra thanh toán:', err);
             }
         }, 2500);
+
+        async function triggerTestPayment() {
+            try {
+                await fetch(`api/sepay_webhook.php?order_id=${orderId}`);
+            } catch (err) {
+                console.error('Lỗi khi giả lập thanh toán:', err);
+            }
+        }
 
         // Card formatting
         const cardNumInput = document.getElementById('cardNumber');

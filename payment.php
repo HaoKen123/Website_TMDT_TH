@@ -104,10 +104,10 @@ unset($_SESSION['momo_error']);
                 </div>
 
             <?php elseif (strpos($order['payment_method'], 'Ngân Hàng') !== false): ?>
-                <!-- VietQR Real Banking Transfer -->
+                <!-- VietQR & SePay Auto Banking Transfer -->
                 <div class="qr-box">
-                    <h4 style="margin-bottom: 15px; color: #003087;"><i class="fas fa-university"></i> Quét QR Thanh Toán Thật Qua App Ngân Hàng (VietQR)</h4>
-                    <img src="https://img.vietqr.io/image/<?php echo VIETQR_BANK_ID; ?>-<?php echo VIETQR_ACCOUNT_NO; ?>-compact2.png?amount=<?php echo $amount_vnd; ?>&addInfo=Thanh%20toan%20DH%20<?php echo $order['id']; ?>&accountName=<?php echo urlencode(VIETQR_ACCOUNT_NAME); ?>" alt="VietQR Banking Code" style="width: 260px; height: auto;">
+                    <h4 style="margin-bottom: 15px; color: #003087;"><i class="fas fa-university"></i> Quét QR Thanh Toán Ngân Hàng Tự Động (VietQR / SePay)</h4>
+                    <img src="https://img.vietqr.io/image/<?php echo VIETQR_BANK_ID; ?>-<?php echo VIETQR_ACCOUNT_NO; ?>-compact2.png?amount=<?php echo $amount_vnd; ?>&addInfo=DH%20<?php echo $order['id']; ?>&accountName=<?php echo urlencode(VIETQR_ACCOUNT_NAME); ?>" alt="VietQR Banking Code" style="width: 260px; height: auto;">
                     
                     <div class="bank-details">
                         <div class="bank-row">
@@ -127,8 +127,8 @@ unset($_SESSION['momo_error']);
                             <strong style="color: #2e7d32;"><?php echo number_format($amount_vnd); ?> VNĐ <button class="copy-btn" onclick="navigator.clipboard.writeText('<?php echo $amount_vnd; ?>'); alert('Đã sao chép số tiền!');">Copy</button></strong>
                         </div>
                         <div class="bank-row">
-                            <span>Nội dung chuyển khoản:</span>
-                            <strong style="color: #d97706;">Thanh toan DH <?php echo $order['id']; ?> <button class="copy-btn" onclick="navigator.clipboard.writeText('Thanh toan DH <?php echo $order['id']; ?>'); alert('Đã sao chép nội dung!');">Copy</button></strong>
+                            <span>Nội dung chuyển khoản (BẮT BUỘC):</span>
+                            <strong style="color: #d97706;">DH <?php echo $order['id']; ?> <button class="copy-btn" onclick="navigator.clipboard.writeText('DH <?php echo $order['id']; ?>'); alert('Đã sao chép nội dung!');">Copy</button></strong>
                         </div>
                     </div>
                 </div>

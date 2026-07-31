@@ -9,9 +9,10 @@ define('MOMO_SECRET_KEY', 'MOMO_SECRET_KEY_HERE');     // Thay Secret Key MoMo c
 define('MOMO_ENDPOINT', 'https://test-payment.momo.vn/v2/gateway/api/create'); // Test Sandbox
 // define('MOMO_ENDPOINT', 'https://payment.momo.vn/v2/gateway/api/create');   // Production Thật
 
-// 2. Cấu hình Chuyển Khoản Ngân Hàng Qua VietQR (Quét QR thật bằng tất cả App Ngân hàng Việt Nam)
-define('VIETQR_BANK_ID', 'VCB');             // Mã ngân hàng (VCB: Vietcombank, MB: MBBank, TCB: Techcombank, ACB, STB, CTG...)
-define('VIETQR_ACCOUNT_NO', '9939916872');   // Số tài khoản ngân hàng thật
+// 2. Cấu hình Chuyển Khoản Ngân Hàng Qua VietQR & SePay Webhook
+define('VIETQR_BANK_ID', 'VCB');             // Mã ngân hàng (VCB: Vietcombank, MB: MBBank, TCB: Techcombank...)
+define('VIETQR_ACCOUNT_NO', '9939916872');   // Số tài khoản ngân hàng (hoặc 0000000001 nếu dùng Testmode SePay)
 define('VIETQR_ACCOUNT_NAME', 'HO NHAT HAO'); // Tên chủ tài khoản ngân hàng
+define('SEPAY_API_KEY', 'SEPAY_SECRET_API_KEY'); // Token / API Key bảo mật từ SePay Webhook
 define('USD_TO_VND_RATE', 25400);            // Tỷ giá quy đổi USD sang VND
 ?>

@@ -104,10 +104,11 @@ unset($_SESSION['momo_error']);
                 </div>
 
             <?php elseif (strpos($order['payment_method'], 'Ngân Hàng') !== false): ?>
+                <?php $order_code = 'DH' . sprintf('%06d', $order['id']); ?>
                 <!-- VietQR & SePay Auto Banking Transfer -->
                 <div class="qr-box">
                     <h4 style="margin-bottom: 15px; color: #003087;"><i class="fas fa-university"></i> Quét QR Thanh Toán Ngân Hàng Tự Động (VietQR / SePay)</h4>
-                    <img src="https://img.vietqr.io/image/<?php echo VIETQR_BANK_ID; ?>-<?php echo VIETQR_ACCOUNT_NO; ?>-compact2.png?amount=<?php echo $amount_vnd; ?>&addInfo=DH%20<?php echo $order['id']; ?>&accountName=<?php echo urlencode(VIETQR_ACCOUNT_NAME); ?>" alt="VietQR Banking Code" style="width: 260px; height: auto;">
+                    <img src="https://img.vietqr.io/image/<?php echo VIETQR_BANK_ID; ?>-<?php echo VIETQR_ACCOUNT_NO; ?>-compact2.png?amount=<?php echo $amount_vnd; ?>&addInfo=<?php echo $order_code; ?>&accountName=<?php echo urlencode(VIETQR_ACCOUNT_NAME); ?>" alt="VietQR Banking Code" style="width: 260px; height: auto;">
                     
                     <div class="bank-details">
                         <div class="bank-row">
@@ -128,7 +129,7 @@ unset($_SESSION['momo_error']);
                         </div>
                         <div class="bank-row">
                             <span>Nội dung chuyển khoản (BẮT BUỘC):</span>
-                            <strong style="color: #d97706;">DH <?php echo $order['id']; ?> <button class="copy-btn" onclick="navigator.clipboard.writeText('DH <?php echo $order['id']; ?>'); alert('Đã sao chép nội dung!');">Copy</button></strong>
+                            <strong style="color: #d97706;"><?php echo $order_code; ?> <button class="copy-btn" onclick="navigator.clipboard.writeText('<?php echo $order_code; ?>'); alert('Đã sao chép nội dung!');">Copy</button></strong>
                         </div>
                     </div>
                 </div>
@@ -165,12 +166,7 @@ unset($_SESSION['momo_error']);
                 <i class="fas fa-sync fa-spin" style="margin-right: 8px;"></i> Hệ thống đang tự động kiểm tra giao dịch chuyển khoản 24/7 (Tự động chuyển trang khi nhận được tiền)...
             </div>
 
-            <!-- Nút Giả lập SePay Webhook Nhanh (Dành cho thử nghiệm Testmode) -->
-            <div style="margin-top: 15px; text-align: center;">
-                <button type="button" onclick="triggerTestPayment()" style="background: #f8fafc; border: 1px dashed #0284c7; color: #0284c7; padding: 10px 16px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer;">
-                    <i class="fas fa-bolt" style="color: #eab308; margin-right: 4px;"></i> ⚡ Giả lập SePay Bắn Webhook Nhanh (Thử Nghiệm Testmode)
-                </button>
-            </div>
+
 
             <div class="security-badge">
                 <i class="fas fa-shield-alt" style="color: #2e7d32;"></i> Thanh toán mã hóa bảo mật SSL 256-bit chuẩn quốc tế PCI-DSS.
@@ -205,13 +201,6 @@ unset($_SESSION['momo_error']);
             }
         }, 2500);
 
-        async function triggerTestPayment() {
-            try {
-                await fetch(`api/sepay_webhook.php?order_id=${orderId}`);
-            } catch (err) {
-                console.error('Lỗi khi giả lập thanh toán:', err);
-            }
-        }
 
         // Card formatting
         const cardNumInput = document.getElementById('cardNumber');

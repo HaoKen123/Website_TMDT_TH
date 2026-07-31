@@ -165,13 +165,6 @@ unset($_SESSION['momo_error']);
                 <i class="fas fa-sync fa-spin" style="margin-right: 8px;"></i> Hệ thống đang tự động kiểm tra giao dịch chuyển khoản 24/7 (Tự động chuyển trang khi nhận được tiền)...
             </div>
 
-            <form method="POST" action="confirm_payment.php" style="margin-top: 15px;">
-                <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
-                <button type="submit" class="btn-confirm-pay">
-                    <i class="fas fa-check-circle" style="margin-right: 6px;"></i> XÁC NHẬN THỦ CÔNG ĐÃ HOÀN TẤT THANH TOÁN
-                </button>
-            </form>
-
             <div class="security-badge">
                 <i class="fas fa-shield-alt" style="color: #2e7d32;"></i> Thanh toán mã hóa bảo mật SSL 256-bit chuẩn quốc tế PCI-DSS.
             </div>

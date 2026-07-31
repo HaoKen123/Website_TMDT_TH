@@ -108,7 +108,7 @@ unset($_SESSION['momo_error']);
                 <!-- VietQR & SePay Auto Banking Transfer -->
                 <div class="qr-box">
                     <h4 style="margin-bottom: 15px; color: #003087;"><i class="fas fa-university"></i> Quét QR Thanh Toán Ngân Hàng Tự Động (VietQR / SePay)</h4>
-                    <img src="https://img.vietqr.io/image/<?php echo VIETQR_BANK_ID; ?>-<?php echo VIETQR_ACCOUNT_NO; ?>-compact2.png?amount=<?php echo $amount_vnd; ?>&addInfo=<?php echo $order_code; ?>&accountName=<?php echo urlencode(VIETQR_ACCOUNT_NAME); ?>" alt="VietQR Banking Code" style="width: 260px; height: auto;">
+                    <img src="https://vietqr.app/img?bank=<?php echo VIETQR_BANK_ID; ?>&acc=<?php echo VIETQR_ACCOUNT_NO; ?>&amount=<?php echo $amount_vnd; ?>&des=<?php echo $order_code; ?>&template=compact" alt="VietQR Banking Code" style="width: 260px; height: auto;">
                     
                     <div class="bank-details">
                         <div class="bank-row">

@@ -11,7 +11,7 @@ define('MOMO_ENDPOINT', 'https://test-payment.momo.vn/v2/gateway/api/create'); /
 
 // 2. Cấu hình Chuyển Khoản Ngân Hàng Qua VietQR & SePay Webhook
 define('VIETQR_BANK_ID', 'VCB');             // Mã ngân hàng (VCB: Vietcombank, MB: MBBank, TCB: Techcombank...)
-define('VIETQR_ACCOUNT_NO', '9939916872');   // Số tài khoản ngân hàng (hoặc 0000000001 nếu dùng Testmode SePay)
+define('VIETQR_ACCOUNT_NO', 'SBSEPAY0HYNZEHCX0NI'); // Số tài khoản ảo Vietcombank SePay Test Mode
 define('VIETQR_ACCOUNT_NAME', 'HO NHAT HAO'); // Tên chủ tài khoản ngân hàng
 define('SEPAY_API_KEY', '9D0LTOE7KAJ7RRWNYUPZKTX63BQAVEHBSXGNP1MAKDD4RM5JLV8FLFWYULO2MSFW'); // Token / API Key bảo mật từ SePay Webhook
 define('USD_TO_VND_RATE', 25400);            // Tỷ giá quy đổi USD sang VND

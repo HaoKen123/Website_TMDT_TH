@@ -250,11 +250,6 @@ $current_region = get_current_region();
                     <button type="submit"><?php echo __('FOOTER_SUBSCRIBE'); ?></button>
                 </form>
             </div>
-                <form class="newsletter-form" onsubmit="handleNewsletterSubmit(event, this); return false;">
-                    <input type="email" name="email" placeholder="Email của bạn" required>
-                    <button type="submit"><?php echo __('FOOTER_SUBSCRIBE'); ?></button>
-                </form>
-            </div>
         </div>
         <div class="footer-bottom">
             <p>&copy; <?php echo date("Y"); ?> PixelGear Store. All rights reserved.</p>

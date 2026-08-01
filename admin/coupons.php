@@ -17,11 +17,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_coupon'])) {
     $type = $_POST['discount_type'];
     $val = floatval($_POST['discount_value']);
     $min = floatval($_POST['min_order']);
+    $expires_at = empty($_POST['expires_at']) ? null : date('Y-m-d H:i:s', strtotime($_POST['expires_at']));
 
     if (!empty($code) && $val > 0) {
         try {
-            $stmt = $pdo->prepare("INSERT INTO coupons (code, discount_type, discount_value, min_order) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$code, $type, $val, $min]);
+            $stmt = $pdo->prepare("INSERT INTO coupons (code, discount_type, discount_value, min_order, expires_at) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([$code, $type, $val, $min, $expires_at]);
             $msg = "Đã thêm mã ưu đãi $code thành công!";
         } catch (Exception $e) {
             $error = "Lỗi: Mã coupon này đã tồn tại!";
@@ -126,7 +127,13 @@ $subscribers = $pdo->query("SELECT * FROM subscribers ORDER BY id DESC")->fetchA
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-weight: 700;">TẠO MÃ KHUYẾN MÃI</button>
+                        <div class="form-group">
+                            <label>Thời Gian Hết Hạn / Cooldown (Không bắt buộc)</label>
+                            <input type="datetime-local" name="expires_at" style="padding:10px; border:1px solid #cbd5e1; border-radius:6px; width:100%;">
+                            <small style="color:#64748b;">Để trống nếu là mã vô thời hạn.</small>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-weight: 700; margin-top:10px;">TẠO MÃ KHUYẾN MÃI</button>
                     </form>
                 </div>
 
@@ -138,7 +145,7 @@ $subscribers = $pdo->query("SELECT * FROM subscribers ORDER BY id DESC")->fetchA
                                 <th>Mã Code</th>
                                 <th>Mức Giảm</th>
                                 <th>Đơn Tối Thiểu</th>
-                                <th>Trạng Thái</th>
+                                <th>Thời Hạn Hết Hạn</th>
                                 <th>Thao tác</th>
                             </tr>
                         </thead>
@@ -156,7 +163,20 @@ $subscribers = $pdo->query("SELECT * FROM subscribers ORDER BY id DESC")->fetchA
                                     ?>
                                 </td>
                                 <td>$<?php echo number_format($c['min_order'], 2); ?></td>
-                                <td><span class="badge pending"><?php echo $c['status']; ?></span></td>
+                                <td>
+                                    <?php 
+                                        if (!empty($c['expires_at'])) {
+                                            $exp = strtotime($c['expires_at']);
+                                            if ($exp < time()) {
+                                                echo '<span style="color:#ef4444; font-weight:600;"><i class="fas fa-clock"></i> Đã hết hạn (' . date('d/m/Y H:i', $exp) . ')</span>';
+                                            } else {
+                                                echo '<span style="color:#10b981; font-weight:600;"><i class="fas fa-clock"></i> ' . date('d/m/Y H:i', $exp) . '</span>';
+                                            }
+                                        } else {
+                                            echo '<span style="color:#64748b;">Vĩnh viễn</span>';
+                                        }
+                                    ?>
+                                </td>
                                 <td>
                                     <a href="coupons.php?delete=<?php echo $c['id']; ?>" class="btn btn-danger" style="padding: 4px 10px; font-size: 12px;" onclick="return confirm('Bạn có chắc chắn muốn xóa mã ưu đãi này?');"><i class="fas fa-trash"></i> Xóa</a>
                                 </td>

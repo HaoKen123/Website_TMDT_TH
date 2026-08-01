@@ -2,6 +2,8 @@
 session_start();
 require_once 'db.php';
 
+require_once 'lang.php';
+
 header('Content-Type: application/json');
 
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
@@ -17,6 +19,8 @@ try {
     $product = $stmt->fetch();
 
     if ($product) {
+        $product['price_formatted'] = format_price($product['price']);
+        $product['old_price_formatted'] = !empty($product['old_price']) ? format_price($product['old_price']) : null;
         echo json_encode(['success' => true, 'product' => $product]);
     } else {
         echo json_encode(['success' => false, 'message' => 'Không tìm thấy sản phẩm.']);

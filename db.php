@@ -1,10 +1,26 @@
 <?php
-$host = 'localhost';
-$db   = 'pixelgear_shop';
-$user = 'root';
-$pass = ''; // Default XAMPP password is empty
-$charset = 'utf8mb4';
+// Tự động phát hiện môi trường (Local XAMPP vs Online AwardSpace)
+$is_local = (
+    in_array($_SERVER['REMOTE_ADDR'] ?? '', ['127.0.0.1', '::1']) || 
+    strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false ||
+    strpos($_SERVER['HTTP_HOST'] ?? '', '127.0.0.1') !== false
+);
 
+if ($is_local) {
+    // 1. Cấu hình CSDL Chạy trên Máy Cục Bộ (XAMPP)
+    $host = 'localhost';
+    $db   = 'pixelgear_shop';
+    $user = 'root';
+    $pass = '';
+} else {
+    // 2. Cấu hình CSDL Chạy trên Host Thật (AwardSpace)
+    $host = 'fdb1030.awardspace.net';
+    $db   = '4776587_pixelgear';
+    $user = '4776587_pixelgear';
+    $pass = 'thapvi123';
+}
+
+$charset = 'utf8mb4';
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
 $options = [
     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
@@ -15,6 +31,6 @@ $options = [
 try {
     $pdo = new PDO($dsn, $user, $pass, $options);
 } catch (\PDOException $e) {
-    die("Lỗi kết nối CSDL: Vui lòng kiểm tra XAMPP và cấu hình MySQL. Chi tiết: " . $e->getMessage());
+    die("Lỗi kết nối CSDL: " . $e->getMessage());
 }
 ?>

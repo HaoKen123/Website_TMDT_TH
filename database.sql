@@ -43,11 +43,15 @@ INSERT INTO `products` (`id`, `category`, `name`, `image_url`, `price`, `old_pri
 CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `fullname` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `phone` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `address` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `reset_otp` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `reset_expiry` datetime DEFAULT NULL,
   `avatar_url` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -82,5 +86,36 @@ CREATE TABLE `admins` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `admins` (`username`, `password`) VALUES ('admin', 'admin');
+
+CREATE TABLE IF NOT EXISTS `coupons` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `code` VARCHAR(50) NOT NULL UNIQUE,
+  `discount_type` ENUM('percent', 'fixed') NOT NULL DEFAULT 'percent',
+  `discount_value` DECIMAL(10, 2) NOT NULL,
+  `min_order` DECIMAL(10, 2) DEFAULT 0,
+  `status` ENUM('active', 'expired') DEFAULT 'active',
+  `expires_at` DATETIME DEFAULT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `user_coupons` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `user_id` INT NOT NULL,
+  `coupon_code` VARCHAR(50) NOT NULL,
+  `used_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY `user_coupon_unique` (`user_id`, `coupon_code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `subscribers` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `email` VARCHAR(255) NOT NULL UNIQUE,
+  `voucher_sent` VARCHAR(50) DEFAULT 'WELCOME15',
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO `coupons` (`code`, `discount_type`, `discount_value`, `min_order`, `status`) VALUES
+  ('WELCOME15', 'percent', 15.00, 0, 'active'),
+  ('FREESHIP', 'fixed', 2.00, 10.00, 'active'),
+  ('PIXEL10', 'percent', 10.00, 0, 'active');
 
 COMMIT;

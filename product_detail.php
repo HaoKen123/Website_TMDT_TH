@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once 'db.php';
+require_once 'lang.php';
 
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
@@ -224,9 +225,9 @@ if (isset($_SESSION['cart'])) {
 
                 <div class="detail-price">
                     <?php if ($product['old_price']): ?>
-                        <span class="detail-old-price">$<?php echo htmlspecialchars($product['old_price']); ?></span>
+                        <span class="detail-old-price"><?php echo format_price($product['old_price']); ?></span>
                     <?php endif; ?>
-                    $<?php echo htmlspecialchars($product['price']); ?>
+                    <?php echo format_price($product['price']); ?>
                 </div>
 
                 <div class="detail-description">

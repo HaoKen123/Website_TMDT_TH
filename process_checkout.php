@@ -65,6 +65,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$order_id, $product['id'], $qty, $product['price']]);
     }
 
+    // Record coupon usage for user
+    if (isset($_SESSION['coupon'])) {
+        try {
+            $stmtUserCoupon = $pdo->prepare("INSERT IGNORE INTO user_coupons (user_id, coupon_code) VALUES (?, ?)");
+            $stmtUserCoupon->execute([$user_id, strtoupper($_SESSION['coupon']['code'])]);
+        } catch (Exception $e) {}
+    }
+
     // Clear Cart & Coupon
     $_SESSION['cart'] = [];
     unset($_SESSION['coupon']);

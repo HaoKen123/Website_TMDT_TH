@@ -151,39 +151,48 @@ $current_region = get_current_region();
                     <h2 class="section-title"><?php echo $current_region === 'VN' ? 'Phương thức thanh toán' : 'Payment Method'; ?></h2>
                     
                     <div class="payment-tabs">
-                        <div class="payment-tab active" data-target="momo">
-                            <i class="fas fa-qrcode" style="color:#A50064;"></i> MoMo/ZaloPay
-                        </div>
-                        <div class="payment-tab" data-target="bank">
-                            <i class="fas fa-university" style="color:#0078d7;"></i> <?php echo $current_region === 'VN' ? 'Chuyển khoản NH' : 'Bank Transfer'; ?>
-                        </div>
-                        <div class="payment-tab" data-target="card">
-                            <i class="fab fa-cc-visa" style="color:#1A1F71;"></i> <?php echo $current_region === 'VN' ? 'Thẻ tín dụng' : 'Credit Card'; ?>
+                        <div class="payment-tab active" data-target="bank">
+                            <i class="fas fa-university" style="color:#0078d7;"></i> <?php echo $current_region === 'VN' ? 'Chuyển Khoản NH (Tự Động 24/7)' : 'Auto Bank Transfer'; ?>
                         </div>
                         <div class="payment-tab" data-target="cod">
                             <i class="fas fa-truck" style="color:#0e8543;"></i> <?php echo $current_region === 'VN' ? 'Thanh toán COD' : 'Cash on Delivery'; ?>
                         </div>
+                        <div class="payment-tab" data-target="momo">
+                            <i class="fas fa-qrcode" style="color:#A50064;"></i> Ví MoMo / ZaloPay
+                        </div>
+                        <div class="payment-tab" data-target="card">
+                            <i class="fab fa-cc-visa" style="color:#1A1F71;"></i> <?php echo $current_region === 'VN' ? 'Thẻ Tín Dụng / Visa' : 'Credit Card'; ?>
+                        </div>
                     </div>
 
                     <!-- Hidden input to store selected method -->
-                    <input type="hidden" name="payment_method" id="payment_method" value="momo">
+                    <input type="hidden" name="payment_method" id="payment_method" value="bank">
 
-                    <div class="payment-content active" id="content-momo">
-                        <p><?php echo $current_region === 'VN' ? 'Hệ thống sẽ chuyển hướng tới trang hiển thị mã QR để bạn quét thanh toán.' : 'You will be redirected to the QR code payment page.'; ?></p>
-                    </div>
-
-                    <div class="payment-content" id="content-bank">
-                        <p><?php echo $current_region === 'VN' ? 'Hệ thống sẽ cung cấp Số tài khoản Ngân Hàng để bạn chuyển khoản 24/7.' : 'Bank Account details will be provided for 24/7 transfer.'; ?></p>
-                    </div>
-
-                    <div class="payment-content" id="content-card">
-                        <p><?php echo $current_region === 'VN' ? 'Hệ thống sẽ cung cấp form nhập thẻ tín dụng bảo mật.' : 'A secure credit card checkout form will be provided.'; ?></p>
+                    <div class="payment-content active" id="content-bank">
+                        <div style="background:#eff6ff; padding:15px; border-radius:6px; border:1px solid #bfdbfe; color:#1e40af;">
+                            <i class="fas fa-bolt" style="color:#eab308; margin-right:6px;"></i>
+                            <strong>Tự động xác nhận 24/7 qua SePay:</strong> Hệ thống sẽ tự động hiển thị mã VietQR chuyển khoản. Sau khi chuyển xong, đơn hàng sẽ được duyệt tức thì!
+                        </div>
                     </div>
 
                     <div class="payment-content" id="content-cod">
-                        <div style="text-align:center; padding:10px;">
-                            <i class="fas fa-box-open" style="font-size:40px; color:var(--primary-color); margin-bottom:15px;"></i>
-                            <p><?php echo $current_region === 'VN' ? 'Bạn sẽ thanh toán bằng tiền mặt khi shipper giao hàng tới tận nhà.' : 'Pay with cash upon delivery.'; ?></p>
+                        <div style="text-align:center; padding:15px; background:#f0fdf4; border-radius:6px; border:1px solid #bbf7d0; color:#166534;">
+                            <i class="fas fa-box-open" style="font-size:32px; color:#16a34a; margin-bottom:10px;"></i>
+                            <p><?php echo $current_region === 'VN' ? 'Thanh toán tiền mặt trực tiếp cho nhân viên giao hàng (Shipper) khi nhận hàng tại nhà.' : 'Pay with cash upon delivery.'; ?></p>
+                        </div>
+                    </div>
+
+                    <div class="payment-content" id="content-momo">
+                        <div style="background:#fff1f2; padding:15px; border-radius:6px; border:1px solid #fecdd3; color:#9f1239;">
+                            <i class="fas fa-wrench" style="margin-right:6px;"></i>
+                            <strong>Đang bảo trì / Nâng cấp:</strong> Cổng MoMo/ZaloPay tạm thời đang nâng cấp hệ thống. Vui lòng chọn <strong>Chuyển Khoản Ngân Hàng</strong> hoặc <strong>COD</strong> để đặt hàng ngay!
+                        </div>
+                    </div>
+
+                    <div class="payment-content" id="content-card">
+                        <div style="background:#fff1f2; padding:15px; border-radius:6px; border:1px solid #fecdd3; color:#9f1239;">
+                            <i class="fas fa-wrench" style="margin-right:6px;"></i>
+                            <strong>Đang bảo trì:</strong> Cổng Thẻ Quốc Tế Visa/Mastercard đang được tích hợp. Vui lòng chọn <strong>Chuyển Khoản Ngân Hàng</strong> hoặc <strong>COD</strong>!
                         </div>
                     </div>
                 </div>

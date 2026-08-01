@@ -12,6 +12,9 @@ header('bypass-tunnel-reminder: 1');
 
 // 1. Đọc dữ liệu JSON gửi từ SePay Webhook
 $rawInput = file_get_contents('php://input');
+file_put_contents('webhook_log.txt', "[" . date('Y-m-d H:i:s') . "] RAW PAYLOAD: " . $rawInput . "\n", FILE_APPEND);
+$headers = getallheaders();
+file_put_contents('webhook_log.txt', "[" . date('Y-m-d H:i:s') . "] HEADERS: " . json_encode($headers) . "\n", FILE_APPEND);
 $data = json_decode($rawInput, true);
 
 if (!$data) {
@@ -21,16 +24,28 @@ if (!$data) {
 }
 
 // 2. Kiểm tra Token bảo mật (nếu được thiết lập)
-$headers = getallheaders();
-$authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+$headers = function_exists('getallheaders') ? getallheaders() : [];
+$authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
+$getKey = $_GET['api_key'] ?? $_GET['token'] ?? $_GET['key'] ?? '';
 
 if (defined('SEPAY_API_KEY') && SEPAY_API_KEY !== 'SEPAY_SECRET_API_KEY' && !empty(SEPAY_API_KEY)) {
     $expectedBearer = 'Bearer ' . SEPAY_API_KEY;
     $expectedApikey = 'Apikey ' . SEPAY_API_KEY;
     
-    if ($authHeader !== $expectedBearer && $authHeader !== $expectedApikey && $authHeader !== SEPAY_API_KEY) {
+    // Normalize spaces and compare
+    $cleanAuth = trim(preg_replace('/\s+/', ' ', $authHeader));
+    
+    $isHeaderValid = ($cleanAuth === $expectedBearer || $cleanAuth === $expectedApikey || $cleanAuth === SEPAY_API_KEY);
+    $isGetValid = ($getKey === SEPAY_API_KEY);
+
+    if (!$isHeaderValid && !$isGetValid) {
         http_response_code(401);
-        echo json_encode(['success' => false, 'message' => 'Mã API Key / Authorization không chính xác']);
+        echo json_encode([
+            'success' => false, 
+            'message' => 'Mã API Key / Authorization không chính xác',
+            'debug_received' => $cleanAuth,
+            'debug_get' => $getKey
+        ]);
         exit;
     }
 }
@@ -75,6 +90,7 @@ try {
     }
 
     // 6. Cập nhật trạng thái Đã thanh toán & Đã xác nhận đơn hàng
+    file_put_contents('webhook_log.txt', "[" . date('Y-m-d H:i:s') . "] UPDATE DB FOR ORDER: " . $order_id . "\n", FILE_APPEND);
     $update = $pdo->prepare("UPDATE orders SET payment_status = 'Đã thanh toán', status = 'Đã xác nhận' WHERE id = ?");
     $update->execute([$order_id]);
 

@@ -1,4 +1,56 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Custom Toast Notification System
+    function getOrCreateToastContainer() {
+        let container = document.getElementById('customToastContainer');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'customToastContainer';
+            container.style.cssText = 'position:fixed; top:20px; right:20px; z-index:99999; display:flex; flex-direction:column; gap:10px; max-width:400px; width:calc(100% - 40px); pointer-events:none;';
+            document.body.appendChild(container);
+        }
+        return container;
+    }
+
+    window.showCustomNotice = function(message, type = 'info', duration = 4000) {
+        const container = getOrCreateToastContainer();
+        const toastEl = document.createElement('div');
+        
+        let bg = '#0f172a';
+        let icon = 'fa-info-circle';
+        let border = '#334155';
+
+        if (type === 'success') {
+            bg = '#065f46';
+            icon = 'fa-check-circle';
+            border = '#10b981';
+        } else if (type === 'warning') {
+            bg = '#9a3412';
+            icon = 'fa-exclamation-circle';
+            border = '#f97316';
+        } else if (type === 'error') {
+            bg = '#991b1b';
+            icon = 'fa-times-circle';
+            border = '#ef4444';
+        }
+
+        toastEl.style.cssText = `background:${bg}; color:#ffffff; border-left:4px solid ${border}; padding:14px 18px; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.2); font-size:14px; font-weight:500; font-family:'Inter', sans-serif; display:flex; align-items:flex-start; gap:12px; opacity:0; transform:translateY(-15px); transition:all 0.3s cubic-bezier(0.16, 1, 0.3, 1); pointer-events:auto; line-height:1.5;`;
+        toastEl.innerHTML = `<i class="fas ${icon}" style="font-size:18px; margin-top:2px; flex-shrink:0;"></i><div style="flex:1;">${message}</div><i class="fas fa-times" style="font-size:14px; opacity:0.6; cursor:pointer; margin-top:3px; flex-shrink:0;" onclick="this.parentElement.remove()"></i>`;
+
+        container.appendChild(toastEl);
+        
+        // Trigger animation
+        requestAnimationFrame(() => {
+            toastEl.style.opacity = '1';
+            toastEl.style.transform = 'translateY(0)';
+        });
+
+        setTimeout(() => {
+            toastEl.style.opacity = '0';
+            toastEl.style.transform = 'translateY(-15px)';
+            setTimeout(() => toastEl.remove(), 300);
+        }, duration);
+    };
+
     // Mobile menu toggle
     const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
     const mainNav = document.querySelector('.main-nav');
@@ -29,49 +81,33 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add to cart functionality
     const addToCartBtns = document.querySelectorAll('.add-to-cart-quick');
     const cartCount = document.querySelector('.cart-count');
-    const toast = document.getElementById('toast');
 
     addToCartBtns.forEach(btn => {
         btn.addEventListener('click', async (e) => {
             e.preventDefault();
-
             const productId = btn.getAttribute('data-id');
 
             try {
                 const response = await fetch('add_to_cart.php', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id: productId })
                 });
 
                 const data = await response.json();
 
                 if (data.success) {
-                    // Update cart count
                     if (cartCount) cartCount.textContent = data.cart_count;
-                    // Show toast notification
-                    showToast();
+                    showCustomNotice('Đã thêm sản phẩm vào giỏ hàng thành công!', 'success');
                 } else {
-                    alert('Lỗi: ' + data.message);
+                    showCustomNotice(data.message || 'Không thể thêm sản phẩm!', 'error');
                 }
             } catch (err) {
                 console.error('Fetch error:', err);
+                showCustomNotice('Có lỗi xảy ra khi thêm vào giỏ hàng!', 'error');
             }
         });
     });
-
-    function showToast() {
-        if (toast) {
-            toast.classList.add('show');
-
-            // Hide toast after 3 seconds
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
-        }
-    }
 
     // Hero Background Slider
     const heroSection = document.querySelector('.hero');
@@ -98,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
             currentBgIndex = (currentBgIndex - 1 + bgImages.length) % bgImages.length;
             updateHeroBackground();
         }
-        
+
         function startHeroSlider() {
             clearInterval(slideInterval);
             slideInterval = setInterval(nextHeroSlide, 5000);
@@ -110,18 +146,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (prevBtn) {
             prevBtn.addEventListener('click', () => {
                 prevHeroSlide();
-                startHeroSlider(); // Reset interval
+                startHeroSlider();
             });
         }
 
         if (nextBtn) {
             nextBtn.addEventListener('click', () => {
                 nextHeroSlide();
-                startHeroSlider(); // Reset interval
+                startHeroSlider();
             });
         }
 
-        // Start auto slider initially
         startHeroSlider();
     }
 
@@ -169,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.success) {
                     const p = data.product;
                     qvTitle.textContent = p.name;
-                    qvPrice.textContent = `$${parseFloat(p.price).toFixed(2)}`;
+                    qvPrice.textContent = p.price_formatted || `$${parseFloat(p.price).toFixed(2)}`;
                     qvMainImg.src = p.image_url;
                     qvThumb1.src = p.image_url;
                     qvDescription.textContent = p.description || 'Sản phẩm Minecraft chính hãng, chất lượng cao với thiết kế độc quyền.';
@@ -177,10 +212,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     quickViewModal.classList.add('active');
                 } else {
-                    alert('Lỗi: ' + data.message);
+                    showCustomNotice(data.message, 'error');
                 }
             } catch (err) {
                 console.error('Lỗi khi tải chi tiết sản phẩm:', err);
+                showCustomNotice('Không thể tải chi tiết sản phẩm', 'error');
             }
         });
     });
@@ -194,7 +230,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (closeQuickView) closeQuickView.addEventListener('click', hideQuickViewModal);
     if (modalOverlay) modalOverlay.addEventListener('click', hideQuickViewModal);
 
-    // Quantity controls inside modal
     if (qvQtyMinus) {
         qvQtyMinus.addEventListener('click', () => {
             let val = parseInt(qvQtyInput.value) || 1;
@@ -209,7 +244,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Size selection buttons
     const sizeBtns = document.querySelectorAll('.size-btn');
     sizeBtns.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -218,7 +252,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Add to cart from Quick View Modal
     if (qvAddToCartBtn) {
         qvAddToCartBtn.addEventListener('click', async () => {
             if (!currentActiveProductId) return;
@@ -236,12 +269,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.success) {
                     if (cartCount) cartCount.textContent = data.cart_count;
                     hideQuickViewModal();
-                    showToast();
+                    showCustomNotice('Đã thêm sản phẩm vào giỏ hàng!', 'success');
                 } else {
-                    alert('Lỗi: ' + data.message);
+                    showCustomNotice(data.message, 'error');
                 }
             } catch (err) {
                 console.error('Fetch error:', err);
+                showCustomNotice('Không thể thêm sản phẩm!', 'error');
             }
         });
     }
@@ -255,11 +289,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const submitBtn = form.querySelector('button');
             const email = emailInput ? emailInput.value.trim() : '';
 
-            if (!email) return;
+            if (!email) {
+                showCustomNotice('Vui lòng nhập địa chỉ Email!', 'warning');
+                return;
+            }
 
             const originalBtnText = submitBtn ? submitBtn.innerText : 'ĐĂNG KÝ';
             if (submitBtn) {
-                submitBtn.innerText = 'Đang gửi...';
+                submitBtn.innerText = 'Đang xử lý...';
                 submitBtn.disabled = true;
             }
 
@@ -272,18 +309,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await res.json();
 
                 if (data.status === 'not_registered') {
-                    alert(data.message);
-                    window.location.href = data.redirect;
+                    showCustomNotice(data.message, 'info');
+                    setTimeout(() => {
+                        window.location.href = data.redirect;
+                    }, 1500);
                 } else if (data.status === 'already_registered') {
-                    alert('ℹ️ ' + data.message);
+                    showCustomNotice(data.message, 'info', 6000);
                 } else if (data.status === 'success') {
-                    alert('✅ ' + data.message);
+                    showCustomNotice(data.message, 'success');
                     if (emailInput) emailInput.value = '';
                 } else {
-                    alert('⚠️ Lỗi: ' + data.message);
+                    showCustomNotice('Lỗi: ' + data.message, 'error');
                 }
             } catch (err) {
-                alert('Có lỗi xảy ra khi kiểm tra đăng ký!');
+                showCustomNotice('Có lỗi xảy ra khi xử lý yêu cầu!', 'error');
             } finally {
                 if (submitBtn) {
                     submitBtn.innerText = originalBtnText;

@@ -12,16 +12,35 @@ $success_msg = '';
 
 // Xử lý cập nhật thông tin
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $fullname = $_POST['fullname'];
-    $phone = $_POST['phone'];
-    $address = $_POST['address'];
-    $avatar_url = empty($_POST['avatar_url']) ? null : $_POST['avatar_url'];
+    $fullname = trim($_POST['fullname']);
+    $phone = trim($_POST['phone']);
+    $address = trim($_POST['address']);
+    $avatar_url = empty($_POST['avatar_url']) ? null : trim($_POST['avatar_url']);
+
+    // Tải ảnh đại diện từ máy tính (Browse File)
+    if (isset($_FILES['avatar_file']) && $_FILES['avatar_file']['error'] === UPLOAD_ERR_OK) {
+        $fileTmpPath = $_FILES['avatar_file']['tmp_name'];
+        $fileName = $_FILES['avatar_file']['name'];
+        $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+        $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
+        if (in_array($fileExtension, $allowedExtensions)) {
+            $newFileName = 'avatar_' . $user_id . '_' . time() . '.' . $fileExtension;
+            $uploadFileDir = 'uploads/avatars/';
+            if (!is_dir($uploadFileDir)) {
+                mkdir($uploadFileDir, 0755, true);
+            }
+            if (move_uploaded_file($fileTmpPath, $uploadFileDir . $newFileName)) {
+                $avatar_url = $uploadFileDir . $newFileName;
+            }
+        }
+    }
 
     $stmt = $pdo->prepare("UPDATE users SET fullname=?, phone=?, address=?, avatar_url=? WHERE id=?");
     $stmt->execute([$fullname, $phone, $address, $avatar_url, $user_id]);
     
     $_SESSION['user_name'] = $fullname;
-    $success_msg = "Cập nhật thông tin thành công!";
+    $success_msg = "Cập nhật thông tin và ảnh đại diện thành công!";
 }
 
 // Lấy thông tin user
@@ -113,24 +132,31 @@ foreach ($orders as $order) {
                 <h4 style="text-align:left; margin-bottom:15px;">Cập nhật thông tin</h4>
                 <?php if($success_msg) echo "<div class='alert-success'>$success_msg</div>"; ?>
                 
-                <form method="POST">
-                    <div class="form-group">
-                        <label>Link Ảnh đại diện</label>
-                        <input type="text" name="avatar_url" value="<?php echo htmlspecialchars($user['avatar_url'] ?? ''); ?>" placeholder="https://...">
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="form-group" style="background:#f8fafc; padding:15px; border-radius:8px; border:1px dashed #cbd5e1;">
+                        <label style="font-weight:600;"><i class="fas fa-camera"></i> Ảnh đại diện (Avatar):</label>
+                        <div style="margin-top:8px;">
+                            <label style="font-size:13px; font-weight:600; color:#334155;"><i class="fas fa-upload"></i> Tải từ máy tính (Browse File):</label>
+                            <input type="file" name="avatar_file" accept="image/*" style="margin-top:4px; margin-bottom:10px;">
+                        </div>
+                        <div>
+                            <label style="font-size:13px; font-weight:600; color:#334155;"><i class="fas fa-link"></i> Hoặc dán Link URL:</label>
+                            <input type="text" name="avatar_url" value="<?php echo htmlspecialchars($user['avatar_url'] ?? ''); ?>" placeholder="https://example.com/avatar.jpg">
+                        </div>
                     </div>
                     <div class="form-group">
-                        <label>Họ và Tên</label>
+                        <label style="font-weight:600;">Họ và Tên</label>
                         <input type="text" name="fullname" value="<?php echo htmlspecialchars($user['fullname']); ?>" required>
                     </div>
                     <div class="form-group">
-                        <label>Số điện thoại</label>
+                        <label style="font-weight:600;">Số điện thoại</label>
                         <input type="text" name="phone" value="<?php echo htmlspecialchars($user['phone']); ?>" required>
                     </div>
                     <div class="form-group">
-                        <label>Địa chỉ nhận hàng</label>
+                        <label style="font-weight:600;">Địa chỉ nhận hàng</label>
                         <textarea name="address" rows="3" required><?php echo htmlspecialchars($user['address']); ?></textarea>
                     </div>
-                    <button type="submit" class="btn btn-primary" style="width:100%; padding:10px;">LƯU THAY ĐỔI</button>
+                    <button type="submit" class="btn btn-primary" style="width:100%; padding:12px; font-weight:600;"><i class="fas fa-save"></i> LƯU THAY ĐỔI</button>
                 </form>
             </div>
         </div>

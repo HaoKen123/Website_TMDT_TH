@@ -1,0 +1,8 @@
+DirectoryIndex index.php index.html
+
+# Fix Apache stripping Authorization header for SePay Webhook on Shared Hosting
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteCond %{HTTP_AUTHORIZATION} ^(.*)
+RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
+</IfModule>

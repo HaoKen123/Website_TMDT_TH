@@ -30,6 +30,27 @@ try {
         exit;
     }
 
+    // 1. Kiểm tra ngày hết hạn (Expiration Cooldown)
+    if (!empty($coupon['expires_at']) && strtotime($coupon['expires_at']) < time()) {
+        echo json_encode(['status' => 'error', 'message' => 'Mã giảm giá ' . strtoupper($code) . ' đã hết hạn sử dụng!']);
+        exit;
+    }
+
+    // 2. Kiểm tra giới hạn 1 lần sử dụng per tài khoản (đặc biệt cho WELCOME15)
+    $user_id = $_SESSION['user_id'] ?? 0;
+    if ($user_id > 0) {
+        try {
+            $stmtUsed = $pdo->prepare("SELECT id FROM user_coupons WHERE user_id = ? AND UPPER(coupon_code) = UPPER(?)");
+            $stmtUsed->execute([$user_id, $code]);
+            if ($stmtUsed->fetch()) {
+                echo json_encode(['status' => 'error', 'message' => 'Tài khoản của bạn đã dùng mã ' . strtoupper($code) . ' trước đó rồi! Mỗi tài khoản chỉ được dùng 1 lần.']);
+                exit;
+            }
+        } catch (Exception $ex) {
+            // Table might be created on fly
+        }
+    }
+
     // Calculate cart total in USD
     $total_usd = 0;
     if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {

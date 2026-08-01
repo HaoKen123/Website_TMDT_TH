@@ -12,8 +12,16 @@ $whereClauses = [];
 $params = [];
 
 if ($category) {
-    $whereClauses[] = 'category = :category';
-    $params[':category'] = $category;
+    if ($category === 'clothing') {
+        $whereClauses[] = "(category IN ('clothing', 'tshirts', 'cosplay'))";
+    } else if ($category === 'accessories') {
+        $whereClauses[] = "(category IN ('accessories', 'hats', 'keychains'))";
+    } else if ($category === 'toys') {
+        $whereClauses[] = "(category IN ('toys', 'toys_models', 'decor'))";
+    } else {
+        $whereClauses[] = 'category = :category';
+        $params[':category'] = $category;
+    }
 }
 
 if ($search !== '') {

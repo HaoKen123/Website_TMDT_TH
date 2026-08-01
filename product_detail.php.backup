@@ -1,0 +1,1045 @@
+<?php
+session_start();
+
+$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+
+$stmt = $pdo->prepare("SELECT * FROM products WHERE id = ?");
+$stmt->execute([$id]);
+$product = $stmt->fetch();
+
+if (!$product) {
+    header("Location: index.php");
+    exit;
+}
+
+// Fetch related products (same category)
+$stmt = $pdo->prepare("SELECT * FROM products WHERE category = ? AND id != ? LIMIT 6");
+$stmt->execute([$product['category'], $id]);
+$related_products = $stmt->fetchAll();
+
+// Fetch customer reviews
+$stmt = $pdo->prepare("SELECT * FROM product_reviews WHERE product_id = ? ORDER BY created_at DESC");
+$stmt->execute([$id]);
+$reviews = $stmt->fetchAll();
+
+// Calculate average rating
+$avg_rating = 0;
+if ($reviews) {
+    $total_rating = 0;
+    foreach ($reviews as $review) {
+        $total_rating += $review['rating'];
+    }
+    $avg_rating = round($total_rating / count($reviews), 1);
+}
+
+// Get cart count
+$cart_count = 0;
+if (isset($_SESSION['cart'])) {
+    foreach ($_SESSION['cart'] as $qty) {
+        $cart_count += $qty;
+    }
+}
+
+// Fetch size availability for clothing
+$sizes = [];
+if ($product['category'] === 'clothing') {
+    $sizes_sql = "SELECT * FROM product_sizes WHERE product_id = ?";
+    $stmt = $pdo->prepare($sizes_sql);
+    $stmt->execute([$id]);
+    $sizes = $stmt->fetchAll();
+}
+?>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?php echo htmlspecialchars($product['name']); ?> | PixelGear</title>
+    <link rel="stylesheet" href="style.css?v=<?php echo time(); ?>">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ==========================================
+           PRODUCT DETAIL PAGE - MODERN E-COMMERCE
+           ========================================== */
+        .product-detail-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f9fafb;
+        }
+        
+        /* Breadcrumb Navigation */
+        .breadcrumb {
+            margin-bottom: 30px;
+            font-size: 14px;
+            color: #6b7280;
+        }
+        .breadcrumb a {
+            color: var(--primary-color);
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        .breadcrumb a:hover {
+            color: var(--primary-hover);
+        }
+        .breadcrumb span {
+            color: #9ca3af;
+            margin: 0 8px;
+        }
+        
+        /* Main Product Grid Layout */
+        .product-detail-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            gap: 50px;
+            margin-bottom: 60px;
+        }
+        
+        /* Image Gallery */
+        .product-detail-media {
+            position: sticky;
+            top: 120px;
+        }
+        .gallery-main {
+            width: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 15px;
+            position: relative;
+        }
+        .gallery-main img {
+            width: 100%;
+            height: 500px;
+            object-fit: cover;
+            object-position: center;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), filter 0.3s;
+        }
+        .gallery-main img:hover {
+            transform: scale(1.05);
+            filter: brightness(1.05);
+        }
+        .zoom-overlay {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, var(--mc-primary), var(--mc-primary-light));
+            color: #fff;
+            padding: 10px 18px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(56, 182, 172, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .gallery-thumbnails {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .gallery-thumb {
+            width: 100%;
+            height: 80px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 3px solid transparent;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .gallery-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .gallery-thumb.active {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(56, 182, 172, 0.2);
+        }
+        .gallery-thumb:hover {
+            transform: scale(1.05);
+            border-color: var(--primary-hover);
+        }
+        .gallery-thumb::after {
+            content: '\f04e';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            color: #fff;
+            font-size: 24px;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        .gallery-thumb:hover::after {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        .gallery-thumb.active::after {
+            content: '\f00d';
+            transform: translate(-50%, -50%) scale(1);
+        }
+        
+        /* Product Info Section */
+        .product-detail-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Product Badge */
+        .detail-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            align-self: flex-start;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 20px;
+        }
+        .detail-badge.new {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+        }
+        .detail-badge.best-seller {
+            background: linear-gradient(135deg, var(--primary-color), #16a34a);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(56, 182, 172, 0.5);
+        }
+        .detail-badge.sale {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.5);
+        }
+        .badge-icon {
+            font-size: 10px;
+        }
+        
+        /* Product Title */
+        .detail-title {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 15px;
+            color: #111827;
+            line-height: 1.2;
+        }
+        
+        /* Product Rating */
+        .product-rating {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: #f9fafb;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            align-self: flex-start;
+        }
+        .rating-stars {
+            color: #f59e0b;
+            font-size: 16px;
+        }
+        .rating-count {
+            color: #6b7280;
+            font-size: 13px;
+            margin-left: 4px;
+        }
+        .rating-verified {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            font-size: 11px;
+            color: #16a34a;
+            font-weight: 700;
+            margin-left: 4px;
+        }
+        
+        /* Price */
+        .detail-price {
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: baseline;
+            gap: 15px;
+        }
+        .detail-price-suffix {
+            font-size: 20px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+        .detail-old-price {
+            font-size: 22px;
+            color: #d1d5db;
+            text-decoration: line-through;
+            font-weight: 500;
+        }
+        .discount-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: #fff;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Feature Icons */
+        .product-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+        .feature-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            border: 1px solid #86efac;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #16a34a;
+        }
+        .feature-tag i {
+            font-size: 14px;
+        }
+        
+        /* Tabs Navigation */
+        .tabs-container {
+            margin-bottom: 30px;
+        }
+        .tabs-header {
+            display: flex;
+            gap: 1px;
+            background: #e5e7eb;
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 25px;
+            overflow-x: auto;
+        }
+        .tab {
+            padding: 14px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #6b7280;
+            background: #e5e7eb;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+        .tab:hover {
+            color: var(--primary-color);
+            background: #d1d5db;
+        }
+        .tab.active {
+            color: #fff;
+            background: var(--primary-color);
+        }
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #fff, transparent);
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Tab Panels */
+        .tab-panel {
+            background: #fff;
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+        .tab-panel-description {
+            font-size: 15px;
+            line-height: 1.8;
+            color: #374151;
+        }
+        .tab-panel-specs table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .tab-panel-specs td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .tab-panel-specs td:first-child {
+            font-weight: 600;
+            color: #6b7280;
+            width: 40%;
+        }
+        .tab-panel-reviews {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .review-item {
+            background: #f9fafb;
+            padding: 18px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .reviewer-name {
+            font-weight: 700;
+            color: #111827;
+            font-size: 14px;
+        }
+        .review-date {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+        
+        /* Purchase Actions */
+        .purchase-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+            align-items: flex-start;
+        }
+        .quantity-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+        }
+        .quantity-control {
+            display: inline-flex;
+            align-items: center;
+            border: 1px solid #e5e7eb;
+            border-radius: 999px;
+            overflow: hidden;
+            background: #f9fafb;
+        }
+        .quantity-control button {
+            width: 38px;
+            height: 38px;
+            background: #fff;
+            border: none;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary-color);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .quantity-control button:hover {
+            background: #f9fafb;
+            color: var(--primary-hover);
+            transform: scale(1.1);
+        }
+        .quantity-control button:active {
+            transform: scale(0.95);
+        }
+        .quantity-control input {
+            width: 60px;
+            height: 38px;
+            border: none;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 700;
+            color: #111827;
+            outline: none;
+            -moz-appearance: textfield;
+        }
+        .quantity-control input::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .quantity-control input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .quantity-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-add-to-cart {
+            width: 100%;
+            padding: 18px 30px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+            background: linear-gradient(135deg, var(--primary-color), var(--mc-primary-light));
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(56, 182, 172, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-add-to-cart::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        .btn-add-to-cart:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        .btn-add-to-cart:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(56, 182, 172, 0.5);
+        }
+        .btn-add-to-cart:active {
+            transform: translateY(0);
+        }
+        .btn-add-to-cart i {
+            font-size: 18px;
+        }
+        .btn-add-to-cart .btn-icon {
+            position: absolute;
+            right: 20px;
+        }
+        .btn-add-to-cart .btn-text {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .btn-secondary-large {
+            padding: 16px 24px;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--primary-color);
+            background: #fff;
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-secondary-large:hover {
+            background: var(--primary-color);
+            color: #fff;
+            box-shadow: 0 6px 20px rgba(56, 182, 172, 0.4);
+        }
+        
+        .trust-icons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            margin-top: 20px;
+            align-items: center;
+        }
+        .trust-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #6b7280;
+        }
+        .trust-item i {
+            color: var(--primary-color);
+            font-size: 14px;
+        }
+        
+        /* Related Products Section */
+        .related-section {
+            margin-top: 70px;
+        }
+        .related-section h2 {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            color: #111827;
+        }
+        .related-section p {
+            font-size: 15px;
+            color: #6b7280;
+            margin-bottom: 30px;
+        }
+        .product-card {
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+        }
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+        }
+        .related-card-image {
+            width: 100%;
+            height: 240px;
+            overflow: hidden;
+            position: relative;
+        }
+        .related-card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        .product-card:hover .related-card-image img {
+            transform: scale(1.1);
+        }
+        .related-card-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            padding: 4px 10px;
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: #fff;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .related-card-info {
+            padding: 20px;
+        }
+        .related-card-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #111827;
+        }
+        .related-card-title a {
+            color: inherit;
+            text-decoration: none;
+        }
+        .related-card-price {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+        }
+        .related-card-old-price {
+            font-size: 14px;
+            color: #d1d5db;
+            text-decoration: line-through;
+        }
+        
+        /* Color Variant Selector */
+        .color-selector {
+            margin: 25px 0;
+        }
+        .color-selector-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            display: block;
+        }
+        .color-options {
+            display: flex;
+            gap: 12px;
+        }
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #e5e7eb;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .color-option:hover {
+            transform: scale(1.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        .color-option.active {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(56, 182, 172, 0.2);
+            transform: scale(1.15);
+        }
+        .color-option.active::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-size: 16px;
+        }
+        
+        /* Size Selector */
+        .size-selector {
+            margin: 25px 0;
+        }
+        .size-selector-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            display: block;
+        }
+        .size-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .size-option {
+            padding: 10px 18px;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            min-width: 60px;
+            text-align: center;
+        }
+        .size-option:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(56, 182, 172, 0.2);
+        }
+        .size-option.selected {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(56, 182, 172, 0.4);
+        }
+        .size-option.available {
+            background: #f0fdf4;
+            border-color: #86efac;
+            color: #16a34a;
+        }
+        .size-option.out-of-stock {
+            background: #f9fafb;
+            border-color: #e5e7eb;
+            color: #d1d5db;
+            cursor: not-allowed;
+        }
+        .size-option.out-of-stock::before {
+            content: '\f11e';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            font-size: 14px;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .product-detail-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            .product-detail-media {
+                position: static;
+            }
+            .gallery-thumbnails {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .product-detail-container {
+                padding: 15px;
+            }
+            .detail-title {
+                font-size: 24px;
+            }
+            .detail-price {
+                font-size: 28px;
+            }
+            .tabs-header {
+                overflow-x: visible;
+            }
+            .tab {
+                padding: 12px 16px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Announcement Bar -->
+    <div class="announcement-bar">
+        <div class="announcement-slider">
+            <p class="slide active"><i class="fas fa-gift"></i> <?php echo __('ANNOUNCEMENT_1'); ?></p>
+            <p class="slide"><i class="fas fa-rocket"></i> <?php echo __('ANNOUNCEMENT_2'); ?></p>
+            <p class="slide"><i class="fas fa-trophy"></i> <?php echo __('ANNOUNCEMENT_3'); ?></p>
+        </div>
+    </div>
+
+    <!-- Announcement Bar -->
+    <div class="announcement-bar">
+        <div class="announcement-slider">
+            <p class="slide active"><i class="fas fa-gift"></i> <?php echo __('ANNOUNCEMENT_1'); ?></p>
+            <p class="slide"><i class="fas fa-rocket"></i> <?php echo __('ANNOUNCEMENT_2'); ?></p>
+            <p class="slide"><i class="fas fa-trophy"></i> <?php echo __('ANNOUNCEMENT_3'); ?></p>
+        </div>
+    </div>
+
+    <!-- Header / Navigation -->
+    <header class="site-header">
+        <div class="header-container" style="width: 100%;">
+            <div class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </div>
+            
+            <div class="logo">
+                <h1 class="glitch-title" data-text="PIXELGEAR">PIXELGEAR</h1>
+            </div>
+
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="index.php" class="active-nav <?php echo $current_page === 'index' ? 'active' : ''; ?>"><?php echo __('NAV_HOME'); ?></a></li>
+                    <li><a href="products.php" class="nav-link <?php echo in_array($current_page, ['products', 'all']) ? 'active' : ''; ?>"><?php echo __('NAV_ALL'); ?></a></li>
+                    <li><a href="products.php?category=clothing" class="nav-link <?php echo $current_page === 'clothing' ? 'active' : ''; ?>"><?php echo __('NAV_CLOTHING'); ?></a></li>
+                    <li><a href="products.php?category=accessories" class="nav-link <?php echo $current_page === 'accessories' ? 'active' : ''; ?>"><?php echo __('NAV_ACCESSORIES'); ?></a></li>
+                    <li><a href="products.php?category=toys" class="nav-link <?php echo $current_page === 'toys' ? 'active' : ''; ?>"><?php echo __('NAV_TOYS'); ?></a></li>
+                </ul>
+            </nav>
+
+            <div class="header-icons">
+                <!-- Region & Currency Switcher -->
+                <div class="region-switcher-container">
+                    <button class="region-btn" type="button">
+                        <?php if ($current_region === 'VN'): ?>
+                            <div class="flag vn"><i class="fas fa-flag"></i></div>
+                            <span>Việt Nam</span>
+                        <?php else: ?>
+                            <div class="flag us"><i class="fas fa-flag"></i></div>
+                            <span>USA</span>
+                        <?php endif; ?>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="region-dropdown">
+                        <a href="?region=VN" class="region-option <?php echo $current_region === 'VN' ? 'active' : ''; ?>">
+                            <div class="flag vn"><i class="fas fa-flag"></i></div>
+                            <span>Việt Nam (₫)</span>
+                        </a>
+                        <a href="?region=US" class="region-option <?php echo $current_region === 'US' ? 'active' : ''; ?>">
+                            <div class="flag us"><i class="fas fa-flag"></i></div>
+                            <span>USA ($)</span>
+                        </a>
+                    </div>
+                </div>
+
+                <form action="products.php" method="GET" class="search-container">
+                    <input type="text" name="search" placeholder="Tìm kiếm sản phẩm...">
+                    <button type="submit"><i class="fas fa-search"></i></button>
+                </form>
+
+                <?php if(isset($_SESSION['user_id'])): ?>
+                    <a href="profile.php" title="<?php echo __('PROFILE'); ?>" class="user-menu"><i class="fas fa-user-circle"></i></a>
+                <?php else: ?>
+                    <a href="login.php" title="<?php echo __('LOGIN'); ?>" class="auth-btn"><i class="fas fa-user"></i></a>
+                <?php endif; ?>
+                
+                <a href="cart.php" class="cart-icon" title="<?php echo __('CART'); ?>">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="cart-count"><?php echo $cart_count; ?></span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="product-detail-container">
+        <div class="breadcrumb">
+            <a href="index.php">Trang chủ</a> / 
+            <a href="index.php?category=<?php echo $product['category']; ?>">
+                <?php 
+                    $cats = ['clothing' => 'Quần Áo', 'accessories' => 'Phụ Kiện', 'toys' => 'Đồ Chơi & Game'];
+                    echo $cats[$product['category']] ?? $product['category'];
+                ?>
+            </a> / 
+            <span><?php echo htmlspecialchars($product['name']); ?></span>
+        </div>
+
+        <div class="product-detail-grid">
+            <div class="product-detail-media">
+                <img src="<?php echo htmlspecialchars($product['image_url']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="product-detail-img">
+            </div>
+
+            <div class="product-detail-info">
+                <?php if ($product['badge']): ?>
+                    <span class="detail-badge <?php echo $product['badge'] === 'Giảm giá' ? 'sale' : ''; ?>">
+                        <?php echo htmlspecialchars($product['badge']); ?>
+                    </span>
+                <?php endif; ?>
+
+                <h1 class="detail-title"><?php echo htmlspecialchars($product['name']); ?></h1>
+
+                <div class="detail-price">
+                    <?php if ($product['old_price']): ?>
+                        <span class="detail-old-price">$<?php echo htmlspecialchars($product['old_price']); ?></span>
+                    <?php endif; ?>
+                    $<?php echo htmlspecialchars($product['price']); ?>
+                </div>
+
+                <div class="detail-description">
+                    <p><?php echo nl2br(htmlspecialchars($product['description'] ?? 'Sản phẩm cao cấp chính hãng PixelGear, thiết kế độc quyền chất lượng cao.')); ?></p>
+                </div>
+
+                <div class="purchase-action">
+                    <div class="quantity-control-lg">
+                        <button onclick="adjustDetailQty(-1)">-</button>
+                        <input type="number" id="detailQty" value="1" min="1">
+                        <button onclick="adjustDetailQty(1)">+</button>
+                    </div>
+                    <button class="btn-add-detail" onclick="addToCartDetailed(<?php echo $product['id']; ?>)">
+                        <i class="fas fa-shopping-cart" style="margin-right: 8px;"></i> THÊM VÀO GIỎ HÀNG
+                    </button>
+                </div>
+
+                <div class="product-meta">
+                    <p><i class="fas fa-shield-alt" style="color: var(--primary-color);"></i> Cam kết hàng chính hãng 100% Minecraft</p>
+                    <p style="margin-top: 8px;"><i class="fas fa-shipping-fast" style="color: var(--primary-color);"></i> Giao hàng toàn quốc từ 2-4 ngày</p>
+                </div>
+            </div>
+        </div>
+
+        <?php if (!empty($related_products)): ?>
+        <div class="related-section">
+            <h2 class="section-title" style="text-align: left; font-size: 24px; margin-bottom: 25px;">SẢN PHẨM TƯƠNG TỰ</h2>
+            <div class="product-grid">
+                <?php foreach ($related_products as $rel): ?>
+                <div class="product-card">
+                    <div class="product-image">
+                        <a href="product_detail.php?id=<?php echo $rel['id']; ?>">
+                            <img src="<?php echo htmlspecialchars($rel['image_url']); ?>" alt="<?php echo htmlspecialchars($rel['name']); ?>">
+                        </a>
+                    </div>
+                    <div class="product-info">
+                        <h3><a href="product_detail.php?id=<?php echo $rel['id']; ?>"><?php echo htmlspecialchars($rel['name']); ?></a></h3>
+                        <p class="price">$<?php echo htmlspecialchars($rel['price']); ?></p>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <?php endif; ?>
+    </div>
+
+    <!-- Footer -->
+    <footer class="site-footer" style="margin-top: 80px;">
+        <div class="footer-bottom">
+            <p>&copy; <?php echo date("Y"); ?> Cửa Hàng PixelGear. Tất cả các quyền được bảo lưu.</p>
+        </div>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <i class="fas fa-check-circle"></i> Đã thêm sản phẩm vào giỏ hàng!
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+    function adjustDetailQty(delta) {
+        const input = document.getElementById('detailQty');
+        let current = parseInt(input.value) || 1;
+        current += delta;
+        if (current < 1) current = 1;
+        input.value = current;
+    }
+
+    async function addToCartDetailed(productId) {
+        const qty = parseInt(document.getElementById('detailQty').value) || 1;
+        try {
+            const response = await fetch('update_cart.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: productId, action: 'set', quantity: qty })
+            });
+            const data = await response.json();
+            if (data.success) {
+                document.querySelector('.cart-count').textContent = data.cart_count;
+                const toast = document.getElementById('toast');
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 3000);
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+    </script>
+</body>
+</html>

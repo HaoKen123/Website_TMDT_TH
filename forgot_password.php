@@ -2,7 +2,7 @@
 session_start();
 require_once 'db.php';
 require_once 'mailer.php';
-
+require_once 'lang.php';
 $msg = '';
 $error = '';
 

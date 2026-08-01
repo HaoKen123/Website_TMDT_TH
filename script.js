@@ -1,4 +1,54 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Region switcher button handler
+    const regionBtn = document.querySelector('.region-btn');
+    const regionDropdown = document.querySelector('.region-dropdown');
+    
+    if (regionBtn && regionDropdown) {
+        regionBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            regionDropdown.classList.toggle('show');
+        });
+    }
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!regionBtn.contains(e.target) && !regionDropdown.contains(e.target)) {
+            regionDropdown.classList.remove('show');
+        }
+    });
+    
+    // Close dropdown when clicking on container
+    const regionSwitcherContainer = document.querySelector('.region-switcher-container');
+    if (regionSwitcherContainer) {
+        regionSwitcherContainer.addEventListener('click', (e) => {
+            if (e.target === regionSwitcherContainer) {
+                regionDropdown.classList.remove('show');
+            }
+        });
+    }
+    
+    // Progressive Image Loading - Prevents blur
+    const productImages = document.querySelectorAll('.product-image-lazy');
+    const imageObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                if (img.dataset.src) {
+                    img.src = img.dataset.src;
+                    img.removeAttribute('data-src');
+                }
+                imageObserver.unobserve(img);
+            }
+        });
+    }, {
+        root: null,
+        rootMargin: '100px',
+        threshold: 0.01
+    });
+
+    productImages.forEach(img => {
+        imageObserver.observe(img);
+    });
     // Mobile menu toggle
     const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
     const mainNav = document.querySelector('.main-nav');
@@ -26,12 +76,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Add to cart functionality
-    const addToCartBtns = document.querySelectorAll('.add-to-cart-quick');
+    // Add to cart functionality - Product grid buttons
+    const productAddToCartBtns = document.querySelectorAll('.product-card .btn-add-to-cart-green.small');
     const cartCount = document.querySelector('.cart-count');
     const toast = document.getElementById('toast');
 
-    addToCartBtns.forEach(btn => {
+    productAddToCartBtns.forEach(btn => {
         btn.addEventListener('click', async (e) => {
             e.preventDefault();
 
@@ -62,6 +112,61 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Add to cart functionality - "Xem tất cả" button
+    const viewAllBtn = document.querySelector('.btn-xl');
+    if (viewAllBtn) {
+        viewAllBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.location.href = viewAllBtn.getAttribute('href');
+        });
+    }
+    
+    // Heart Button - Add to Cart
+    const heartButtons = document.querySelectorAll('.btn-add-to-cart-heart');
+    heartButtons.forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            
+            const productId = btn.getAttribute('data-id');
+            const quantity = 1;
+            
+            if (!productId) {
+                console.error('No product ID found');
+                return;
+            }
+            
+            try {
+                const response = await fetch('add_to_cart.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ id: productId, quantity: quantity })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update cart count
+                    if (cartCount) cartCount.textContent = data.cart_count;
+                    
+                    // Visual feedback - pulse animation on button
+                    btn.style.animation = 'heart-pulse 0.6s ease-in-out';
+                    setTimeout(() => {
+                        btn.style.animation = '';
+                    }, 600);
+                    
+                    showToast();
+                } else {
+                    alert('Lỗi: ' + data.message);
+                }
+            } catch (err) {
+                console.error('Heart button error:', err);
+                alert('Lỗi khi thêm vào giỏ hàng!');
+            }
+        });
+    });
+    
     function showToast() {
         if (toast) {
             toast.classList.add('show');
@@ -162,12 +267,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const productId = btn.getAttribute('data-id');
             currentActiveProductId = productId;
 
+            console.log('🔍 Quick View clicked! Product ID:', productId);
+            console.log('🖼️ Modal element:', quickViewModal);
+            console.log('📍 Modal active state before:', quickViewModal ? quickViewModal.classList.contains('active') : 'N/A');
+
             try {
                 const response = await fetch(`get_product.php?id=${productId}`);
                 const data = await response.json();
+                console.log('📦 get_product.php response:', data);
 
                 if (data.success) {
                     const p = data.product;
+                    console.log('✅ Product data:', p);
                     qvTitle.textContent = p.name;
                     qvPrice.textContent = `$${parseFloat(p.price).toFixed(2)}`;
                     qvMainImg.src = p.image_url;
@@ -175,12 +286,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     qvDescription.textContent = p.description || 'Sản phẩm Minecraft chính hãng, chất lượng cao với thiết kế độc quyền.';
                     qvQtyInput.value = 1;
 
+                    console.log('🚀 Opening modal...');
+                    console.log('🖼️ Modal classList before:', quickViewModal ? Array.from(quickViewModal.classList) : 'N/A');
                     quickViewModal.classList.add('active');
+                    console.log('🖼️ Modal classList after:', quickViewModal ? Array.from(quickViewModal.classList) : 'N/A');
                 } else {
+                    console.error('❌ Product fetch failed:', data.message);
                     alert('Lỗi: ' + data.message);
                 }
             } catch (err) {
-                console.error('Lỗi khi tải chi tiết sản phẩm:', err);
+                console.error('🔥 Lỗi khi tải chi tiết sản phẩm:', err);
             }
         });
     });

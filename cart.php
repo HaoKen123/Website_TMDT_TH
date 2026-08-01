@@ -32,8 +32,8 @@ $current_region = get_current_region();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Giỏ Hàng | PixelGear Shop</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=<?php echo time(); ?>">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .cart-container { padding: 50px 20px; min-height: 500px; }
@@ -81,34 +81,50 @@ $current_region = get_current_region();
 <body>
     <!-- Header -->
     <header class="site-header">
-        <div class="header-container">
-            <div class="logo">
-                <h1><a href="index.php"><i class="fas fa-cube" style="color: #ffaa00; margin-right: 5px;"></i>PIXELGEAR</a></h1>
+        <div class="header-container" style="width: 100%;">
+            <div class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
             </div>
+            
+            <div class="logo">
+                <h1 class="glitch-title" data-text="PIXELGEAR">PIXELGEAR</h1>
+            </div>
+
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="index.php" class="active-nav <?php echo $current_page === 'index' ? 'active' : ''; ?>"><?php echo __('NAV_HOME'); ?></a></li>
+                    <li><a href="cart.php" class="active-nav <?php echo $current_page === 'cart' ? 'active' : ''; ?>"><?php echo __('NAV_CART'); ?></a></li>
+                </ul>
+            </nav>
+
             <div class="header-icons">
-                <!-- Region Switcher -->
+                <!-- Region & Currency Switcher -->
                 <div class="region-switcher-container">
                     <button class="region-btn" type="button">
                         <?php if ($current_region === 'VN'): ?>
-                            <span class="flag-tag">VN</span> <span>Việt Nam (VNĐ)</span>
+                            <div class="flag vn"><i class="fas fa-flag"></i></div>
+                            <span>Việt Nam</span>
                         <?php else: ?>
-                            <span class="flag-tag">US</span> <span>USA (USD)</span>
+                            <div class="flag us"><i class="fas fa-flag"></i></div>
+                            <span>USA</span>
                         <?php endif; ?>
-                        <i class="fas fa-chevron-down" style="font-size: 10px;"></i>
+                        <i class="fas fa-chevron-down"></i>
                     </button>
                     <div class="region-dropdown">
                         <a href="?region=VN" class="region-option <?php echo $current_region === 'VN' ? 'active' : ''; ?>">
-                            <span class="flag-tag">VN</span> <span>Việt Nam (VNĐ - ₫)</span>
+                            <div class="flag vn"><i class="fas fa-flag"></i></div>
+                            <span>Việt Nam (₫)</span>
                         </a>
                         <a href="?region=US" class="region-option <?php echo $current_region === 'US' ? 'active' : ''; ?>">
-                            <span class="flag-tag">US</span> <span>United States (USD - $)</span>
+                            <div class="flag us"><i class="fas fa-flag"></i></div>
+                            <span>USA ($)</span>
                         </a>
                     </div>
                 </div>
 
-                <a href="index.php" style="font-size: 14px; font-weight: 600; color: #fff; text-decoration: none;"><?php echo __('NAV_HOME'); ?></a>
+                <a href="index.php" class="btn-primary btn-sm" style="padding: 8px 16px; font-size: 11px; text-decoration: none; color: #000;"><?php echo __('NAV_HOME'); ?></a>
                 <a href="cart.php" class="cart-icon">
-                    <i class="fas fa-shopping-cart"></i>
+                    <i class="fas fa-shopping-bag"></i>
                     <span class="cart-count"><?php echo $cart_count; ?></span>
                 </a>
             </div>

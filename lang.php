@@ -31,6 +31,8 @@ $dictionary = [
         'NAV_CLOTHING' => 'QUẦN ÁO',
         'NAV_ACCESSORIES' => 'PHỤ KIỆN',
         'NAV_TOYS' => 'ĐỒ CHƠI & GAME',
+        'NAV_CART' => 'GIỎ HÀNG',
+        'NAV_PROFILE' => 'HỒ SƠ CÁ NHÂN',
         
         'HERO_TITLE' => 'KHÁM PHÁ PHONG CÁCH & THỜI TRANG ĐỘC ĐÁO',
         'HERO_SUBTITLE' => 'Trang phục cao cấp, phụ kiện thời thượng và đồ chơi sưu tầm độc quyền.',
@@ -77,6 +79,8 @@ $dictionary = [
         'NAV_CLOTHING' => 'CLOTHING',
         'NAV_ACCESSORIES' => 'ACCESSORIES',
         'NAV_TOYS' => 'TOYS & GAMES',
+        'NAV_CART' => 'CART',
+        'NAV_PROFILE' => 'PROFILE',
         
         'HERO_TITLE' => 'DISCOVER UNIQUE STYLE & PREMIUM GEAR',
         'HERO_SUBTITLE' => 'Explore premium apparel, trendy accessories, and collectible gear.',

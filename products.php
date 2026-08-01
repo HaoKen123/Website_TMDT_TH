@@ -54,70 +54,101 @@ $current_region = get_current_region();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo __('SITE_TITLE'); ?></title>
     <link rel="stylesheet" href="style.css?v=<?php echo time(); ?>">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .search-container {
-            display: flex;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            padding: 2px 10px;
-            border: 1px solid rgba(255,255,255,0.4);
-        }
-        .search-container input {
-            background: transparent;
-            border: none;
-            outline: none;
-            color: #fff;
-            padding: 6px;
-            font-size: 13px;
-            width: 140px;
-        }
-        .search-container input::placeholder { color: #e0f2e9; }
-        .search-container button {
-            background: none;
-            border: none;
-            color: #fff;
-            cursor: pointer;
-            padding: 4px;
-        }
+             display: flex;
+             align-items: center;
+             background: rgba(255, 255, 255, 0.08);
+             border-radius: 999px;
+             padding: 3px 16px;
+             border: 1px solid rgba(56, 182, 172, 0.3);
+             transition: all 0.3s var(--mc-ease);
+             backdrop-filter: blur(10px);
+         }
+         .search-container:hover {
+             background: rgba(56, 182, 172, 0.15);
+             border-color: var(--mc-primary);
+             box-shadow: 0 0 20px rgba(56, 182, 172, 0.3);
+         }
+         .search-container input {
+             background: transparent;
+             border: none;
+             outline: none;
+             color: #fff;
+             padding: 8px;
+             font-size: 13px;
+             width: 200px;
+             font-family: var(--font-body);
+         }
+         .search-container input::placeholder { color: rgba(255, 255, 255, 0.5); }
+         .search-container button {
+             background: none;
+             border: none;
+             color: #fff;
+             cursor: pointer;
+             padding: 6px;
+             transition: all 0.3s var(--mc-ease);
+             display: flex;
+             align-items: center;
+         }
+         .search-container button:hover {
+             color: var(--mc-primary);
+             transform: scale(1.25) rotate(5deg);
+             text-shadow: 0 0 20px rgba(56, 182, 172, 0.8);
+         }
         
         .filter-toolbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            gap: 15px;
-            background: #fff;
-            padding: 15px 20px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
+             display: flex;
+             justify-content: space-between;
+             align-items: center;
+             margin-bottom: 25px;
+             flex-wrap: wrap;
+             gap: 15px;
+         }
         .filter-results-info {
-            font-weight: 600;
-            color: #555;
-        }
+             font-weight: 600;
+             font-size: 13px;
+             color: #666;
+         }
+        .filter-results-info strong {
+             color: #2e7d32;
+         }
         .sort-select {
-            padding: 8px 15px;
-            border-radius: 4px;
-            border: 1px solid var(--border-color);
-            font-family: 'Inter';
-            font-weight: 600;
-            color: var(--text-color-dark);
-            outline: none;
-            cursor: pointer;
-        }
+             padding: 10px 18px;
+             border-radius: 999px;
+             border: 1px solid rgba(56, 182, 172, 0.4);
+             font-family: var(--font-body);
+             font-weight: 700;
+             color: #fff;
+             outline: none;
+             cursor: pointer;
+             background: linear-gradient(135deg, var(--mc-primary), var(--mc-primary-light));
+             box-shadow: 0 4px 15px rgba(56, 182, 172, 0.4);
+             transition: all 0.3s var(--mc-ease);
+             font-size: 12px;
+             letter-spacing: 0.5px;
+             text-transform: uppercase;
+         }
+        .sort-select:hover {
+             transform: translateY(-1px);
+             box-shadow: 0 6px 20px rgba(56, 182, 172, 0.6);
+         }
+        .sort-select option {
+             background: var(--mc-primary);
+             color: #fff;
+             font-weight: 700;
+         }
     </style>
 </head>
 <body>
     <!-- Announcement Bar -->
     <div class="announcement-bar">
         <div class="announcement-slider">
-            <p class="slide active"><i class="fas fa-bullhorn"></i> <?php echo __('ANNOUNCEMENT_1'); ?></p>
-            <p class="slide"><i class="fas fa-truck"></i> <?php echo __('ANNOUNCEMENT_2'); ?></p>
-            <p class="slide"><i class="fas fa-star"></i> <?php echo __('ANNOUNCEMENT_3'); ?></p>
+            <p class="slide active"><i class="fas fa-gift"></i> <?php echo __('ANNOUNCEMENT_1'); ?></p>
+            <p class="slide"><i class="fas fa-rocket"></i> <?php echo __('ANNOUNCEMENT_2'); ?></p>
+            <p class="slide"><i class="fas fa-trophy"></i> <?php echo __('ANNOUNCEMENT_3'); ?></p>
         </div>
     </div>
 
@@ -273,43 +304,52 @@ $current_region = get_current_region();
                     </div>
                 </div>
                 
-                <?php if (empty($products)): ?>
-                    <div style="text-align: center; padding: 50px 0; background: #fff; border-radius: 8px;">
-                        <p style="font-size: 18px; color: #666;"><?php echo $current_region === 'VN' ? 'Không tìm thấy sản phẩm nào phù hợp.' : 'No products found matching your search.'; ?></p>
-                        <br>
-                        <a href="products.php" class="btn btn-primary"><?php echo __('NAV_ALL'); ?></a>
-                    </div>
-                <?php else: ?>
-                    <div class="product-grid">
+                 <?php if (empty($products)): ?>
+                     <div style="text-align: center; padding: 60px 0; max-width: 600px; margin: 0 auto;">
+                         <i class="fas fa-search" style="font-size: 64px; color: #444; margin-bottom: 20px; opacity: 0.5;"></i>
+                         <p style="font-size: 18px; color: #666;"><?php echo $current_region === 'VN' ? 'Không tìm thấy sản phẩm nào phù hợp.' : 'No products found matching your search.'; ?></p>
+                         <p style="font-size: 14px; color: #999; margin-top: 10px;"><?php echo $current_region === 'VN' ? 'Hãy thử tìm kiếm với từ khóa khác.' : 'Try searching with different keywords.'; ?></p>
+                         <br>
+                         <a href="products.php" class="btn btn-primary"><?php echo __('NAV_ALL'); ?></a>
+                     </div>
+                 <?php else: ?>
+                     <div class="product-grid">
                         <?php foreach ($products as $product): ?>
-                        <div class="product-card">
-                            <div class="product-image">
-                                <a href="product_detail.php?id=<?php echo $product['id']; ?>">
-                                    <img src="<?php echo htmlspecialchars($product['image_url']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
-                                </a>
-                                
-                                <?php if ($product['badge']): ?>
-                                    <div class="product-badge <?php echo $product['badge'] === 'Giảm giá' ? 'sale' : ''; ?>">
-                                        <?php echo htmlspecialchars($product['badge']); ?>
-                                    </div>
-                                <?php endif; ?>
-                                
-                                <button class="btn-quick-view" data-id="<?php echo $product['id']; ?>"><?php echo __('QUICK_VIEW'); ?></button>
-                            </div>
-                            <div class="product-info">
-                                <h3>
-                                    <a href="product_detail.php?id=<?php echo $product['id']; ?>">
-                                        <?php echo htmlspecialchars($product['name']); ?>
-                                    </a>
-                                </h3>
-                                <p class="price">
-                                    <?php if ($product['old_price']): ?>
-                                        <span class="old-price"><?php echo format_price($product['old_price']); ?></span>
-                                    <?php endif; ?>
-                                    <?php echo format_price($product['price']); ?>
-                                </p>
-                            </div>
-                        </div>
+                         <div class="product-card">
+                             <div class="product-image">
+                                 <a href="product_detail.php?id=<?php echo $product['id']; ?>">
+                                     <img src="<?php echo htmlspecialchars($product['image_url']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
+                                 </a>
+                                 
+                                 <?php if ($product['badge']): ?>
+                                     <div class="product-badge <?php echo $product['badge'] === 'Giảm giá' ? 'sale' : ''; ?>">
+                                         <?php echo htmlspecialchars($product['badge']); ?>
+                                     </div>
+                                 <?php endif; ?>
+                                 
+                                 <div class="product-actions">
+                                     <button class="btn-favorite" data-id="<?php echo $product['id']; ?>">
+                                         <i class="far fa-heart"></i>
+                                     </button>
+                                     <button class="btn-quick-view" data-id="<?php echo $product['id']; ?>">
+                                         <?php echo __('QUICK_VIEW'); ?>
+                                     </button>
+                                 </div>
+                             </div>
+                             <div class="product-info">
+                                 <h3 class="product-name">
+                                     <a href="product_detail.php?id=<?php echo $product['id']; ?>">
+                                         <?php echo htmlspecialchars($product['name']); ?>
+                                     </a>
+                                 </h3>
+                                 <p class="price">
+                                     <?php if ($product['old_price']): ?>
+                                         <span class="old-price"><?php echo format_price($product['old_price']); ?></span>
+                                     <?php endif; ?>
+                                     <?php echo format_price($product['price']); ?>
+                                 </p>
+                             </div>
+                         </div>
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
@@ -321,7 +361,10 @@ $current_region = get_current_region();
     <div id="quickViewModal" class="quick-view-modal">
         <div class="modal-overlay"></div>
         <div class="modal-container">
-            <button class="modal-close" id="closeQuickView">&times;</button>
+            <div class="modal-header">
+                <button class="modal-close" id="closeQuickView">&times;</button>
+                <h3 class="modal-title"><?php echo $current_region === 'VN' ? 'XEM NHANH' : 'QUICK VIEW'; ?></h3>
+            </div>
             <div class="modal-body">
                 <div class="modal-left">
                     <div class="modal-thumbnails">
@@ -332,11 +375,11 @@ $current_region = get_current_region();
                     </div>
                 </div>
                 <div class="modal-right">
-                    <h2 id="qvTitle" class="qv-title">MINECRAFT PRODUCT</h2>
+                    <h2 id="qvTitle" class="qv-title product-name">MINECRAFT PRODUCT</h2>
                     <div id="qvPrice" class="qv-price">$0.00</div>
                     
                     <div class="qv-option-group">
-                        <label>Size / Kích thước:</label>
+                        <label><?php echo $current_region === 'VN' ? 'Kích Thước' : 'Size'; ?>:</label>
                         <div class="qv-sizes">
                             <span class="size-btn active">Freesize</span>
                             <span class="size-btn">M</span>
@@ -346,7 +389,7 @@ $current_region = get_current_region();
                     </div>
 
                     <div class="qv-option-group">
-                        <label>Số lượng (Quantity):</label>
+                        <label><?php echo $current_region === 'VN' ? 'Số Lượng' : 'Quantity'; ?>:</label>
                         <div class="qv-quantity-picker">
                             <button type="button" id="qvQtyMinus">-</button>
                             <input type="number" id="qvQtyInput" value="1" min="1">
@@ -354,14 +397,12 @@ $current_region = get_current_region();
                         </div>
                     </div>
 
-                    <div class="qv-shipping-note">
-                        <i class="fas fa-truck"></i> <?php echo $current_region === 'VN' ? 'Giao hàng tận nơi toàn quốc từ 1-3 ngày.' : 'Fast US Shipping in 1-3 business days.'; ?>
-                    </div>
-
-                    <button id="qvAddToCartBtn" class="btn-add-to-cart-green"><?php echo __('ADD_TO_CART'); ?></button>
+                    <button id="qvAddToCartBtn" class="btn-add-to-cart-green btn-lg">
+                        <i class="fas fa-shopping-cart"></i> <span><?php echo __('ADD_TO_CART'); ?></span>
+                    </button>
 
                     <div class="qv-details">
-                        <h4>Mô tả sản phẩm:</h4>
+                        <h4><?php echo $current_region === 'VN' ? 'Mô Tả:' : 'Description:'; ?></h4>
                         <p id="qvDescription">Thông tin chi tiết sản phẩm Minecraft chính hãng...</p>
                     </div>
                 </div>
@@ -411,54 +452,42 @@ $current_region = get_current_region();
 
     <script src="script.js?v=<?php echo time(); ?>"></script>
     <script>
-    function changeSort(sortValue) {
-        const urlParams = new URLSearchParams(window.location.search);
-        urlParams.set('sort', sortValue);
-        window.location.search = urlParams.toString();
-    }
-
-    async function handleNewsletterSubmit(e, form) {
-        if (e) e.preventDefault();
-        
-        const emailInput = form.querySelector('input[type="email"]');
-        const email = emailInput ? emailInput.value.trim() : '';
-        if (!email) return false;
-
-        const btn = form.querySelector('button');
-        const originalText = btn ? btn.innerText : 'ĐĂNG KÝ';
-        if (btn) {
-            btn.innerText = 'Đang kiểm tra...';
-            btn.disabled = true;
+        function changeSort(sortValue) {
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('sort', sortValue);
+            window.location.search = urlParams.toString();
         }
 
-        try {
-            const response = await fetch('subscribe_newsletter.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: 'email=' + encodeURIComponent(email)
-            });
-            const data = await response.json();
-
-            if (data.status === 'not_registered') {
-                alert('Email chưa có tài khoản. Đang dắt bạn qua trang Đăng Ký để tạo tài khoản & nhận ngay bộ đôi Voucher 15% + Freeship!');
-                window.location.href = data.redirect;
-            } else if (data.status === 'already_registered') {
-                alert('ℹ️ ' + data.message);
-            } else {
-                alert(data.message);
+        async function handleNewsletterSubmit(e, form) {
+            if (e) e.preventDefault();
+            const emailInput = form.querySelector('input[type="email"]');
+            const email = emailInput ? emailInput.value.trim() : '';
+            if (!email) return false;
+            const btn = form.querySelector('button');
+            const originalText = btn ? btn.innerText : 'ĐĂNG KÝ';
+            if (btn) { btn.innerText = 'Đang kiểm tra...'; btn.disabled = true; }
+            try {
+                const response = await fetch('subscribe_newsletter.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'email=' + encodeURIComponent(email)
+                });
+                const data = await response.json();
+                if (data.status === 'not_registered') {
+                    alert('Email chưa có tài khoản. Đang dắt bạn qua trang Đăng Ký để tạo tài khoản & nhận ngay bộ đôi Voucher 15% + Freeship!');
+                    window.location.href = data.redirect;
+                } else if (data.status === 'already_registered') {
+                    alert('ℹ️ ' + data.message);
+                } else {
+                    alert(data.message);
+                }
+            } catch (err) {
+                alert('Lỗi kết nối kiểm tra email!');
+            } finally {
+                if (btn) { btn.innerText = originalText; btn.disabled = false; }
             }
-        } catch (err) {
-            alert('Lỗi kết nối kiểm tra email!');
-        } finally {
-            if (btn) {
-                btn.innerText = originalText;
-                btn.disabled = false;
-            }
+            return false;
         }
-        return false;
-    }
     </script>
 </body>
 </html>

@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // Heart Button - Add to Cart
+    // Heart Button - Add to Cart (Product Grid)
     const heartButtons = document.querySelectorAll('.btn-add-to-cart-heart');
     heartButtons.forEach(btn => {
         btn.addEventListener('click', async (e) => {
@@ -150,11 +150,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Update cart count
                     if (cartCount) cartCount.textContent = data.cart_count;
                     
-                    // Visual feedback - pulse animation on button
-                    btn.style.animation = 'heart-pulse 0.6s ease-in-out';
-                    setTimeout(() => {
-                        btn.style.animation = '';
-                    }, 600);
+                    // Toggle heart icon
+                    if (btn.querySelector('.fa-heart')) {
+                        const icon = btn.querySelector('.fa-heart');
+                        if (icon.classList.contains('fa-heart')) {
+                            // Already added - change to outline
+                            icon.classList.remove('fa-solid', 'fa-heart');
+                            icon.classList.add('fa-regular', 'fa-heart');
+                        } else {
+                            // Was outline - now solid
+                            icon.classList.remove('fa-regular', 'fa-heart');
+                            icon.classList.add('fa-solid', 'fa-heart');
+                        }
+                    }
                     
                     showToast();
                 } else {

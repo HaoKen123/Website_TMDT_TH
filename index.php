@@ -26,93 +26,169 @@ $current_region = get_current_region();
     <link rel="stylesheet" href="style.css?v=<?php echo time(); ?>">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <canvas id="particles-js"></canvas>
-    
-    <!-- Announcement Bar -->
-    <div class="announcement-bar">
-        <div class="announcement-slider">
-            <p class="slide active"><i class="fas fa-gift"></i> <?php echo __('ANNOUNCEMENT_1'); ?></p>
-            <p class="slide"><i class="fas fa-rocket"></i> <?php echo __('ANNOUNCEMENT_2'); ?></p>
-            <p class="slide"><i class="fas fa-trophy"></i> <?php echo __('ANNOUNCEMENT_3'); ?></p>
-        </div>
-    </div>
-
-    <!-- Header / Navigation -->
-    <header class="site-header">
-        <div class="header-container" style="width: 100%;">
-            <div class="mobile-menu-btn">
-                <i class="fas fa-bars"></i>
-            </div>
-            
-            <div class="logo">
-                <h1 class="glitch-title" data-text="PIXELGEAR">PIXELGEAR</h1>
-            </div>
-
-            <nav class="main-nav">
-                <ul>
-                    <li><a href="index.php" class="active-nav <?php echo $current_page === 'index' ? 'active' : ''; ?>"><?php echo __('NAV_HOME'); ?></a></li>
-                    <li><a href="products.php" class="nav-link <?php echo in_array($current_page, ['products', 'all']) ? 'active' : ''; ?>"><?php echo __('NAV_ALL'); ?></a></li>
-                    <li><a href="products.php?category=clothing" class="nav-link <?php echo $current_page === 'clothing' ? 'active' : ''; ?>"><?php echo __('NAV_CLOTHING'); ?></a></li>
-                    <li><a href="products.php?category=accessories" class="nav-link <?php echo $current_page === 'accessories' ? 'active' : ''; ?>"><?php echo __('NAV_ACCESSORIES'); ?></a></li>
-                    <li><a href="products.php?category=toys" class="nav-link <?php echo $current_page === 'toys' ? 'active' : ''; ?>"><?php echo __('NAV_TOYS'); ?></a></li>
-                </ul>
-            </nav>
-
-            <div class="header-icons">
-                <!-- Region & Currency Switcher -->
-                <div class="region-switcher-container">
-                    <button class="region-btn" type="button">
-                        <?php if ($current_region === 'VN'): ?>
-                            <div class="flag vn"><i class="fas fa-flag"></i></div>
-                            <span>Việt Nam</span>
-                        <?php else: ?>
-                            <div class="flag us"><i class="fas fa-flag"></i></div>
-                            <span>USA</span>
-                        <?php endif; ?>
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                    <div class="region-dropdown">
-                        <a href="?region=VN" class="region-option <?php echo $current_region === 'VN' ? 'active' : ''; ?>">
-                            <div class="flag vn"><i class="fas fa-flag"></i></div>
-                            <span>Việt Nam (₫)</span>
-                        </a>
-                        <a href="?region=US" class="region-option <?php echo $current_region === 'US' ? 'active' : ''; ?>">
-                            <div class="flag us"><i class="fas fa-flag"></i></div>
-                            <span>USA ($)</span>
-                        </a>
-                    </div>
-                </div>
-
-                <form action="products.php" method="GET" class="search-container">
-                    <input type="text" name="search" placeholder="Tìm kiếm sản phẩm...">
-                    <button type="submit"><i class="fas fa-search"></i></button>
-                </form>
-
-                <?php if(isset($_SESSION['user_id'])): ?>
-                    <a href="profile.php" title="<?php echo __('PROFILE'); ?>" class="user-menu"><i class="fas fa-user-circle"></i></a>
-                <?php else: ?>
-                    <a href="login.php" title="<?php echo __('LOGIN'); ?>" class="auth-btn"><i class="fas fa-user"></i></a>
-                <?php endif; ?>
-                
-                <a href="cart.php" class="cart-icon" title="<?php echo __('CART'); ?>">
-                    <i class="fas fa-shopping-bag"></i>
-                    <span class="cart-count"><?php echo $cart_count; ?></span>
-                </a>
-            </div>
-        </div>
-    </header>
-
-    <!-- Hero Section with Auto Slider & Manual Arrows -->
+</head>
+<?php require_once 'header.php'; ?>
     <section class="hero">
         <div class="hero-overlay"></div>
         <button class="hero-arrow hero-arrow-left" id="heroPrev"><i class="fas fa-chevron-left"></i></button>
         <button class="hero-arrow hero-arrow-right" id="heroNext"><i class="fas fa-chevron-right"></i></button>
         <div class="hero-content">
-            <h2 class="hero-title">MINECRAFT STORE</h2>
-            <p class="hero-subtitle">CHOOSE YOUR ADVENTURE</p>
+            <h2 class="hero-title"><?php echo __('HERO_TITLE'); ?></h2>
+            <p class="hero-subtitle"><?php echo __('HERO_SUBTITLE'); ?></p>
             <div class="hero-buttons">
-                <a href="products.php" class="btn btn-primary btn-lg">SHOP NOW</a>
-                <a href="products.php?category=toys" class="btn btn-secondary btn-lg">VIEW TOYS</a>
+                <a href="products.php" class="btn btn-primary btn-lg"><?php echo __('HERO_BTN'); ?></a>
+                <a href="products.php?category=toys" class="btn btn-secondary btn-lg">ĐỒ CHƠI & GAME</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Best Sellers Section -->
+    <section class="best-sellers">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title"><?php echo __('BEST_SELLERS_TITLE'); ?></h2>
+                <p class="section-subtitle">Sản phẩm bán chạy nhất tháng này</p>
+                <?php if (!empty($best_sellers)): ?>
+                <p class="section-subtitle small"><?php echo count($best_sellers); ?> sản phẩm</p>
+                <?php endif; ?>
+            </div>
+                <div class="product-grid">
+                <!-- Best sellers will be fetched from DB or hardcoded -->
+                <?php 
+                if (!empty($pdo)) {
+                    $stmt = $pdo->query("
+                        SELECT p.*, SUM(oi.quantity) as total_sold
+                        FROM products p
+                        LEFT JOIN order_items oi ON p.id = oi.product_id
+                        LEFT JOIN orders o ON oi.order_id = o.id
+                        WHERE o.id IS NOT NULL
+                        GROUP BY p.id
+                        ORDER BY total_sold DESC
+                        LIMIT 6
+                    ");
+                    $best_sellers = $stmt->fetchAll();
+                }
+                foreach ($best_sellers as $product): 
+                ?>
+                <div class="product-card">
+                    <div class="product-image">
+                        <a href="product_detail.php?id=<?php echo $product['id']; ?>">
+                            <img src="<?php echo htmlspecialchars($product['image_url']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
+                        </a>
+                        
+                        <?php if ($product['badge']): ?>
+                            <div class="product-badge <?php echo $product['badge'] === 'Giảm giá' ? 'sale' : ''; ?>">
+                                <?php echo htmlspecialchars($product['badge']); ?>
+                            </div>
+                        <?php endif; ?>
+                        
+                        <span class="badge-sale">
+                            <i class="fas fa-fire"></i> <?php echo number_format($product['total_sold']); ?>
+                        </span>
+                        
+                        <button class="btn-quick-view" data-id="<?php echo $product['id']; ?>">
+                            <?php echo __('QUICK_VIEW'); ?>
+                        </button>
+                        <button class="btn-add-to-cart-heart" data-id="<?php echo $product['id']; ?>">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                    </div>
+                    <div class="product-info">
+                        <h3>
+                            <a href="product_detail.php?id=<?php echo $product['id']; ?>">
+                                <?php echo htmlspecialchars($product['name']); ?>
+                            </a>
+                        </h3>
+                        <p class="price">
+                            <?php if ($product['old_price']): ?>
+                                <span class="old-price"><?php echo format_price($product['old_price']); ?></span>
+                            <?php endif; ?>
+                            <?php echo format_price($product['price']); ?>
+                        </p>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </section>
+
+    <!-- New Arrivals Section -->
+    <section class="new-arrivals">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title"><?php echo __('NEW_ARRIVALS_TITLE'); ?></h2>
+                <p class="section-subtitle">Sản phẩm mới cập nhật hôm nay</p>
+            </div>
+            <div class="product-grid">
+                <?php 
+                if (!empty($pdo)) {
+                    $stmt = $pdo->query("SELECT * FROM products ORDER BY id DESC LIMIT 6");
+                    $new_arrivals = $stmt->fetchAll();
+                }
+                foreach ($new_arrivals as $product): 
+                ?>
+                <div class="product-card">
+                    <div class="product-image">
+                        <a href="product_detail.php?id=<?php echo $product['id']; ?>">
+                            <img src="<?php echo htmlspecialchars($product['image_url']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
+                        </a>
+                        
+                        <?php if ((isset($product['new']) && $product['new'] == 1) || (isset($product['created_at']) && strtotime($product['created_at']) > time() - 86400)): ?>
+                            <div class="product-badge new">
+                                NEW
+                            </div>
+                        <?php endif; ?>
+                        
+                        <button class="btn-quick-view" data-id="<?php echo $product['id']; ?>">
+                            <?php echo __('QUICK_VIEW'); ?>
+                        </button>
+                        <button class="btn-add-to-cart-heart" data-id="<?php echo $product['id']; ?>">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                    </div>
+                    <div class="product-info">
+                        <h3>
+                            <a href="product_detail.php?id=<?php echo $product['id']; ?>">
+                                <?php echo htmlspecialchars($product['name']); ?>
+                            </a>
+                        </h3>
+                        <p class="price">
+                            <?php echo format_price($product['price']); ?>
+                        </p>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trust Badges Section -->
+    <section class="trust-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title"><?php echo __('TRUST_BADGES_TITLE'); ?></h2>
+            </div>
+            <div class="trust-grid">
+                <div class="trust-item">
+                    <i class="fas fa-check-circle" style="color: var(--mc-primary); font-size: 40px;"></i>
+                    <h3>Hàng Chính Hãng</h3>
+                    <p>100% sản phẩm chính hãng, nguồn gốc rõ ràng</p>
+                </div>
+                <div class="trust-item">
+                    <i class="fas fa-shipping-fast" style="color: var(--mc-primary); font-size: 40px;"></i>
+                    <h3>Ship Nhanh</h3>
+                    <p>Giao hàng 24-48h trên toàn quốc</p>
+                </div>
+                <div class="trust-item">
+                    <i class="fas fa-shield-alt" style="color: var(--mc-primary); font-size: 40px;"></i>
+                    <h3>Bảo Hành</h3>
+                    <p>12 tháng bảo hành chính thức</p>
+                </div>
+                <div class="trust-item">
+                    <i class="fas fa-headset" style="color: var(--mc-primary); font-size: 40px;"></i>
+                    <h3>Hỗ Trợ 24/7</h3>
+                    <p>Đóng cửa liên tục hỗ trợ khách hàng</p>
+                </div>
             </div>
         </div>
     </section>
@@ -136,6 +212,12 @@ $current_region = get_current_region();
                         <?php if ($product['badge']): ?>
                             <div class="product-badge <?php echo $product['badge'] === 'Giảm giá' ? 'sale' : ''; ?>">
                                 <?php echo htmlspecialchars($product['badge']); ?>
+                            </div>
+                        <?php endif; ?>
+                        
+                        <?php if ((isset($product['new']) && $product['new'] == 1) || (isset($product['created_at']) && strtotime($product['created_at']) > time() - 86400)): ?>
+                            <div class="product-badge new">
+                                NEW
                             </div>
                         <?php endif; ?>
                         
@@ -223,36 +305,67 @@ $current_region = get_current_region();
 
     <!-- Footer -->
     <footer class="site-footer">
-        <div class="container footer-grid">
-            <div class="footer-column">
-                <h3 class="footer-title"><?php echo __('FOOTER_SHOP'); ?></h3>
-                <ul class="footer-links">
-                    <li><a href="products.php?category=clothing"><?php echo __('NAV_CLOTHING'); ?></a></li>
-                    <li><a href="products.php?category=accessories"><?php echo __('NAV_ACCESSORIES'); ?></a></li>
-                    <li><a href="products.php?category=toys"><?php echo __('NAV_TOYS'); ?></a></li>
-                    <li><a href="products.php"><?php echo __('NAV_ALL'); ?></a></li>
-                </ul>
+        <!-- Top Section: Main Links -->
+        <div class="footer-top">
+            <div class="container">
+                <div class="footer-grid">
+                    <div class="footer-brand">
+                        <div class="logo">
+                            <h2 class="logo-text"><?php echo $current_region === 'VN' ? 'PIXELGEAR' : 'PIXELGEAR'; ?></h2>
+                        </div>
+                        <p class="footer-tagline"><?php echo __('FOOTER_TAGLINE_VN'); ?></p>
+                        <div class="footer-connect">
+                            <p><?php echo __('FOOTER_CONNECT'); ?></p>
+                            <div class="social-mini">
+                                <a href="#" class="social-btn">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                                <a href="#" class="social-btn">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                                <a href="#" class="social-btn">
+                                    <i class="fab fa-tiktok"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h4 class="footer-heading"><?php echo __('FOOTER_SHOP'); ?></h4>
+                        <ul class="footer-menu">
+                            <li><a href="products.php?category=clothing"><?php echo __('NAV_CLOTHING'); ?></a></li>
+                            <li><a href="products.php?category=accessories"><?php echo __('NAV_ACCESSORIES'); ?></a></li>
+                            <li><a href="products.php?category=toys"><?php echo __('NAV_TOYS'); ?></a></li>
+                            <li><a href="products.php"><?php echo __('NAV_ALL'); ?></a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h4 class="footer-heading"><?php echo __('FOOTER_SUPPORT'); ?></h4>
+                        <ul class="footer-menu">
+                            <li><a href="#">FAQ</a></li>
+                            <li><a href="#">Chính Sách Giao Hàng</a></li>
+                            <li><a href="#">Hoàn Hàng & Đổi Hàng</a></li>
+                            <li><a href="#">Liên Hệ</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h4 class="footer-heading"><?php echo __('FOOTER_CONTACT'); ?></h4>
+                        <ul class="footer-contact">
+                            <li class="footer-contact-item">
+                                <i class="fas fa-phone-alt"></i>
+                                <a href="tel:19001234"><?php echo __('FOOTER_PHONE'); ?></a>
+                            </li>
+                            <li class="footer-contact-item">
+                                <i class="fas fa-envelope"></i>
+                                <a href="mailto:<?php echo __('FOOTER_EMAIL'); ?>"><?php echo __('FOOTER_EMAIL'); ?></a>
+                            </li>
+                        </ul>
+                        <p class="footer-copyright"><?php echo __('FOOTER_COPYRIGHT'); ?></p>
+                    </div>
+                </div>
             </div>
-            <div class="footer-column">
-                <h3 class="footer-title"><?php echo __('FOOTER_SUPPORT'); ?></h3>
-                <ul class="footer-links">
-                    <li><a href="#">FAQ</a></li>
-                    <li><a href="#">Chính Sách Giao Hàng</a></li>
-                    <li><a href="#">Hoàn Hàng & Đổi Đổi</a></li>
-                    <li><a href="#">Liên Hệ</a></li>
-                </ul>
-            </div>
-            <div class="footer-column newsletter">
-                <h3 class="footer-title"><?php echo __('FOOTER_NEWSLETTER'); ?></h3>
-                <p class="newsletter-text"><?php echo __('ANNOUNCEMENT_1'); ?></p>
-                <form class="newsletter-form" onsubmit="handleNewsletterSubmit(event, this); return false;">
-                    <input type="email" name="email" placeholder="Email của bạn" required>
-                    <button type="submit"><?php echo __('FOOTER_SUBSCRIBE'); ?></button>
-                </form>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; <?php echo date("Y"); ?> PixelGear Store. All rights reserved.</p>
         </div>
     </footer>
 
@@ -285,36 +398,5 @@ $current_region = get_current_region();
             retinaDetect: true
         });
 
-        async function handleNewsletterSubmit(e, form) {
-            if (e) e.preventDefault();
-            const emailInput = form.querySelector('input[type="email"]');
-            const email = emailInput ? emailInput.value.trim() : '';
-            if (!email) return false;
-            const btn = form.querySelector('button');
-            const originalText = btn ? btn.innerText : 'ĐĂNG KÝ';
-            if (btn) { btn.innerText = 'Đang kiểm tra...'; btn.disabled = true; }
-            try {
-                const response = await fetch('subscribe_newsletter.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: 'email=' + encodeURIComponent(email)
-                });
-                const data = await response.json();
-                if (data.status === 'not_registered') {
-                    alert('Email chưa có tài khoản. Đang dắt bạn qua trang Đăng Ký để tạo tài khoản & nhận ngay bộ đôi Voucher 15% + Freeship!');
-                    window.location.href = data.redirect;
-                } else if (data.status === 'already_registered') {
-                    alert('ℹ️ ' + data.message);
-                } else {
-                    alert(data.message);
-                }
-            } catch (err) {
-                alert('Lỗi kết nối kiểm tra email!');
-            } finally {
-                if (btn) { btn.innerText = originalText; btn.disabled = false; }
-            }
-            return false;
-        }
     </script>
-</body>
 </html>

@@ -1,7 +1,6 @@
 <?php
 session_start();
-require_once 'db.php';
-require_once 'lang.php';
+require_once 'header.php';
 
 // Fetch products in cart
 $cart_items = [];
@@ -31,7 +30,7 @@ $current_region = get_current_region();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Giỏ Hàng | PixelGear Shop</title>
+    <title><?php echo __('CART_PAGE_TITLE'); ?></title>
     <link rel="stylesheet" href="style.css?v=<?php echo time(); ?>">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -78,60 +77,7 @@ $current_region = get_current_region();
         }
     </style>
 </head>
-<body>
-    <!-- Header -->
-    <header class="site-header">
-        <div class="header-container" style="width: 100%;">
-            <div class="mobile-menu-btn">
-                <i class="fas fa-bars"></i>
-            </div>
-            
-            <div class="logo">
-                <h1 class="glitch-title" data-text="PIXELGEAR">PIXELGEAR</h1>
-            </div>
-
-            <nav class="main-nav">
-                <ul>
-                    <li><a href="index.php" class="active-nav <?php echo $current_page === 'index' ? 'active' : ''; ?>"><?php echo __('NAV_HOME'); ?></a></li>
-                    <li><a href="cart.php" class="active-nav <?php echo $current_page === 'cart' ? 'active' : ''; ?>"><?php echo __('NAV_CART'); ?></a></li>
-                </ul>
-            </nav>
-
-            <div class="header-icons">
-                <!-- Region & Currency Switcher -->
-                <div class="region-switcher-container">
-                    <button class="region-btn" type="button">
-                        <?php if ($current_region === 'VN'): ?>
-                            <div class="flag vn"><i class="fas fa-flag"></i></div>
-                            <span>Việt Nam</span>
-                        <?php else: ?>
-                            <div class="flag us"><i class="fas fa-flag"></i></div>
-                            <span>USA</span>
-                        <?php endif; ?>
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                    <div class="region-dropdown">
-                        <a href="?region=VN" class="region-option <?php echo $current_region === 'VN' ? 'active' : ''; ?>">
-                            <div class="flag vn"><i class="fas fa-flag"></i></div>
-                            <span>Việt Nam (₫)</span>
-                        </a>
-                        <a href="?region=US" class="region-option <?php echo $current_region === 'US' ? 'active' : ''; ?>">
-                            <div class="flag us"><i class="fas fa-flag"></i></div>
-                            <span>USA ($)</span>
-                        </a>
-                    </div>
-                </div>
-
-                <a href="index.php" class="btn-primary btn-sm" style="padding: 8px 16px; font-size: 11px; text-decoration: none; color: #000;"><?php echo __('NAV_HOME'); ?></a>
-                <a href="cart.php" class="cart-icon">
-                    <i class="fas fa-shopping-bag"></i>
-                    <span class="cart-count"><?php echo $cart_count; ?></span>
-                </a>
-            </div>
-        </div>
-    </header>
-
-    <!-- Cart Content -->
+<?php $current_page = 'cart'; ?>
     <div class="container cart-container">
         <h2 class="section-title"><?php echo $current_region === 'VN' ? 'GIỎ HÀNG CỦA BẠN' : 'YOUR SHOPPING CART'; ?></h2>
 
@@ -197,50 +143,44 @@ if (isset($_SESSION['coupon'])) {
 $final_total_price = max(0, $total_price - $discount_usd);
 ?>
 
-                <div class="cart-summary">
-                    <h3><?php echo $current_region === 'VN' ? 'TỔNG ĐƠN HÀNG' : 'ORDER SUMMARY'; ?></h3>
-                    
-                    <!-- Coupon Code Input Box -->
-                    <div style="margin-bottom: 20px; background: #fff; padding: 15px; border-radius: 6px; border: 1px solid #ddd;">
-                        <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px; color: #333;">
-                            <i class="fas fa-ticket-alt" style="color: var(--primary-color);"></i> <?php echo $current_region === 'VN' ? 'Mã Giảm Giá / Voucher' : 'Promo Code / Coupon'; ?>
-                        </label>
-                        <div style="display: flex; gap: 8px;">
-                            <input type="text" id="couponInput" placeholder="VD: WELCOME15" value="<?php echo htmlspecialchars($coupon_code); ?>" style="flex: 1; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-weight: 700; text-transform: uppercase;">
-                            <button type="button" onclick="handleApplyCoupon()" class="btn btn-primary" style="padding: 8px 15px; font-size: 13px;"><?php echo $current_region === 'VN' ? 'ÁP DỤNG' : 'APPLY'; ?></button>
-                        </div>
-                        <div id="couponMsg" style="font-size: 12px; margin-top: 6px; font-weight: 600;"></div>
-                    </div>
+                 <div class="cart-summary">
+                     <h3><?php echo $current_region === 'VN' ? 'TỔNG ĐƠN HÀNG' : 'ORDER SUMMARY'; ?></h3>
+                     
+                     <!-- Coupon Code Input Box -->
+                     <div style="margin-bottom: 20px; background: #fff; padding: 15px; border-radius: 6px; border: 1px solid #ddd;">
+                         <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px; color: #333;">
+                             <i class="fas fa-ticket-alt" style="color: var(--primary-color);"></i> <?php echo $current_region === 'VN' ? 'Mã Giảm Giá / Voucher' : 'Promo Code / Coupon'; ?>
+                         </label>
+                         <div style="display: flex; gap: 8px;">
+                             <input type="text" id="couponInput" placeholder="VD: WELCOME15" value="<?php echo htmlspecialchars($coupon_code); ?>" style="flex: 1; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-weight: 700; text-transform: uppercase;">
+                             <button type="button" onclick="handleApplyCoupon()" class="btn btn-primary" style="padding: 8px 15px; font-size: 13px;"><?php echo $current_region === 'VN' ? 'ÁP DỤNG' : 'APPLY'; ?></button>
+                         </div>
+                         <div id="couponMsg" style="font-size: 12px; margin-top: 6px; font-weight: 600;"></div>
+                     </div>
 
-                    <div class="summary-line" style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 15px;">
-                        <span><?php echo $current_region === 'VN' ? 'Tạm tính:' : 'Subtotal:'; ?></span>
-                        <strong><?php echo format_price($total_price); ?></strong>
-                    </div>
+                     <div class="summary-line" style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 15px;">
+                         <span><?php echo $current_region === 'VN' ? 'Tạm tính:' : 'Subtotal:'; ?></span>
+                         <strong><?php echo format_price($total_price); ?></strong>
+                     </div>
 
-                    <?php if ($discount_usd > 0): ?>
-                    <div class="summary-line" style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 15px; color: #16a34a; font-weight: 700;">
-                        <span><?php echo $current_region === 'VN' ? 'Giảm giá (' . $coupon_code . '):' : 'Discount (' . $coupon_code . '):'; ?></span>
-                        <span>-<?php echo format_price($discount_usd); ?></span>
-                    </div>
-                    <?php endif; ?>
+                     <?php if ($discount_usd > 0): ?>
+                     <div class="summary-line" style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 15px; color: #16a34a; font-weight: 700;">
+                         <span><?php echo $current_region === 'VN' ? 'Giảm giá (' . $coupon_code . '):' : 'Discount (' . $coupon_code . '):'; ?></span>
+                         <span>-<?php echo format_price($discount_usd); ?></span>
+                     </div>
+                     <?php endif; ?>
 
-                    <div class="total" style="border-top: 2px solid #ddd; padding-top: 15px;">
-                        <?php echo $current_region === 'VN' ? 'Tổng cộng:' : 'Total:'; ?> 
-                        <span id="cart-total"><?php echo format_price($final_total_price); ?></span>
-                    </div>
+                     <div class="total" style="border-top: 2px solid #ddd; padding-top: 15px;">
+                         <?php echo $current_region === 'VN' ? 'Tổng cộng:' : 'Total:'; ?> 
+                         <span id="cart-total"><?php echo format_price($final_total_price); ?></span>
+                     </div>
 
-                    <a href="checkout.php" class="btn btn-primary" style="width: 100%; text-align: center; margin-top: 15px;"><?php echo $current_region === 'VN' ? 'TIẾN HÀNH THANH TOÁN' : 'PROCEED TO CHECKOUT'; ?></a>
-                </div>
-            </div>
-        <?php endif; ?>
-    </div>
-
-    <!-- Footer -->
-    <footer class="site-footer">
-        <div class="footer-bottom">
-            <p>&copy; <?php echo date("Y"); ?> Cửa Hàng PixelGear. Tất cả các quyền được bảo lưu.</p>
+                     <a href="checkout.php" class="btn btn-primary" style="width: 100%; text-align: center; margin-top: 15px;"><?php echo $current_region === 'VN' ? 'TIẾN HÀNH THANH TOÁN' : 'PROCEED TO CHECKOUT'; ?></a>
+                 </div>
+             </div>
+           <?php endif; ?>
         </div>
-    </footer>
+    </div>
 
     <script>
     async function handleApplyCoupon() {
@@ -315,12 +255,6 @@ $final_total_price = max(0, $total_price - $discount_usd);
             console.error('Update qty error:', err);
         }
     }
-
-    async function removeItem(id) {
-        if(confirm('Bạn có chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng?')) {
-            await updateQty(id, 'set', 0);
-        }
-    }
     </script>
-</body>
+ <?php require_once 'footer.php'; ?>
 </html>

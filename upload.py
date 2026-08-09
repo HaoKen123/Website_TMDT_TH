@@ -1,92 +1,121 @@
 import os
 import sys
 import ftplib
+import time
+
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
 
 HOST = "pixelgear.getenjoyment.net"
 USER = "4776587"
-REMOTE_TARGET = "pixelgear.getenjoyment.net"
+PASSWORD = "thapvi123"
 
-print("=== CÔNG CỤ TỰ ĐỘNG UPLOAD WEBSITE LÊN AWARDSPACE (FTP PASV) ===")
-password = "thapvi123"
+print("=== CONG CU UPLOAD PIXELGEAR STORE ===")
+print("1. Upload riêng tên miền chính: honhathao.id.vn (Nhanh)")
+print("2. Upload riêng tên miền phụ: pixelgear.getenjoyment.net (Nhanh)")
+print("3. Upload đồng bộ cả 2 tên miền")
 
-try:
-    ftp = ftplib.FTP(HOST, USER, password)
-    ftp.set_pasv(True)
-    print("-> Kết nối FTP thành công!")
-except Exception as e:
-    print(f"Lỗi kết nối: {e}")
+choice = "1"
+if len(sys.argv) > 1:
+    choice = sys.argv[1]
+else:
+    try:
+        user_input = input("\nChon so (1, 2, 3) [Mac dinh: 1]: ").strip()
+        if user_input:
+            choice = user_input
+    except Exception:
+        choice = "1"
+
+if choice == "1":
+    valid_target_dirs = ["honhathao.id.vn"]
+elif choice == "2":
+    valid_target_dirs = ["pixelgear.getenjoyment.net"]
+else:
+    valid_target_dirs = ["honhathao.id.vn", "pixelgear.getenjoyment.net"]
+
+def get_ftp():
+    for attempt in range(5):
+        try:
+            ftp = ftplib.FTP(HOST, USER, PASSWORD, timeout=30)
+            ftp.set_pasv(True)
+            return ftp
+        except Exception as e:
+            time.sleep(1)
+    print("Lỗi: Không thể kết nối FTP.")
     sys.exit(1)
 
-# Thử chuyển vào thư mục subdomain
-try:
-    ftp.cwd(REMOTE_TARGET)
-except Exception:
-    try:
-        ftp.cwd(f"www/{REMOTE_TARGET}")
-    except Exception:
-        print(f"Lỗi: Không tìm thấy thư mục {REMOTE_TARGET} trên Host!")
-        sys.exit(1)
+ftp = get_ftp()
+print("-> Kết nối FTP thành công!")
 
-def clean_remote_folder(folder="."):
-    """Xóa sạch các file cũ trên host để đảm bảo bản upload mới hoàn toàn sạch sẽ"""
-    print("-> Đang dọn dẹp các tệp cũ trên Host trước khi up mới...")
-    try:
-        items = ftp.nlst(folder)
-        for item in items:
-            name = os.path.basename(item)
-            if name in [".", ".."]:
-                continue
-            try:
-                ftp.delete(item)
-                print(f"   [Đã xóa file cũ]: {item}")
-            except Exception:
-                try:
-                    clean_remote_folder(item)
-                    ftp.rmd(item)
-                    print(f"   [Đã xóa thư mục cũ]: {item}")
-                except Exception:
-                    pass
-    except Exception as e:
-        print(f"   (Bỏ qua thông báo dọn dẹp: {e})")
+ignored_names = {".git", "node_modules", "website.zip", "website.txt", "upload.py", "upload_honhathao.py", "upload_pixelgear.py", ".gitignore"}
 
-# Thực hiện xóa sạch file cũ trước khi upload
-clean_remote_folder(".")
-print("-> Dọn dẹp hoàn tất! Bắt đầu upload dữ liệu mới...\n")
-
-def ensure_remote_dir(path):
-    parts = path.replace("\\", "/").strip("/").split("/")
-    curr = ""
-    for p in parts:
-        if not p: continue
-        curr = f"{curr}/{p}" if curr else p
-        try:
-            ftp.mkd(curr)
-        except Exception:
-            pass
-
-ignored_names = {".git", "node_modules", "website.zip", "website.txt", "upload.py", ".gitignore"}
-
-for root, dirs, files in os.walk("."):
-    dirs[:] = [d for d in dirs if d not in ignored_names]
+for target_folder in valid_target_dirs:
+    print(f"\n==========================================")
+    print(f"-> ĐANG UPLOAD MÃ NGUỒN CHO TÊN MIỀN: {target_folder}")
+    print(f"==========================================")
     
-    rel_dir = os.path.relpath(root, ".").replace("\\", "/")
-    if rel_dir != ".":
-        ensure_remote_dir(rel_dir)
-        
-    for file in files:
-        if file in ignored_names:
-            continue
-            
-        local_path = os.path.join(root, file)
-        remote_path = f"{rel_dir}/{file}" if rel_dir != "." else file
-        
-        print(f"Đang up: {remote_path} ... ", end="", flush=True)
+    try:
+        ftp.cwd("/")
+        ftp.cwd(target_folder)
+    except Exception:
         try:
-            with open(local_path, "rb") as f:
-                ftp.storbinary(f"STOR {remote_path}", f)
-            print("XONG")
+            ftp.cwd("/")
+            ftp.cwd(f"www.{target_folder}")
+            target_folder = f"www.{target_folder}"
         except Exception as e:
-            print(f"LỖI ({e})")
+            print(f"Bỏ qua thư mục {target_folder}: {e}")
+            continue
 
-ftp.quit()
-print("\n🎉 ĐÃ DỌN SẠCH CŨ & UPLOAD TOÀN BỘ WEBSITE MỚI THÀNH CÔNG 100%!")
+    def ensure_dir(path):
+        parts = path.replace("\\", "/").strip("/").split("/")
+        curr = ""
+        for p in parts:
+            if not p: continue
+            curr = f"{curr}/{p}" if curr else p
+            try:
+                ftp.mkd(curr)
+            except Exception:
+                pass
+
+    for root, dirs, files in os.walk("."):
+        dirs[:] = [d for d in dirs if d not in ignored_names]
+        rel_dir = os.path.relpath(root, ".").replace("\\", "/")
+        if rel_dir != ".":
+            ensure_dir(rel_dir)
+            
+        for file in files:
+            if file in ignored_names:
+                continue
+                
+            local_path = os.path.join(root, file)
+            remote_path = f"{rel_dir}/{file}" if rel_dir != "." else file
+            
+            uploaded = False
+            for retry in range(3):
+                try:
+                    with open(local_path, "rb") as f:
+                        ftp.storbinary(f"STOR {remote_path}", f)
+                    uploaded = True
+                    break
+                except Exception:
+                    time.sleep(1)
+                    try:
+                        ftp = get_ftp()
+                        ftp.cwd("/")
+                        ftp.cwd(target_folder)
+                        if rel_dir != ".":
+                            ensure_dir(rel_dir)
+                    except Exception:
+                        pass
+
+            if uploaded:
+                print(f"[{target_folder}] Up thành công: {remote_path}")
+            else:
+                print(f"[{target_folder}] Bỏ qua: {remote_path}")
+
+try:
+    ftp.quit()
+except Exception:
+    pass
+
+print("\n🎉 HOÀN TẤT UPLOAD!")

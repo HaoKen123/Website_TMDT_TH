@@ -3,19 +3,35 @@ session_start();
 require_once '../db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = $_POST['username'];
+    $username = trim($_POST['username']);
     $password = $_POST['password'];
 
+    // 1. Kiểm tra tài khoản trong bảng admins (TK mặc định admin/admin)
     $stmt = $pdo->prepare('SELECT * FROM admins WHERE username = ? AND password = ?');
     $stmt->execute([$username, $password]);
     $admin = $stmt->fetch();
 
     if ($admin) {
         $_SESSION['admin_id'] = $admin['id'];
+        $_SESSION['admin_username'] = $admin['username'];
+        $_SESSION['admin_role'] = 'admin';
         header('Location: index.php');
         exit;
     } else {
-        $error = "Tài khoản hoặc mật khẩu không chính xác!";
+        // 2. Kiểm tra tài khoản trong bảng users (Có quyền staff hoặc admin và status = 1)
+        $stmtUser = $pdo->prepare("SELECT * FROM users WHERE (username = ? OR email = ?) AND status = 1 AND role IN ('staff', 'admin')");
+        $stmtUser->execute([$username, $username]);
+        $user = $stmtUser->fetch();
+
+        if ($user && password_verify($password, $user['password'])) {
+            $_SESSION['admin_id'] = $user['id'];
+            $_SESSION['admin_username'] = $user['username'];
+            $_SESSION['admin_role'] = $user['role'];
+            header('Location: index.php');
+            exit;
+        } else {
+            $error = "Tài khoản hoặc mật khẩu không chính xác hoặc bạn không có quyền Nhân viên/Admin!";
+        }
     }
 }
 ?>

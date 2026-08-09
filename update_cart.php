@@ -19,6 +19,28 @@ if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
 }
 
+// Kiểm tra số lượng tồn kho
+$stmtStock = $pdo->prepare("SELECT stock FROM products WHERE id = ?");
+$stmtStock->execute([$id]);
+$product_stock = $stmtStock->fetchColumn();
+
+if ($product_stock !== false) {
+    $target_qty = $_SESSION['cart'][$id] ?? 0;
+    if ($action === 'increase') {
+        $target_qty++;
+    } elseif ($action === 'set') {
+        $target_qty = $quantity;
+    }
+
+    if ($target_qty > $product_stock) {
+        echo json_encode([
+            'success' => false,
+            'error' => "Rất tiếc, số lượng sản phẩm trong kho chỉ còn " . intval($product_stock) . " sản phẩm!"
+        ]);
+        exit;
+    }
+}
+
 if ($action === 'increase') {
     $_SESSION['cart'][$id] = ($_SESSION['cart'][$id] ?? 0) + 1;
 } elseif ($action === 'decrease') {

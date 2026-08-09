@@ -3,10 +3,16 @@ session_start();
 require_once 'db.php';
 require_once 'lang.php';
 
-// Fetch featured products for Homepage (limit 8)
-$stmt = $pdo->prepare("SELECT * FROM products ORDER BY id DESC LIMIT 8");
-$stmt->execute();
-$products = $stmt->fetchAll();
+// Fetch featured products for Homepage (limit 8, chỉ lấy sản phẩm đang hiển thị status = 1)
+try {
+    $stmt = $pdo->prepare("SELECT * FROM products WHERE (status = 1 OR status IS NULL) ORDER BY id DESC LIMIT 8");
+    $stmt->execute();
+    $products = $stmt->fetchAll();
+} catch (Exception $e) {
+    $stmt = $pdo->prepare("SELECT * FROM products ORDER BY id DESC LIMIT 8");
+    $stmt->execute();
+    $products = $stmt->fetchAll();
+}
 
 // Cart count
 $cart_count = 0;
@@ -72,7 +78,9 @@ $current_region = get_current_region();
             </div>
             
             <div class="logo">
-                <h1><a href="index.php"><i class="fas fa-cube" style="color: #ffaa00; margin-right: 5px;"></i>PIXELGEAR</a></h1>
+                <a href="index.php" class="logo-link">
+                    <span class="glitch-title" data-text="PIXELGEAR">PIXELGEAR</span>
+                </a>
             </div>
 
             <nav class="main-nav">
@@ -318,5 +326,6 @@ $current_region = get_current_region();
         return false;
     }
     </script>
+    <?php include_once 'ai_assistant.php'; ?>
 </body>
 </html>

@@ -49,8 +49,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($error)) {
-        $stmt = $pdo->prepare("INSERT INTO products (category, name, image_url, price, old_price, badge, description) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$category, $name, $image_url, $price, $old_price, $badge, $description]);
+        $stock = intval($_POST['stock'] ?? 50);
+        $status = intval($_POST['status'] ?? 1);
+        $stmt = $pdo->prepare("INSERT INTO products (category, name, image_url, price, old_price, badge, description, stock, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$category, $name, $image_url, $price, $old_price, $badge, $description, $stock, $status]);
         header('Location: products.php');
         exit;
     }
@@ -123,7 +125,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="text" name="image_url" placeholder="https://example.com/image.jpg">
                 </div>
 
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; margin-top: 15px;">
                     <div>
                         <label style="font-weight:600;">Giá bán ($ USD)</label>
                         <input type="number" step="0.01" id="priceInput" name="price" required placeholder="29.95">
@@ -131,20 +133,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
 
                     <div>
-                        <label style="font-weight:600;">Giá cũ ($ USD) - <span style="font-weight:normal; color:#64748b;">(Nếu có giảm giá)</span></label>
+                        <label style="font-weight:600;">Giá cũ ($ USD) - <span style="font-weight:normal; color:#64748b;">(Nếu có)</span></label>
                         <input type="number" step="0.01" id="oldPriceInput" name="old_price" placeholder="39.95">
                         <small id="oldPriceVndHint" style="color:#64748b; display:block; margin-top:4px;">Tương đương: 0 VNĐ</small>
                     </div>
+
+                    <div>
+                        <label style="font-weight:600;">Số lượng tồn kho</label>
+                        <input type="number" name="stock" value="50" min="0" required placeholder="50">
+                    </div>
                 </div>
 
-                <label style="font-weight:600; margin-top:15px;">Nhãn dán nổi bật (Badge)</label>
-                <select name="badge">
-                    <option value="">Không có nhãn</option>
-                    <option value="Mới">Hàng Mới (Mới)</option>
-                    <option value="Giảm giá">Đang Giảm Giá (Giảm giá)</option>
-                    <option value="Hot">Bán Chạy (Hot)</option>
-                    <option value="Best Seller">Best Seller</option>
-                </select>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:15px;">
+                    <div>
+                        <label style="font-weight:600;">Nhãn dán nổi bật (Badge)</label>
+                        <select name="badge">
+                            <option value="">Không có nhãn</option>
+                            <option value="Mới">Hàng Mới (Mới)</option>
+                            <option value="Giảm giá">Đang Giảm Giá (Giảm giá)</option>
+                            <option value="Hot">Bán Chạy (Hot)</option>
+                            <option value="Best Seller">Best Seller</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-weight:600;">Trạng thái sản phẩm</label>
+                        <select name="status">
+                            <option value="1" selected>Hiển thị trên shop</option>
+                            <option value="0">Ẩn khỏi shop</option>
+                        </select>
+                    </div>
+                </div>
 
                 <label style="font-weight:600;">Mô tả sản phẩm</label>
                 <textarea name="description" rows="4" placeholder="Nhập chi tiết thông tin sản phẩm..."></textarea>

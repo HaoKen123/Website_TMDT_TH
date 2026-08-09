@@ -8,7 +8,7 @@ $category = isset($_GET['category']) ? $_GET['category'] : '';
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $sort = isset($_GET['sort']) ? $_GET['sort'] : 'newest';
 
-$whereClauses = [];
+$whereClauses = ['(status = 1 OR status IS NULL)'];
 $params = [];
 
 if ($category) {
@@ -25,8 +25,9 @@ if ($category) {
 }
 
 if ($search !== '') {
-    $whereClauses[] = '(name LIKE :search OR description LIKE :search)';
-    $params[':search'] = '%' . $search . '%';
+    $whereClauses[] = '(name LIKE :search1 OR description LIKE :search2)';
+    $params[':search1'] = '%' . $search . '%';
+    $params[':search2'] = '%' . $search . '%';
 }
 
 $whereSql = '';
@@ -42,9 +43,16 @@ if ($sort === 'price_asc') {
 }
 
 // Fetch products from database
-$stmt = $pdo->prepare("SELECT * FROM products $whereSql $orderSql");
-$stmt->execute($params);
-$products = $stmt->fetchAll();
+try {
+    $stmt = $pdo->prepare("SELECT * FROM products $whereSql $orderSql");
+    $stmt->execute($params);
+    $products = $stmt->fetchAll();
+} catch (Exception $e) {
+    // Fallback if status column does not exist
+    $stmt = $pdo->prepare("SELECT * FROM products $orderSql");
+    $stmt->execute();
+    $products = $stmt->fetchAll();
+}
 
 // Cart count
 $cart_count = 0;
@@ -137,7 +145,9 @@ $current_region = get_current_region();
             </div>
             
             <div class="logo">
-                <h1><a href="index.php"><i class="fas fa-cube" style="color: #ffaa00; margin-right: 5px;"></i>PIXELGEAR</a></h1>
+                <a href="index.php" class="logo-link">
+                    <span class="glitch-title" data-text="PIXELGEAR">PIXELGEAR</span>
+                </a>
             </div>
 
             <nav class="main-nav">
@@ -227,14 +237,34 @@ $current_region = get_current_region();
     <section id="shop" class="collection">
         <div class="container collection-layout">
             <!-- Left Filter Sidebar -->
+            <?php
+            $categories_list = [];
+            try {
+                $categories_list = $pdo->query("SELECT * FROM categories WHERE status = 1 ORDER BY id ASC")->fetchAll();
+            } catch (Exception $e) {}
+
+            if (empty($categories_list)) {
+                $categories_list = [
+                    ['slug' => 'clothing', 'name' => 'Quần áo & Hoodies'],
+                    ['slug' => 'accessories', 'name' => 'Phụ kiện Minecraft'],
+                    ['slug' => 'toys', 'name' => 'Đồ chơi & Gấu bông'],
+                    ['slug' => 'decor', 'name' => 'Đèn & Trang trí']
+                ];
+            }
+            ?>
             <aside class="filter-sidebar">
                 <div class="filter-group">
                     <h3 class="filter-title"><?php echo __('FILTER_TYPE'); ?> <i class="fas fa-chevron-down"></i></h3>
                     <ul class="filter-list">
-                        <li><label><input type="checkbox" <?php echo $category === 'clothing' ? 'checked' : ''; ?> onclick="window.location.href='products.php?category=clothing'"> <?php echo $current_region === 'VN' ? 'Áo Thun & Hoodies' : 'T-Shirts & Hoodies'; ?></label></li>
-                        <li><label><input type="checkbox" <?php echo $category === 'accessories' ? 'checked' : ''; ?> onclick="window.location.href='products.php?category=accessories'"> <?php echo $current_region === 'VN' ? 'Nón & Phụ Kiện' : 'Hats & Accessories'; ?></label></li>
-                        <li><label><input type="checkbox" <?php echo $category === 'toys' ? 'checked' : ''; ?> onclick="window.location.href='products.php?category=toys'"> <?php echo $current_region === 'VN' ? 'Đồ Chơi & Móc Khóa' : 'Toys & Keychains'; ?></label></li>
-                        <li><label><input type="checkbox"> <?php echo $current_region === 'VN' ? 'Trang Phục Cosplay & Outfit' : 'Costumes & Outfits'; ?></label></li>
+                        <li><label><input type="checkbox" <?php echo empty($category) ? 'checked' : ''; ?> onclick="window.location.href='products.php'"> <strong><?php echo $current_region === 'VN' ? 'Tất cả sản phẩm' : 'All Products'; ?></strong></label></li>
+                        <?php foreach ($categories_list as $cat_item): ?>
+                        <li>
+                            <label>
+                                <input type="checkbox" <?php echo $category === $cat_item['slug'] ? 'checked' : ''; ?> onclick="window.location.href='products.php?category=<?php echo urlencode($cat_item['slug']); ?>'"> 
+                                <?php echo htmlspecialchars($cat_item['name']); ?>
+                            </label>
+                        </li>
+                        <?php endforeach; ?>
                     </ul>
                 </div>
 
@@ -248,15 +278,6 @@ $current_region = get_current_region();
                     </ul>
                 </div>
 
-                <div class="filter-group">
-                    <h3 class="filter-title"><?php echo __('FILTER_THEME'); ?> <i class="fas fa-chevron-down"></i></h3>
-                    <ul class="filter-list">
-                        <li><label><input type="checkbox"> Streetwear & Cyberpunk</label></li>
-                        <li><label><input type="checkbox"> Gaming & Esports</label></li>
-                        <li><label><input type="checkbox"> Pixel & Retro Gaming</label></li>
-                        <li><label><input type="checkbox"> Casual & Everyday</label></li>
-                    </ul>
-                </div>
             </aside>
 
             <!-- Main Product Grid -->
@@ -467,5 +488,6 @@ $current_region = get_current_region();
         return false;
     }
     </script>
+    <?php include_once 'ai_assistant.php'; ?>
 </body>
 </html>

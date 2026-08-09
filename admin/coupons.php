@@ -77,7 +77,12 @@ $subscribers = $pdo->query("SELECT * FROM subscribers ORDER BY id DESC")->fetchA
             <li><a href="index.php"><i class="fas fa-home"></i> Tổng quan</a></li>
             <li><a href="orders.php"><i class="fas fa-shopping-cart"></i> Đơn hàng</a></li>
             <li><a href="products.php"><i class="fas fa-box"></i> Sản phẩm</a></li>
+            <li><a href="categories.php"><i class="fas fa-list"></i> Danh mục</a></li>
             <li><a href="coupons.php" class="active"><i class="fas fa-ticket-alt"></i> Mã giảm giá</a></li>
+            <li><a href="shipping.php"><i class="fas fa-truck"></i> Phí vận chuyển</a></li>
+            <li><a href="comments.php"><i class="fas fa-comments"></i> Bình luận</a></li>
+            <li><a href="users.php"><i class="fas fa-users"></i> Khách hàng & Nhân viên</a></li>
+            <li><a href="reports.php"><i class="fas fa-chart-bar"></i> Thống kê báo cáo</a></li>
             <li><a href="logout.php"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
         </ul>
     </div>

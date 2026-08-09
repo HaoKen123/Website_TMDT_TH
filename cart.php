@@ -83,7 +83,9 @@ $current_region = get_current_region();
     <header class="site-header">
         <div class="header-container">
             <div class="logo">
-                <h1><a href="index.php"><i class="fas fa-cube" style="color: #ffaa00; margin-right: 5px;"></i>PIXELGEAR</a></h1>
+                <a href="index.php" class="logo-link">
+                    <span class="glitch-title" data-text="PIXELGEAR">PIXELGEAR</span>
+                </a>
             </div>
             <div class="header-icons">
                 <!-- Region Switcher -->

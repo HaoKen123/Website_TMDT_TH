@@ -46,7 +46,6 @@ $dictionary = [
         
         'FILTER_TYPE' => 'LOẠI SẢN PHẨM',
         'FILTER_STYLE' => 'PHONG CÁCH',
-        'FILTER_THEME' => 'CHỦ ĐỀ & THƯƠNG HIỆU',
         'SHOWING' => 'Hiển thị',
         'PRODUCTS_LABEL' => 'sản phẩm',
         'CLEAR_FILTER' => 'Xóa bộ lọc',
@@ -92,7 +91,6 @@ $dictionary = [
         
         'FILTER_TYPE' => 'PRODUCT TYPE',
         'FILTER_STYLE' => 'STYLE',
-        'FILTER_THEME' => 'THEME & BRAND',
         'SHOWING' => 'Showing',
         'PRODUCTS_LABEL' => 'products',
         'CLEAR_FILTER' => 'Clear filter',
@@ -124,13 +122,25 @@ function __($key) {
     return $dictionary[$region][$key] ?? $key;
 }
 
-function format_price($price_in_usd) {
+function format_price($price) {
     $region = get_current_region();
-    if ($region === 'VN') {
-        $vnd = round($price_in_usd * EXCHANGE_RATE_VND);
-        return number_format($vnd) . ' ₫';
+    $price = floatval($price);
+    if ($price > 1000) {
+        // Giá gốc đã là VNĐ (ví dụ: 590000 ₫)
+        if ($region === 'VN') {
+            return number_format($price) . ' ₫';
+        } else {
+            $usd = round($price / EXCHANGE_RATE_VND, 2);
+            return '$' . number_format($usd, 2);
+        }
     } else {
-        return '$' . number_format($price_in_usd, 2);
+        // Giá gốc là USD (ví dụ: 24.95 $)
+        if ($region === 'VN') {
+            $vnd = round($price * EXCHANGE_RATE_VND);
+            return number_format($vnd) . ' ₫';
+        } else {
+            return '$' . number_format($price, 2);
+        }
     }
 }
 ?>

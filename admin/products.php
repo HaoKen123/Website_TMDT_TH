@@ -7,6 +7,26 @@ if (!isset($_SESSION['admin_id'])) {
     exit;
 }
 
+// Tự động kiểm tra và thêm cột stock, status vào bảng products nếu thiếu
+try {
+    $prodCols = $pdo->query("SHOW COLUMNS FROM products")->fetchAll(PDO::FETCH_COLUMN);
+    if (!in_array('stock', $prodCols)) {
+        $pdo->exec("ALTER TABLE products ADD COLUMN stock INT NOT NULL DEFAULT 50");
+    }
+    if (!in_array('status', $prodCols)) {
+        $pdo->exec("ALTER TABLE products ADD COLUMN status TINYINT(1) NOT NULL DEFAULT 1 COMMENT '1: Hiển thị, 0: Ẩn'");
+    }
+} catch (Exception $e) {}
+
+// Toggle status (Show / Hide product)
+if (isset($_GET['toggle_status_id'])) {
+    $pid = intval($_GET['toggle_status_id']);
+    $stmtSt = $pdo->prepare("UPDATE products SET status = IF(status=1, 0, 1) WHERE id = ?");
+    $stmtSt->execute([$pid]);
+    header('Location: products.php?msg=status_updated');
+    exit;
+}
+
 $products = $pdo->query("SELECT * FROM products ORDER BY id DESC")->fetchAll();
 ?>
 <!DOCTYPE html>
@@ -53,6 +73,10 @@ $products = $pdo->query("SELECT * FROM products ORDER BY id DESC")->fetchAll();
             font-size: 14px;
         }
 
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+        .status-show { background: #dcfce7; color: #166534; }
+        .status-hide { background: #fee2e2; color: #991b1b; }
+
         .checkbox-cell { width: 45px; text-align: center; }
         .checkbox-cell input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: #dc2626; }
     </style>
@@ -64,8 +88,12 @@ $products = $pdo->query("SELECT * FROM products ORDER BY id DESC")->fetchAll();
             <li><a href="index.php"><i class="fas fa-home"></i> Tổng quan</a></li>
             <li><a href="orders.php"><i class="fas fa-shopping-cart"></i> Đơn hàng</a></li>
             <li><a href="products.php" class="active"><i class="fas fa-box"></i> Sản phẩm</a></li>
+            <li><a href="categories.php"><i class="fas fa-list"></i> Danh mục</a></li>
             <li><a href="coupons.php"><i class="fas fa-ticket-alt"></i> Mã giảm giá</a></li>
-            <li><a href="users.php"><i class="fas fa-users"></i> Khách hàng</a></li>
+            <li><a href="shipping.php"><i class="fas fa-truck"></i> Phí vận chuyển</a></li>
+            <li><a href="comments.php"><i class="fas fa-comments"></i> Bình luận</a></li>
+            <li><a href="users.php"><i class="fas fa-users"></i> Khách hàng & Nhân viên</a></li>
+            <li><a href="reports.php"><i class="fas fa-chart-bar"></i> Thống kê báo cáo</a></li>
             <li><a href="logout.php"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
         </ul>
     </div>
@@ -78,7 +106,7 @@ $products = $pdo->query("SELECT * FROM products ORDER BY id DESC")->fetchAll();
                     <button type="button" id="btnDeleteSelected" class="btn-delete-selected" onclick="deleteSelectedProducts()">
                         <i class="fas fa-trash-alt" style="margin-right: 6px;"></i> Xóa các sản phẩm đã chọn (<span id="selectedCount">0</span>)
                     </button>
-                    <a href="add_product.php" class="btn btn-primary" style="padding: 10px 20px; font-weight: 700;">
+                    <a href="add_product.php" class="btn btn-primary" style="padding: 10px 20px; font-weight: 700; background:#15803d; border:none; text-decoration:none;">
                         <i class="fas fa-plus" style="margin-right: 6px;"></i> Thêm sản phẩm
                     </a>
                 </div>
@@ -90,24 +118,28 @@ $products = $pdo->query("SELECT * FROM products ORDER BY id DESC")->fetchAll();
                         <th class="checkbox-cell">
                             <input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)" title="Chọn tất cả">
                         </th>
-                        <th style="width: 70px;">ID</th>
-                        <th style="width: 80px;">Hình ảnh</th>
+                        <th style="width: 60px;">ID</th>
+                        <th style="width: 70px;">Hình ảnh</th>
                         <th>Tên sản phẩm</th>
                         <th>Danh mục</th>
                         <th>Giá bán</th>
-                        <th style="width: 180px; text-align: center;">Thao tác</th>
+                        <th>Tồn kho</th>
+                        <th>Trạng thái</th>
+                        <th style="width: 220px; text-align: center;">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody id="productTableBody">
                     <?php if (empty($products)): ?>
                     <tr id="emptyRow">
-                        <td colspan="7" style="text-align: center; padding: 50px; color: #64748b;">
+                        <td colspan="9" style="text-align: center; padding: 50px; color: #64748b;">
                             <i class="fas fa-box-open" style="font-size: 36px; margin-bottom: 10px; color: #cbd5e1; display: block;"></i>
                             Chưa có sản phẩm nào trong kho.
                         </td>
                     </tr>
                     <?php else: ?>
-                        <?php foreach ($products as $p): ?>
+                        <?php foreach ($products as $p): 
+                            $pSt = intval($p['status'] ?? 1);
+                        ?>
                         <tr id="product-row-<?php echo $p['id']; ?>">
                             <td class="checkbox-cell">
                                 <input type="checkbox" name="ids[]" class="product-checkbox" value="<?php echo $p['id']; ?>" onchange="updateSelectedCount()">
@@ -122,11 +154,22 @@ $products = $pdo->query("SELECT * FROM products ORDER BY id DESC")->fetchAll();
                                     <span style="font-size: 11px; background: #e2e8f0; color: #475569; padding: 2px 6px; border-radius: 4px; margin-left: 6px; font-weight: 700;"><?php echo htmlspecialchars($p['badge']); ?></span>
                                 <?php endif; ?>
                             </td>
-                            <td><span class="badge pending" style="text-transform: uppercase;"><?php echo htmlspecialchars($p['category']); ?></span></td>
+                            <td><span class="badge pending" style="text-transform: uppercase; font-weight:700;"><?php echo htmlspecialchars($p['category']); ?></span></td>
                             <td style="font-weight: 700; color: #2e7d32;">$<?php echo number_format($p['price'], 2); ?></td>
+                            <td><strong style="color:#0369a1;"><?php echo intval($p['stock'] ?? 50); ?></strong></td>
+                            <td>
+                                <?php if ($pSt === 1): ?>
+                                    <span class="status-badge status-show"><i class="fas fa-eye"></i> Hiển thị</span>
+                                <?php else: ?>
+                                    <span class="status-badge status-hide"><i class="fas fa-eye-slash"></i> Đã ẩn</span>
+                                <?php endif; ?>
+                            </td>
                             <td style="text-align: center;">
-                                <a href="edit_product.php?id=<?php echo $p['id']; ?>" class="btn btn-primary" style="background:#f59e0b; padding: 6px 14px; font-size: 13px; margin-right: 4px;"><i class="fas fa-edit"></i> Sửa</a>
-                                <button type="button" class="btn btn-danger" style="padding: 6px 14px; font-size: 13px; border:none; cursor:pointer; background:#dc2626;" onclick="quickDeleteProduct(<?php echo $p['id']; ?>)">
+                                <a href="products.php?toggle_status_id=<?php echo $p['id']; ?>" class="btn" style="background: <?php echo $pSt===1?'#64748b':'#16a34a'; ?>; color:#fff; padding: 5px 9px; font-size: 12px; font-weight:700; text-decoration:none; border-radius:4px;">
+                                    <i class="fas fa-<?php echo $pSt===1?'eye-slash':'eye'; ?>"></i> <?php echo $pSt===1?'Ẩn':'Hiện'; ?>
+                                </a>
+                                <a href="edit_product.php?id=<?php echo $p['id']; ?>" class="btn" style="background:#f59e0b; color:#fff; padding: 5px 9px; font-size: 12px; font-weight:700; text-decoration:none; border-radius:4px;"><i class="fas fa-edit"></i> Sửa</a>
+                                <button type="button" class="btn" style="padding: 5px 9px; font-size: 12px; border:none; cursor:pointer; background:#dc2626; color:#fff; font-weight:700; border-radius:4px;" onclick="quickDeleteProduct(<?php echo $p['id']; ?>)">
                                     <i class="fas fa-trash-alt"></i> Xóa
                                 </button>
                             </td>

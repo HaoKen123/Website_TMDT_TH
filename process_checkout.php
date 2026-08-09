@@ -17,16 +17,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = $_POST['name'];
     $phone = $_POST['phone'];
     $address = $_POST['address'];
-    $payment_method = $_POST['payment_method'];
+    $payment_method = isset($_POST['payment_method']) ? $_POST['payment_method'] : 'bank';
+    if (!in_array($payment_method, ['bank', 'cod'])) {
+        $payment_method = 'bank';
+    }
     
     // Convert payment method for display
     $payment_labels = [
-        'momo' => 'Ví MoMo / ZaloPay',
         'bank' => 'Chuyển Khoản Ngân Hàng',
-        'card' => 'Thẻ Tín Dụng',
         'cod' => 'Thanh Toán Khi Nhận Hàng'
     ];
-    $payment_str = isset($payment_labels[$payment_method]) ? $payment_labels[$payment_method] : $payment_method;
+    $payment_str = isset($payment_labels[$payment_method]) ? $payment_labels[$payment_method] : 'Chuyển Khoản Ngân Hàng';
     
     $payment_status = ($payment_method === 'cod') ? 'Chưa thanh toán' : 'Chưa thanh toán';
 

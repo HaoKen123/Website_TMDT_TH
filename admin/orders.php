@@ -58,15 +58,19 @@ $orders = $pdo->query("SELECT * FROM orders ORDER BY created_at DESC")->fetchAll
             <li><a href="index.php"><i class="fas fa-home"></i> Tổng quan</a></li>
             <li><a href="orders.php" class="active"><i class="fas fa-shopping-cart"></i> Đơn hàng</a></li>
             <li><a href="products.php"><i class="fas fa-box"></i> Sản phẩm</a></li>
+            <li><a href="categories.php"><i class="fas fa-list"></i> Danh mục</a></li>
             <li><a href="coupons.php"><i class="fas fa-ticket-alt"></i> Mã giảm giá</a></li>
-            <li><a href="users.php"><i class="fas fa-users"></i> Khách hàng</a></li>
+            <li><a href="shipping.php"><i class="fas fa-truck"></i> Phí vận chuyển</a></li>
+            <li><a href="comments.php"><i class="fas fa-comments"></i> Bình luận</a></li>
+            <li><a href="users.php"><i class="fas fa-users"></i> Khách hàng & Nhân viên</a></li>
+            <li><a href="reports.php"><i class="fas fa-chart-bar"></i> Thống kê báo cáo</a></li>
             <li><a href="logout.php"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
         </ul>
     </div>
 
     <div class="main-content">
         <form method="POST" id="bulkDeleteForm">
-            <div class="top-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <div class="top-header" style="display:flex; justify-space-between; align-items:center;">
                 <h1>Quản Lý Đơn Hàng</h1>
                 <div>
                     <button type="submit" name="action" value="delete_selected" class="btn btn-danger" style="padding: 10px 18px;" onclick="return confirmBulkDelete();">
@@ -87,7 +91,7 @@ $orders = $pdo->query("SELECT * FROM orders ORDER BY created_at DESC")->fetchAll
                         <th>Thanh toán</th>
                         <th>Trạng thái</th>
                         <th>Cập nhật trạng thái</th>
-                        <th>Hành động</th>
+                        <th style="width: 160px; text-align:center;">Hành động</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -108,7 +112,7 @@ $orders = $pdo->query("SELECT * FROM orders ORDER BY created_at DESC")->fetchAll
                                 <strong><?php echo htmlspecialchars($order['customer_name']); ?></strong><br>
                                 <span style="font-size:12px; color:#666;"><?php echo htmlspecialchars($order['customer_phone']); ?></span>
                             </td>
-                            <td>$<?php echo number_format($order['total_amount'], 2); ?></td>
+                            <td style="font-weight:700; color:#15803d;">$<?php echo number_format($order['total_amount'], 2); ?></td>
                             <td>
                                 <span class="badge <?php echo $order['payment_status'] == 'Đã thanh toán' ? 'success' : 'danger'; ?>">
                                     <?php echo $order['payment_status']; ?>
@@ -121,23 +125,45 @@ $orders = $pdo->query("SELECT * FROM orders ORDER BY created_at DESC")->fetchAll
                                 </span>
                             </td>
                             <td>
-                                <?php if ($order['status'] != 'Đã hủy'): ?>
+                                <?php if ($order['status'] == 'Chờ xác nhận'): ?>
                                 <div style="display:flex; gap:10px;">
                                     <select id="status_<?php echo $order['id']; ?>" style="width:130px; margin-bottom:0; padding:5px;">
-                                        <option value="Chờ xác nhận" <?php if($order['status']=='Chờ xác nhận') echo 'selected';?>>Chờ xác nhận</option>
-                                        <option value="Đã xác nhận" <?php if($order['status']=='Đã xác nhận') echo 'selected';?>>Đã xác nhận</option>
-                                        <option value="Đang giao" <?php if($order['status']=='Đang giao') echo 'selected';?>>Đang giao</option>
-                                        <option value="Hoàn thành" <?php if($order['status']=='Hoàn thành') echo 'selected';?>>Hoàn thành</option>
-                                        <option value="Đã hủy">Hủy đơn</option>
+                                        <option value="Chờ xác nhận" selected>1. Chờ xác nhận</option>
+                                        <option value="Đã xác nhận">2. Đã xác nhận</option>
+                                        <option value="Đang giao">3. Đang giao</option>
+                                        <option value="Đã hủy">❌ Hủy đơn</option>
                                     </select>
                                     <button type="button" class="btn btn-primary" style="padding:5px 10px;" onclick="updateOrderStatus(<?php echo $order['id']; ?>)">Lưu</button>
                                 </div>
+                                <?php elseif ($order['status'] == 'Đã xác nhận'): ?>
+                                <div style="display:flex; gap:10px;">
+                                    <select id="status_<?php echo $order['id']; ?>" style="width:130px; margin-bottom:0; padding:5px;">
+                                        <option value="Đã xác nhận" selected>2. Đã xác nhận</option>
+                                        <option value="Đang giao">3. Đang giao</option>
+                                        <option value="Đã hủy">❌ Hủy đơn</option>
+                                    </select>
+                                    <button type="button" class="btn btn-primary" style="padding:5px 10px;" onclick="updateOrderStatus(<?php echo $order['id']; ?>)">Lưu</button>
+                                </div>
+                                <?php elseif ($order['status'] == 'Đang giao'): ?>
+                                <div style="display:flex; gap:10px;">
+                                    <select id="status_<?php echo $order['id']; ?>" style="width:130px; margin-bottom:0; padding:5px;">
+                                        <option value="Đang giao" selected>3. Đang giao</option>
+                                        <option value="Hoàn thành">4. Hoàn thành</option>
+                                        <option value="Đã hủy">❌ Hủy đơn</option>
+                                    </select>
+                                    <button type="button" class="btn btn-primary" style="padding:5px 10px;" onclick="updateOrderStatus(<?php echo $order['id']; ?>)">Lưu</button>
+                                </div>
+                                <?php elseif ($order['status'] == 'Hoàn thành'): ?>
+                                    <strong style="color:#15803d;"><i class="fas fa-check-circle"></i> Hoàn thành</strong>
                                 <?php else: ?>
-                                    <em>Đã hủy</em>
+                                    <em style="color:#dc2626;"><i class="fas fa-times-circle"></i> Đã hủy</em>
                                 <?php endif; ?>
                             </td>
-                            <td>
-                                <button type="button" class="btn btn-danger" style="padding:5px 10px; font-size:12px;" onclick="deleteSingleOrder(<?php echo $order['id']; ?>)">
+                            <td style="text-align:center;">
+                                <a href="print_order.php?id=<?php echo $order['id']; ?>" target="_blank" class="btn" style="background:#15803d; color:#fff; padding:5px 8px; font-size:12px; text-decoration:none; border-radius:4px; font-weight:700; margin-right:4px;" title="In hóa đơn">
+                                    <i class="fas fa-print"></i> In đơn
+                                </a>
+                                <button type="button" class="btn btn-danger" style="padding:5px 8px; font-size:12px;" onclick="deleteSingleOrder(<?php echo $order['id']; ?>)">
                                     <i class="fas fa-trash"></i> Xóa
                                 </button>
                             </td>

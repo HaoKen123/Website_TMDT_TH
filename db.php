@@ -1,6 +1,8 @@
 <?php
 // Tự động phát hiện môi trường (Local XAMPP vs Online AwardSpace)
 $is_local = (
+    php_sapi_name() === 'cli' ||
+    empty($_SERVER['HTTP_HOST']) ||
     in_array($_SERVER['REMOTE_ADDR'] ?? '', ['127.0.0.1', '::1']) || 
     strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false ||
     strpos($_SERVER['HTTP_HOST'] ?? '', '127.0.0.1') !== false

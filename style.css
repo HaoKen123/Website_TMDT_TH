@@ -1046,3 +1046,91 @@ ul {
     line-height: 1.6;
     color: #666;
 }
+
+/* ==========================================
+   GLITCH TITLE LOGO ANIMATION
+   ========================================== */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap');
+
+.logo {
+    margin-right: 45px;
+}
+
+.logo-link {
+    text-decoration: none;
+    color: inherit;
+    display: inline-block;
+    padding: 4px 0;
+    transition: transform 0.2s ease;
+}
+
+.logo-link:hover {
+    transform: scale(1.05);
+}
+
+.glitch-title {
+    position: relative;
+    font-family: 'Outfit', sans-serif;
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #ffffff;
+    -webkit-text-stroke: 2px #0a0a0f;
+    text-shadow: 
+        3px 3px 0 #000,
+        -1px -1px 0 #000,  
+        1px -1px 0 #000,
+        -1px 1px 0 #000,
+        1px 1px 0 #000,
+        0 0 20px rgba(34, 181, 115, 0.9);
+    animation: title-float 3s ease-in-out infinite;
+    display: inline-block;
+}
+
+.glitch-title::before,
+.glitch-title::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    color: #fff;
+}
+
+.glitch-title::before {
+    left: 2px;
+    text-shadow: -1px 0 #ff00c1;
+    clip-path: inset(0 0 95% 0);
+    animation: glitch-anim-1 2s infinite;
+}
+
+.glitch-title::after {
+    left: -2px;
+    text-shadow: -1px 0 #00fff9;
+    clip-path: inset(0 0 5% 0);
+    animation: glitch-anim-2 2s infinite;
+}
+
+@keyframes title-float {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-3px); }
+}
+
+@keyframes glitch-anim-1 {
+    0%,  100% { clip-path: inset(40% 0 60% 0); }
+    20%        { clip-path: inset(90% 0  1% 0); }
+    40%        { clip-path: inset(10% 0 70% 0); }
+    60%        { clip-path: inset(30% 0 40% 0); }
+    80%        { clip-path: inset(60% 0 20% 0); }
+}
+
+@keyframes glitch-anim-2 {
+    0%,  100% { clip-path: inset(10% 0 30% 0); }
+    20%        { clip-path: inset(70% 0 10% 0); }
+    40%        { clip-path: inset(20% 0 60% 0); }
+    60%        { clip-path: inset(80% 0  5% 0); }
+    80%        { clip-path: inset(30% 0 40% 0); }
+}

@@ -70,6 +70,9 @@ $current_region = get_current_region();
         .payment-tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;}
         .payment-tab { padding: 12px 20px; border: 1px solid #ccc; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: 500; transition: all 0.3s; background: #fff;}
         .payment-tab.active { border-color: var(--primary-color); background: #f0fdf4; color: var(--primary-color); box-shadow: 0 0 0 1px var(--primary-color);}
+        .payment-tab.disabled { opacity: 0.55; cursor: not-allowed; pointer-events: none; background: #f8fafc; border-color: #e2e8f0; color: #94a3b8; user-select: none; }
+        .payment-tab.disabled i { filter: grayscale(70%); }
+        .badge-disabled { font-size: 11px; background: #fee2e2; color: #ef4444; padding: 2px 6px; border-radius: 4px; font-weight: 600; margin-left: auto; }
         .payment-tab i { font-size: 20px; }
         
         /* Payment Contents */
@@ -95,7 +98,9 @@ $current_region = get_current_region();
     <header class="site-header">
         <div class="header-container">
             <div class="logo">
-                <h1><a href="index.php">PIXELGEAR</a></h1>
+                <a href="index.php" class="logo-link">
+                    <span class="glitch-title" data-text="PIXELGEAR">PIXELGEAR</span>
+                </a>
             </div>
             <div class="header-icons">
                 <!-- Region Switcher -->
@@ -146,6 +151,28 @@ $current_region = get_current_region();
                     <label><?php echo $current_region === 'VN' ? 'Địa chỉ nhận hàng' : 'Shipping Address'; ?></label>
                     <input type="text" name="address" value="<?php echo htmlspecialchars($user['address']); ?>" required>
                 </div>
+                
+                <?php
+                // Fetch shipping fees
+                $shipping_fees = [];
+                try {
+                    $shipping_fees = $pdo->query("SELECT * FROM shipping_fees ORDER BY id ASC")->fetchAll();
+                } catch (Exception $e) {}
+                ?>
+                <div class="form-group" style="margin-top: 15px;">
+                    <label><?php echo $current_region === 'VN' ? 'Tỉnh / Thành phố (Tính phí vận chuyển)' : 'Province / State'; ?></label>
+                    <select name="province" required style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: 'Inter'; font-size: 14px; outline: none;">
+                        <?php if (empty($shipping_fees)): ?>
+                            <option value="Khác">Toàn quốc (Phí VC: 30.000₫)</option>
+                        <?php else: ?>
+                            <?php foreach ($shipping_fees as $sf): ?>
+                                <option value="<?php echo htmlspecialchars($sf['province']); ?>">
+                                    <?php echo htmlspecialchars($sf['province']); ?> - Phí VC: <?php echo format_price($sf['fee']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </select>
+                </div>
 
                 <div class="payment-methods">
                     <h2 class="section-title"><?php echo $current_region === 'VN' ? 'Phương thức thanh toán' : 'Payment Method'; ?></h2>
@@ -157,11 +184,11 @@ $current_region = get_current_region();
                         <div class="payment-tab" data-target="cod">
                             <i class="fas fa-truck" style="color:#0e8543;"></i> <?php echo $current_region === 'VN' ? 'Thanh toán COD' : 'Cash on Delivery'; ?>
                         </div>
-                        <div class="payment-tab" data-target="momo">
-                            <i class="fas fa-qrcode" style="color:#A50064;"></i> Ví MoMo / ZaloPay
+                        <div class="payment-tab disabled" data-target="momo">
+                            <i class="fas fa-qrcode" style="color:#A50064;"></i> Ví MoMo / ZaloPay <span class="badge-disabled">Bảo trì</span>
                         </div>
-                        <div class="payment-tab" data-target="card">
-                            <i class="fab fa-cc-visa" style="color:#1A1F71;"></i> <?php echo $current_region === 'VN' ? 'Thẻ Tín Dụng / Visa' : 'Credit Card'; ?>
+                        <div class="payment-tab disabled" data-target="card">
+                            <i class="fab fa-cc-visa" style="color:#1A1F71;"></i> <?php echo $current_region === 'VN' ? 'Thẻ Tín Dụng / Visa' : 'Credit Card'; ?> <span class="badge-disabled">Bảo trì</span>
                         </div>
                     </div>
 
@@ -179,20 +206,6 @@ $current_region = get_current_region();
                         <div style="text-align:center; padding:15px; background:#f0fdf4; border-radius:6px; border:1px solid #bbf7d0; color:#166534;">
                             <i class="fas fa-box-open" style="font-size:32px; color:#16a34a; margin-bottom:10px;"></i>
                             <p><?php echo $current_region === 'VN' ? 'Thanh toán tiền mặt trực tiếp cho nhân viên giao hàng (Shipper) khi nhận hàng tại nhà.' : 'Pay with cash upon delivery.'; ?></p>
-                        </div>
-                    </div>
-
-                    <div class="payment-content" id="content-momo">
-                        <div style="background:#fff1f2; padding:15px; border-radius:6px; border:1px solid #fecdd3; color:#9f1239;">
-                            <i class="fas fa-wrench" style="margin-right:6px;"></i>
-                            <strong>Đang bảo trì / Nâng cấp:</strong> Cổng MoMo/ZaloPay tạm thời đang nâng cấp hệ thống. Vui lòng chọn <strong>Chuyển Khoản Ngân Hàng</strong> hoặc <strong>COD</strong> để đặt hàng ngay!
-                        </div>
-                    </div>
-
-                    <div class="payment-content" id="content-card">
-                        <div style="background:#fff1f2; padding:15px; border-radius:6px; border:1px solid #fecdd3; color:#9f1239;">
-                            <i class="fas fa-wrench" style="margin-right:6px;"></i>
-                            <strong>Đang bảo trì:</strong> Cổng Thẻ Quốc Tế Visa/Mastercard đang được tích hợp. Vui lòng chọn <strong>Chuyển Khoản Ngân Hàng</strong> hoặc <strong>COD</strong>!
                         </div>
                     </div>
                 </div>
@@ -229,7 +242,12 @@ $current_region = get_current_region();
         const hiddenInput = document.getElementById('payment_method');
 
         tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
+            tab.addEventListener('click', (e) => {
+                if (tab.classList.contains('disabled')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }
                 tabs.forEach(t => t.classList.remove('active'));
                 contents.forEach(c => c.classList.remove('active'));
                 tab.classList.add('active');

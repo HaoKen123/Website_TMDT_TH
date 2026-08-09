@@ -31,8 +31,12 @@ $recent_orders = $pdo->query("SELECT * FROM orders ORDER BY created_at DESC LIMI
             <li><a href="index.php" class="active"><i class="fas fa-home"></i> Tổng quan</a></li>
             <li><a href="orders.php"><i class="fas fa-shopping-cart"></i> Đơn hàng</a></li>
             <li><a href="products.php"><i class="fas fa-box"></i> Sản phẩm</a></li>
+            <li><a href="categories.php"><i class="fas fa-list"></i> Danh mục</a></li>
             <li><a href="coupons.php"><i class="fas fa-ticket-alt"></i> Mã giảm giá</a></li>
-            <li><a href="users.php"><i class="fas fa-users"></i> Khách hàng</a></li>
+            <li><a href="shipping.php"><i class="fas fa-truck"></i> Phí vận chuyển</a></li>
+            <li><a href="comments.php"><i class="fas fa-comments"></i> Bình luận</a></li>
+            <li><a href="users.php"><i class="fas fa-users"></i> Khách hàng & Nhân viên</a></li>
+            <li><a href="reports.php"><i class="fas fa-chart-bar"></i> Thống kê báo cáo</a></li>
             <li><a href="logout.php"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
         </ul>
     </div>
@@ -40,7 +44,7 @@ $recent_orders = $pdo->query("SELECT * FROM orders ORDER BY created_at DESC LIMI
     <div class="main-content">
         <div class="top-header">
             <h1>Bảng Điều Khiển (Dashboard)</h1>
-            <div>Xin chào, Admin!</div>
+            <div>Xin chào, <strong style="color:#15803d;"><?php echo htmlspecialchars($_SESSION['admin_username'] ?? 'Quản trị viên'); ?></strong> (<?php echo strtoupper($_SESSION['admin_role'] ?? 'ADMIN'); ?>)</div>
         </div>
 
         <div class="stats-grid">

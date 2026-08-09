@@ -99,7 +99,9 @@ foreach ($orders as $order) {
     <header class="site-header">
         <div class="header-container">
             <div class="logo">
-                <h1><a href="index.php">PIXELGEAR</a></h1>
+                <a href="index.php" class="logo-link">
+                    <span class="glitch-title" data-text="PIXELGEAR">PIXELGEAR</span>
+                </a>
             </div>
             <div class="header-icons">
                 <a href="index.php" style="font-size: 15px; font-weight: 600;">VỀ TRANG CHỦ</a>

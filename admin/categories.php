@@ -9,6 +9,7 @@ if (!isset($_SESSION['admin_id'])) {
 }
 
 $msg = '';
+$error = '';
 
 // Add category
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_category'])) {
@@ -21,9 +22,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_category'])) {
         try {
             $stmt = $pdo->prepare("INSERT INTO categories (name, slug, status) VALUES (?, ?, 1)");
             $stmt->execute([$name, $slug]);
-            $msg = "Đã thêm danh mục mới thành công!";
+            $msg = "Đã thêm danh mục mới '$name' thành công!";
         } catch (Exception $e) {
-            $msg = "Lỗi: Tên hoặc đường dẫn (slug) danh mục đã tồn tại!";
+            $error = "Lỗi: Tên hoặc đường dẫn (slug) danh mục đã tồn tại!";
         }
     }
 }
@@ -33,10 +34,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_category'])) {
     $id = intval($_POST['cat_id']);
     $name = trim($_POST['name']);
     $slug = trim($_POST['slug']);
+    $status = intval($_POST['status'] ?? 1);
+
+    if (empty($slug)) {
+        $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $name)));
+    }
+
     if (!empty($name) && $id > 0) {
-        $stmt = $pdo->prepare("UPDATE categories SET name = ?, slug = ? WHERE id = ?");
-        $stmt->execute([$name, $slug, $id]);
-        $msg = "Đã cập nhật danh mục #$id thành công!";
+        try {
+            $stmt = $pdo->prepare("UPDATE categories SET name = ?, slug = ?, status = ? WHERE id = ?");
+            $stmt->execute([$name, $slug, $status, $id]);
+            $msg = "Đã cập nhật thông tin danh mục #$id ($name) thành công!";
+        } catch (Exception $e) {
+            $error = "Lỗi: Không thể cập nhật hoặc mã Slug '$slug' đã bị trùng!";
+        }
     }
 }
 
@@ -124,11 +135,17 @@ if (empty($categories)) {
         .card { background: #fff; padding: 25px; border-radius: 8px; border: 1px solid #cbd5e1; }
         .card h3 { margin-bottom: 15px; font-size: 18px; color: #1e293b; }
         .card form label { display: block; font-weight: 600; font-size: 13px; color: #475569; margin-bottom: 5px; }
-        .card form input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: 'Inter'; box-sizing: border-box; margin-bottom: 15px; }
+        .card form input, .card form select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: 'Inter'; box-sizing: border-box; margin-bottom: 15px; }
         .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
         .status-show { background: #dcfce7; color: #166534; }
         .status-hide { background: #fee2e2; color: #991b1b; }
         .alert-success { background: #dcfce7; color: #166534; padding: 12px 18px; border-radius: 6px; margin-bottom: 20px; font-weight: 600; }
+        .alert-error { background: #fee2e2; color: #991b1b; padding: 12px 18px; border-radius: 6px; margin-bottom: 20px; font-weight: 600; }
+
+        /* Modal styling */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center; }
+        .modal-content { background: #fff; padding: 30px; border-radius: 10px; width: 440px; text-align: left; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .modal-content input, .modal-content select { width: 100%; padding: 10px; margin: 8px 0 15px 0; border: 1px solid #cbd5e1; border-radius: 6px; font-family: 'Inter'; box-sizing: border-box; }
     </style>
 </head>
 <body>
@@ -151,8 +168,12 @@ if (empty($categories)) {
     <div class="main-content">
         <h1>Quản Lý Danh Mục Sản Phẩm (<?php echo count($categories); ?>)</h1>
         
-        <?php if ($msg): ?>
-            <div class="alert-success"><i class="fas fa-check-circle"></i> <?php echo $msg; ?></div>
+        <?php if ($msg || isset($_GET['msg'])): ?>
+            <div class="alert-success"><i class="fas fa-check-circle"></i> <?php echo $msg ? $msg : 'Đã cập nhật danh mục thành công!'; ?></div>
+        <?php endif; ?>
+
+        <?php if ($error): ?>
+            <div class="alert-error"><i class="fas fa-exclamation-circle"></i> <?php echo $error; ?></div>
         <?php endif; ?>
 
         <div class="layout-grid">
@@ -179,7 +200,7 @@ if (empty($categories)) {
                             <th>Mã Slug</th>
                             <th>Số sản phẩm</th>
                             <th>Trạng thái</th>
-                            <th style="width: 180px; text-align: center;">Thao tác</th>
+                            <th style="width: 220px; text-align: center;">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -199,10 +220,13 @@ if (empty($categories)) {
                                 <?php endif; ?>
                             </td>
                             <td style="text-align: center;">
-                                <a href="categories.php?toggle_id=<?php echo $cat['id']; ?>" class="btn" style="background: <?php echo $cSt===1?'#64748b':'#16a34a'; ?>; color: #fff; padding: 5px 10px; font-size: 12px; text-decoration: none; border-radius: 4px; font-weight: 700;">
+                                <button type="button" class="btn" style="background: #0284c7; color: #fff; padding: 5px 9px; font-size: 12px; border:none; cursor:pointer; border-radius: 4px; font-weight: 700; margin-right: 3px;" onclick="openEditCatModal(<?php echo $cat['id']; ?>, '<?php echo htmlspecialchars(addslashes($cat['name'])); ?>', '<?php echo htmlspecialchars(addslashes($cat['slug'])); ?>', <?php echo $cSt; ?>)">
+                                    <i class="fas fa-edit"></i> Sửa
+                                </button>
+                                <a href="categories.php?toggle_id=<?php echo $cat['id']; ?>" class="btn" style="background: <?php echo $cSt===1?'#64748b':'#16a34a'; ?>; color: #fff; padding: 5px 8px; font-size: 12px; text-decoration: none; border-radius: 4px; font-weight: 700; margin-right: 3px;">
                                     <i class="fas fa-<?php echo $cSt===1?'eye-slash':'eye'; ?>"></i> <?php echo $cSt===1?'Ẩn':'Hiện'; ?>
                                 </a>
-                                <a href="categories.php?delete_id=<?php echo $cat['id']; ?>" onclick="return confirm('Bạn có chắc chắn muốn xóa danh mục này không?')" class="btn" style="background: #dc2626; color: #fff; padding: 5px 10px; font-size: 12px; text-decoration: none; border-radius: 4px; font-weight: 700;">
+                                <a href="categories.php?delete_id=<?php echo $cat['id']; ?>" onclick="return confirm('Bạn có chắc chắn muốn xóa danh mục này không?')" class="btn" style="background: #dc2626; color: #fff; padding: 5px 8px; font-size: 12px; text-decoration: none; border-radius: 4px; font-weight: 700;">
                                     <i class="fas fa-trash"></i> Xóa
                                 </a>
                             </td>
@@ -213,5 +237,46 @@ if (empty($categories)) {
             </div>
         </div>
     </div>
+
+    <!-- Modal Chỉnh Sửa Danh Mục -->
+    <div id="editCatModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 15px; color: #0f172a;"><i class="fas fa-edit" style="color: #0284c7;"></i> Chỉnh Sửa Danh Mục</h3>
+            <form method="POST">
+                <input type="hidden" name="edit_category" value="1">
+                <input type="hidden" name="cat_id" id="editCatId">
+
+                <label style="font-size: 13px; font-weight: 600;">Tên danh mục *</label>
+                <input type="text" name="name" id="editCatName" required placeholder="Tên danh mục...">
+
+                <label style="font-size: 13px; font-weight: 600;">Mã Slug / URL *</label>
+                <input type="text" name="slug" id="editCatSlug" required placeholder="Mã slug...">
+
+                <label style="font-size: 13px; font-weight: 600;">Trạng thái hiển thị</label>
+                <select name="status" id="editCatStatus">
+                    <option value="1">Hiển thị ngoài Website</option>
+                    <option value="0">Tạm ẩn</option>
+                </select>
+
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button type="submit" class="btn" style="flex: 1; padding: 10px; background: #15803d; color: #fff; border: none; font-weight: 700; border-radius: 6px; cursor: pointer;">LƯU THAY ĐỔI</button>
+                    <button type="button" class="btn" style="flex: 1; padding: 10px; background: #64748b; color: #fff; border: none; font-weight: 700; border-radius: 6px; cursor: pointer;" onclick="closeEditCatModal()">HỦY</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    function openEditCatModal(id, name, slug, status) {
+        document.getElementById('editCatId').value = id;
+        document.getElementById('editCatName').value = name;
+        document.getElementById('editCatSlug').value = slug;
+        document.getElementById('editCatStatus').value = status;
+        document.getElementById('editCatModal').style.display = 'flex';
+    }
+    function closeEditCatModal() {
+        document.getElementById('editCatModal').style.display = 'none';
+    }
+    </script>
 </body>
 </html>

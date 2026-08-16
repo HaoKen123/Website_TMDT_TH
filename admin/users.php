@@ -20,6 +20,7 @@ try {
 } catch (Exception $e) {}
 
 $msg = '';
+$error = '';
 
 // Handle Add New User / Staff
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_user_action'])) {
@@ -34,14 +35,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_user_action'])) {
 
     if ($username && $raw_pass && $fullname) {
         $stmtChk = $pdo->prepare("SELECT id FROM users WHERE username = ? OR (email = ? AND email != '')");
-        $stmtChk->execute([$username, $email]);
+        $stmtChk->execute([$username, $email ? $email : '']);
         if ($stmtChk->fetch()) {
-            $msg = "Lỗi: Tên đăng nhập hoặc Email đã tồn tại!";
+            $error = "Lỗi: Tên đăng nhập hoặc Email đã tồn tại trong hệ thống!";
         } else {
             $hashed = password_hash($raw_pass, PASSWORD_DEFAULT);
             $stmtIns = $pdo->prepare("INSERT INTO users (username, email, password, fullname, phone, address, role, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
             $stmtIns->execute([$username, $email, $hashed, $fullname, $phone, $address, $role, $status]);
             $msg = "Đã thêm thành công người dùng mới ($role)!";
+        }
+    } else {
+        $error = "Vui lòng nhập đầy đủ các trường bắt buộc.";
+    }
+}
+
+// Handle Edit Existing User
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_user_action'])) {
+    $u_id = intval($_POST['edit_user_id']);
+    $fullname = trim($_POST['fullname']);
+    $email = trim($_POST['email']);
+    $phone = trim($_POST['phone']);
+    $address = trim($_POST['address']);
+    $role = $_POST['role'] ?? 'customer';
+    $status = intval($_POST['status'] ?? 1);
+    $new_pass = trim($_POST['new_password'] ?? '');
+
+    if ($u_id > 0 && !empty($fullname)) {
+        try {
+            // Check if email already used by another user
+            if (!empty($email)) {
+                $stmtCheck = $pdo->prepare("SELECT id FROM users WHERE email = ? AND id != ?");
+                $stmtCheck->execute([$email, $u_id]);
+                if ($stmtCheck->fetch()) {
+                    $error = "Lỗi: Địa chỉ Email '$email' đã được sử dụng bởi tài khoản khác!";
+                }
+            }
+
+            if (!$error) {
+                if (!empty($new_pass)) {
+                    $hashed = password_hash($new_pass, PASSWORD_DEFAULT);
+                    $stmtUp = $pdo->prepare("UPDATE users SET fullname = ?, email = ?, phone = ?, address = ?, role = ?, status = ?, password = ? WHERE id = ?");
+                    $stmtUp->execute([$fullname, $email, $phone, $address, $role, $status, $hashed, $u_id]);
+                } else {
+                    $stmtUp = $pdo->prepare("UPDATE users SET fullname = ?, email = ?, phone = ?, address = ?, role = ?, status = ? WHERE id = ?");
+                    $stmtUp->execute([$fullname, $email, $phone, $address, $role, $status, $u_id]);
+                }
+                $msg = "Đã cập nhật thông tin người dùng #$u_id ($fullname) thành công!";
+            }
+        } catch (Exception $e) {
+            $error = "Lỗi cập nhật người dùng: " . $e->getMessage();
         }
     }
 }
@@ -55,7 +97,7 @@ if (isset($_GET['toggle_status_id'])) {
     exit;
 }
 
-// Handle Change Role
+// Handle Change Role via inline dropdown
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_role_id'])) {
     $uid = intval($_POST['change_role_id']);
     $new_role = $_POST['new_role'];
@@ -83,7 +125,7 @@ $params = [];
 $whereSql = '';
 
 if ($search !== '') {
-    $whereSql = "WHERE (username LIKE :s OR email LIKE :s OR fullname LIKE :s OR phone LIKE :s)";
+    $whereSql = "WHERE (u.username LIKE :s OR u.email LIKE :s OR u.fullname LIKE :s OR u.phone LIKE :s)";
     $params[':s'] = '%' . $search . '%';
 }
 
@@ -130,6 +172,7 @@ $usersList = $stmt->fetchAll();
         .search-box button { padding: 10px 20px; background: #15803d; color: #fff; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; }
         
         .alert-success { background: #dcfce7; color: #166534; padding: 12px 18px; border-radius: 6px; margin-bottom: 20px; font-weight: 600; }
+        .alert-error { background: #fee2e2; color: #991b1b; padding: 12px 18px; border-radius: 6px; margin-bottom: 20px; font-weight: 600; }
         
         .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
         .status-active { background: #dcfce7; color: #166534; }
@@ -137,8 +180,8 @@ $usersList = $stmt->fetchAll();
 
         /* Modal styling */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center; }
-        .modal-content { background: #fff; padding: 30px; border-radius: 10px; width: 440px; text-align: left; }
-        .modal-content input, .modal-content select { width: 100%; padding: 10px; margin: 8px 0 15px 0; border: 1px solid #cbd5e1; border-radius: 6px; font-family: 'Inter'; box-sizing: border-box; }
+        .modal-content { background: #fff; padding: 30px; border-radius: 10px; width: 480px; max-width: 95vw; max-height: 90vh; overflow-y: auto; text-align: left; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .modal-content input, .modal-content select { width: 100%; padding: 9px 12px; margin: 6px 0 14px 0; border: 1px solid #cbd5e1; border-radius: 6px; font-family: 'Inter'; box-sizing: border-box; }
     </style>
 </head>
 <body>
@@ -169,8 +212,12 @@ $usersList = $stmt->fetchAll();
             </div>
         </div>
 
-        <?php if ($msg): ?>
-            <div class="alert-success"><i class="fas fa-check-circle"></i> <?php echo $msg; ?></div>
+        <?php if ($msg || isset($_GET['msg'])): ?>
+            <div class="alert-success"><i class="fas fa-check-circle"></i> <?php echo $msg ? $msg : 'Đã cập nhật trạng thái người dùng thành công!'; ?></div>
+        <?php endif; ?>
+
+        <?php if ($error): ?>
+            <div class="alert-error"><i class="fas fa-exclamation-circle"></i> <?php echo $error; ?></div>
         <?php endif; ?>
 
         <!-- Search Box -->
@@ -191,17 +238,18 @@ $usersList = $stmt->fetchAll();
                     <th style="width: 50px;">ID</th>
                     <th>Tên tài khoản</th>
                     <th>Họ và tên</th>
+                    <th>Email</th>
                     <th>Quyền / Vai trò</th>
                     <th>Trạng thái</th>
                     <th>Số điện thoại</th>
                     <th>Đơn hàng</th>
-                    <th style="width: 220px; text-align: center;">Thao tác</th>
+                    <th style="width: 240px; text-align: center;">Thao tác</th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (empty($usersList)): ?>
                 <tr>
-                    <td colspan="9" style="text-align: center; padding: 40px; color: #64748b;">
+                    <td colspan="10" style="text-align: center; padding: 40px; color: #64748b;">
                         Chưa có người dùng nào.
                     </td>
                 </tr>
@@ -217,6 +265,7 @@ $usersList = $stmt->fetchAll();
                         <td><strong>#<?php echo $u['id']; ?></strong></td>
                         <td><strong style="color: #0284c7;"><?php echo htmlspecialchars($u['username']); ?></strong></td>
                         <td><strong><?php echo htmlspecialchars($u['fullname']); ?></strong></td>
+                        <td style="font-size: 13px; color: #475569;"><?php echo htmlspecialchars($u['email'] ?? ''); ?></td>
                         <td>
                             <form method="POST" style="display:inline;">
                                 <input type="hidden" name="change_role_id" value="<?php echo $u['id']; ?>">
@@ -237,13 +286,17 @@ $usersList = $stmt->fetchAll();
                         <td><?php echo htmlspecialchars($u['phone']); ?></td>
                         <td><span class="badge pending" style="background: #e0f2fe; color: #0369a1; font-weight: 700;"><?php echo $u['order_count']; ?> đơn</span></td>
                         <td style="text-align: center;">
-                            <a href="users.php?toggle_status_id=<?php echo $u['id']; ?>" class="btn" style="background: <?php echo $uStatus===1?'#ef4444':'#16a34a'; ?>; color: #fff; padding: 5px 9px; font-size: 12px; text-decoration: none; border-radius: 4px; font-weight: 700;">
+                            <button type="button" class="btn" style="background: #0284c7; color: #fff; padding: 5px 8px; font-size: 12px; border:none; cursor:pointer; border-radius: 4px; font-weight: 700; margin-right: 2px;" 
+                                onclick='openEditUserModal(<?php echo json_encode($u, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE); ?>)'>
+                                <i class="fas fa-edit"></i> Sửa
+                            </button>
+                            <a href="users.php?toggle_status_id=<?php echo $u['id']; ?>" class="btn" style="background: <?php echo $uStatus===1?'#ef4444':'#16a34a'; ?>; color: #fff; padding: 5px 8px; font-size: 12px; text-decoration: none; border-radius: 4px; font-weight: 700; margin-right: 2px;">
                                 <i class="fas fa-<?php echo $uStatus===1?'lock':'unlock'; ?>"></i> <?php echo $uStatus===1?'Khóa':'Mở'; ?>
                             </a>
-                            <button type="button" class="btn" style="background: #f59e0b; color: #fff; padding: 5px 9px; font-size: 12px; border:none; cursor:pointer; border-radius: 4px; font-weight: 700;" onclick="openResetModal(<?php echo $u['id']; ?>, '<?php echo htmlspecialchars($u['username']); ?>')">
+                            <button type="button" class="btn" style="background: #f59e0b; color: #fff; padding: 5px 8px; font-size: 12px; border:none; cursor:pointer; border-radius: 4px; font-weight: 700; margin-right: 2px;" onclick="openResetModal(<?php echo $u['id']; ?>, '<?php echo htmlspecialchars($u['username']); ?>')">
                                 <i class="fas fa-key"></i> Pass
                             </button>
-                            <button type="button" class="btn" style="padding: 5px 9px; font-size: 12px; border:none; cursor:pointer; background: #dc2626; color: #fff; border-radius: 4px; font-weight: 700;" onclick="deleteSingleUser(<?php echo $u['id']; ?>)">
+                            <button type="button" class="btn" style="padding: 5px 8px; font-size: 12px; border:none; cursor:pointer; background: #dc2626; color: #fff; border-radius: 4px; font-weight: 700;" onclick="deleteSingleUser(<?php echo $u['id']; ?>)">
                                 <i class="fas fa-trash"></i> Xóa
                             </button>
                         </td>
@@ -304,6 +357,57 @@ $usersList = $stmt->fetchAll();
         </div>
     </div>
 
+    <!-- Modal Chỉnh Sửa Thông Tin Người Dùng -->
+    <div id="editUserModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 15px; color: #0f172a;"><i class="fas fa-user-edit" style="color: #0284c7;"></i> Sửa Thông Tin Người Dùng</h3>
+            <form method="POST">
+                <input type="hidden" name="edit_user_action" value="1">
+                <input type="hidden" name="edit_user_id" id="editUserId">
+
+                <p style="font-size: 13px; color: #64748b; margin-top: 0; margin-bottom: 12px;">Tài khoản: <strong id="editUserUsername" style="color: #0284c7;"></strong></p>
+
+                <label style="font-size: 13px; font-weight: 600;">Họ và tên *</label>
+                <input type="text" name="fullname" id="editUserFullname" required placeholder="Nhập họ và tên...">
+
+                <label style="font-size: 13px; font-weight: 600;">Email</label>
+                <input type="email" name="email" id="editUserEmail" placeholder="Địa chỉ email...">
+
+                <label style="font-size: 13px; font-weight: 600;">Số điện thoại</label>
+                <input type="text" name="phone" id="editUserPhone" placeholder="Số điện thoại...">
+
+                <label style="font-size: 13px; font-weight: 600;">Địa chỉ</label>
+                <input type="text" name="address" id="editUserAddress" placeholder="Địa chỉ...">
+
+                <div style="display: flex; gap: 15px;">
+                    <div style="flex: 1;">
+                        <label style="font-size: 13px; font-weight: 600;">Phân quyền *</label>
+                        <select name="role" id="editUserRole">
+                            <option value="customer">Khách hàng</option>
+                            <option value="staff">Nhân viên</option>
+                            <option value="admin">Quản trị viên (Admin)</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 13px; font-weight: 600;">Trạng thái</label>
+                        <select name="status" id="editUserStatus">
+                            <option value="1">Kích hoạt</option>
+                            <option value="0">Khóa tài khoản</option>
+                        </select>
+                    </div>
+                </div>
+
+                <label style="font-size: 13px; font-weight: 600;">Đổi mật khẩu mới (Để trống nếu không đổi)</label>
+                <input type="password" name="new_password" placeholder="Nhập mật khẩu mới nếu muốn đổi...">
+
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button type="submit" class="btn" style="flex: 1; padding: 10px; background: #15803d; color: #fff; border: none; font-weight: 700; border-radius: 6px; cursor: pointer;">LƯU THAY ĐỔI</button>
+                    <button type="button" class="btn" style="flex: 1; padding: 10px; background: #64748b; color: #fff; border: none; font-weight: 700; border-radius: 6px; cursor: pointer;" onclick="closeEditUserModal()">HỦY</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Reset Password Modal -->
     <div id="resetModal" class="modal">
         <div class="modal-content">
@@ -328,6 +432,22 @@ $usersList = $stmt->fetchAll();
     function closeAddModal() {
         document.getElementById('addModal').style.display = 'none';
     }
+
+    function openEditUserModal(user) {
+        document.getElementById('editUserId').value = user.id;
+        document.getElementById('editUserUsername').innerText = user.username;
+        document.getElementById('editUserFullname').value = user.fullname || '';
+        document.getElementById('editUserEmail').value = user.email || '';
+        document.getElementById('editUserPhone').value = user.phone || '';
+        document.getElementById('editUserAddress').value = user.address || '';
+        document.getElementById('editUserRole').value = user.role || 'customer';
+        document.getElementById('editUserStatus').value = (user.status !== undefined && user.status !== null) ? user.status : 1;
+        document.getElementById('editUserModal').style.display = 'flex';
+    }
+    function closeEditUserModal() {
+        document.getElementById('editUserModal').style.display = 'none';
+    }
+
     function openResetModal(id, username) {
         document.getElementById('modalUserId').value = id;
         document.getElementById('modalUsername').innerText = username;

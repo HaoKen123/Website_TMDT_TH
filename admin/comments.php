@@ -66,6 +66,8 @@ try {
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <link rel="icon" type="image/png" href="../favicon.png?v=2">
+    <link rel="shortcut icon" href="../favicon.ico?v=2">
     <meta charset="UTF-8">
     <title>Quản Lý Bình Luận - Admin PixelGear</title>
     <link rel="stylesheet" href="style.css">

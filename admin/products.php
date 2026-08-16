@@ -32,6 +32,8 @@ $products = $pdo->query("SELECT * FROM products ORDER BY id DESC")->fetchAll();
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <link rel="icon" type="image/png" href="../favicon.png?v=2">
+    <link rel="shortcut icon" href="../favicon.ico?v=2">
     <meta charset="UTF-8">
     <title>Quản lý Sản Phẩm - Admin PixelGear</title>
     <link rel="stylesheet" href="style.css">
@@ -146,7 +148,13 @@ $products = $pdo->query("SELECT * FROM products ORDER BY id DESC")->fetchAll();
                             </td>
                             <td><strong>#<?php echo $p['id']; ?></strong></td>
                             <td>
-                                <img src="<?php echo htmlspecialchars($p['image_url']); ?>" class="product-img" onerror="this.src='https://via.placeholder.com/50';">
+                                <?php 
+                                    $pImg = $p['image_url'];
+                                    if (strpos($pImg, 'http://') !== 0 && strpos($pImg, 'https://') !== 0 && strpos($pImg, 'data:') !== 0 && strpos($pImg, '//') !== 0) {
+                                        $pImg = '../' . ltrim($pImg, '/');
+                                    }
+                                ?>
+                                <img src="<?php echo htmlspecialchars($pImg); ?>" class="product-img" onerror="this.src='https://via.placeholder.com/50';">
                             </td>
                             <td>
                                 <strong><?php echo htmlspecialchars($p['name']); ?></strong>

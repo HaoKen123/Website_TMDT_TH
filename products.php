@@ -66,6 +66,8 @@ $current_region = get_current_region();
 <!DOCTYPE html>
 <html lang="<?php echo strtolower($current_region); ?>">
 <head>
+    <link rel="icon" type="image/png" href="favicon.png?v=2">
+    <link rel="shortcut icon" href="favicon.ico?v=2">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo __('SITE_TITLE'); ?></title>
@@ -145,8 +147,9 @@ $current_region = get_current_region();
             </div>
             
             <div class="logo">
-                <a href="index.php" class="logo-link">
-                    <span class="glitch-title" data-text="PIXELGEAR">PIXELGEAR</span>
+                <a href="index.php" class="mc-logo">
+                    <span class="mc-logo__icon" aria-hidden="true"></span>
+                    <span class="mc-logo__text" data-text="PIXELGEAR">PIXELGEAR</span>
                 </a>
             </div>
 
@@ -327,7 +330,7 @@ $current_region = get_current_region();
                             <div class="product-info">
                                 <h3>
                                     <a href="product_detail.php?id=<?php echo $product['id']; ?>">
-                                        <?php echo htmlspecialchars($product['name']); ?>
+                                        <?php echo htmlspecialchars(translate_product_name($product['name'])); ?>
                                     </a>
                                 </h3>
                                 <p class="price">
@@ -469,16 +472,21 @@ $current_region = get_current_region();
             });
             const data = await response.json();
 
-            if (data.status === 'not_registered') {
-                alert('Email chưa có tài khoản. Đang dắt bạn qua trang Đăng Ký để tạo tài khoản & nhận ngay bộ đôi Voucher 15% + Freeship!');
-                window.location.href = data.redirect;
+            if (data.status === 'success') {
+                if (window.showCustomNotice) showCustomNotice(data.message, 'success', 6000);
+                if (emailInput) emailInput.value = '';
             } else if (data.status === 'already_registered') {
-                alert('ℹ️ ' + data.message);
+                if (window.showCustomNotice) showCustomNotice(data.message, 'info', 6000);
+            } else if (data.status === 'not_registered') {
+                if (window.showCustomNotice) showCustomNotice(data.message, 'info', 4000);
+                setTimeout(() => {
+                    window.location.href = data.redirect;
+                }, 1500);
             } else {
-                alert(data.message);
+                if (window.showCustomNotice) showCustomNotice('Lỗi: ' + data.message, 'error');
             }
         } catch (err) {
-            alert('Lỗi kết nối kiểm tra email!');
+            if (window.showCustomNotice) showCustomNotice('Lỗi kết nối kiểm tra email!', 'error');
         } finally {
             if (btn) {
                 btn.innerText = originalText;
@@ -488,6 +496,15 @@ $current_region = get_current_region();
         return false;
     }
     </script>
+    <?php if (isset($_SESSION['custom_notice'])): ?>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (window.showCustomNotice) {
+            showCustomNotice(<?php echo json_encode($_SESSION['custom_notice']); ?>, 'success', 7000);
+        }
+    });
+    </script>
+    <?php unset($_SESSION['custom_notice']); endif; ?>
     <?php include_once 'ai_assistant.php'; ?>
 </body>
 </html>

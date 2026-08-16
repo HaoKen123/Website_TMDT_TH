@@ -13,7 +13,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
 if (!$email) {
-    // Also try JSON body
     $jsonInput = json_decode(file_get_contents('php://input'), true);
     if (isset($jsonInput['email'])) {
         $email = filter_var($jsonInput['email'], FILTER_VALIDATE_EMAIL);
@@ -26,32 +25,34 @@ if (!$email) {
 }
 
 try {
-    // 1. Check if email exists in users or subscribers table
-    $stmtUser = $pdo->prepare("SELECT id FROM users WHERE email = ?");
-    $stmtUser->execute([$email]);
-    $userExists = $stmtUser->fetch();
-
+    // 1. Check if email exists in subscribers table
     $stmtSub = $pdo->prepare("SELECT id FROM subscribers WHERE email = ?");
     $stmtSub->execute([$email]);
     $subExists = $stmtSub->fetch();
 
-    if ($userExists || $subExists) {
-        // Case B: Already registered/subscribed -> Gentle reminder!
+    if (!$subExists) {
+        // Insert into subscribers table
+        $stmtIns = $pdo->prepare("INSERT INTO subscribers (email, voucher_sent) VALUES (?, 'WELCOME15')");
+        $stmtIns->execute([$email]);
+    }
+
+    // 2. Always send or re-send the voucher email!
+    $mailRes = send_voucher_email($email);
+
+    if ($subExists) {
         echo json_encode([
             'status' => 'already_registered',
-            'message' => 'Tài khoản Email (' . $email . ') đã được nhận Voucher ưu đãi 15% & FREESHIP rồi nhé! Bạn hãy sử dụng mã WELCOME15 & FREESHIP khi thanh toán.',
+            'message' => 'Mã Voucher 15% & Freeship (WELCOME15 / FREESHIP) đã được gửi lại vào Email (' . $email . ') của bạn rồi nhé!',
             'voucher' => 'WELCOME15'
         ]);
-        exit;
     } else {
-        // Case A: Not registered yet -> Redirect to registration page with pre-filled email
         echo json_encode([
-            'status' => 'not_registered',
-            'redirect' => 'register.php?email=' . urlencode($email),
-            'message' => 'Email chưa có tài khoản. Đang chuyển tới trang Đăng Ký để tạo tài khoản & nhận ngay bộ đôi Voucher 15% + Freeship!'
+            'status' => 'success',
+            'message' => '🎉 Đăng ký thành công! Mã Voucher Giảm 15% & Freeship đã được gửi tới Email (' . $email . '). Bạn hãy kiểm tra hòm thư nhé!',
+            'voucher' => 'WELCOME15'
         ]);
-        exit;
     }
+    exit;
 
 } catch (Exception $e) {
     echo json_encode(['status' => 'error', 'message' => 'Lỗi xử lý: ' . $e->getMessage()]);

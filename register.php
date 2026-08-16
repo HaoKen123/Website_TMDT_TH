@@ -1,6 +1,8 @@
 <?php
 session_start();
 require_once 'db.php';
+require_once 'mailer.php';
+require_once 'config_turnstile.php';
 
 $error = '';
 $success = '';
@@ -28,9 +30,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $pdo->prepare('INSERT INTO users (username, email, password, fullname, role, status) VALUES (?, ?, ?, ?, "customer", 1)');
             if ($stmt->execute([$username, $email, $hashed_password, $fullname])) {
                 $user_id = $pdo->lastInsertId();
+
+                // Gửi Email Voucher 15% + Freeship cho người dùng mới
+                $stmtSub = $pdo->prepare("SELECT id FROM subscribers WHERE email = ?");
+                $stmtSub->execute([$email]);
+                if (!$stmtSub->fetch()) {
+                    $stmtSubIns = $pdo->prepare("INSERT INTO subscribers (email, voucher_sent) VALUES (?, 'WELCOME15')");
+                    $stmtSubIns->execute([$email]);
+                    send_voucher_email($email, $fullname);
+                }
+
                 $_SESSION['user_id'] = $user_id;
                 $_SESSION['user_name'] = $fullname;
                 $_SESSION['user_role'] = 'customer';
+                $_SESSION['custom_notice'] = "🎉 Đăng ký tài khoản thành công! Mã Voucher Giảm 15% & Freeship đã được gửi tới Email của bạn.";
+
                 header('Location: index.php');
                 exit;
             } else {
@@ -43,11 +57,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <link rel="icon" type="image/png" href="favicon.png?v=2">
+    <link rel="shortcut icon" href="favicon.ico?v=2">
     <meta charset="UTF-8">
     <title>Đăng ký tài khoản | PixelGear Store</title>
     <link rel="stylesheet" href="style.css?v=<?php echo time(); ?>">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Cloudflare Turnstile API -->
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <style>
         body { background: #f8fafc; }
         .auth-container { max-width: 450px; margin: 50px auto; padding: 35px; background: white; border-radius: 12px; border: 1px solid var(--border-color); text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
@@ -80,6 +98,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <i class="fas fa-eye toggle-password" onclick="togglePass('reg_pass_confirm', this)"></i>
             </div>
             <input type="text" name="fullname" placeholder="Họ và tên" required>
+            
+            <!-- Cloudflare Turnstile Verification Widget -->
+            <div style="display: flex; justify-content: center; margin-bottom: 15px;">
+                <div class="cf-turnstile" data-sitekey="<?php echo TURNSTILE_SITEKEY; ?>" data-theme="light"></div>
+            </div>
+
             <button type="submit">ĐĂNG KÝ NGAY</button>
         </form>
 

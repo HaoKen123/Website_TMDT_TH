@@ -65,6 +65,8 @@ foreach ($orders as $order) {
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <link rel="icon" type="image/png" href="favicon.png?v=2">
+    <link rel="shortcut icon" href="favicon.ico?v=2">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hồ sơ cá nhân | PixelGear</title>
@@ -99,8 +101,9 @@ foreach ($orders as $order) {
     <header class="site-header">
         <div class="header-container">
             <div class="logo">
-                <a href="index.php" class="logo-link">
-                    <span class="glitch-title" data-text="PIXELGEAR">PIXELGEAR</span>
+                <a href="index.php" class="mc-logo">
+                    <span class="mc-logo__icon" aria-hidden="true"></span>
+                    <span class="mc-logo__text" data-text="PIXELGEAR">PIXELGEAR</span>
                 </a>
             </div>
             <div class="header-icons">

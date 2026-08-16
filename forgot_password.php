@@ -32,6 +32,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message = '
             <html>
             <head>
+    <link rel="icon" type="image/png" href="favicon.png?v=2">
+    <link rel="shortcut icon" href="favicon.ico?v=2">
               <title>Khôi Phục Mật Khẩu PixelGear</title>
             </head>
             <body style="font-family: Arial, sans-serif; background-color: #f4f7fa; padding: 30px; margin: 0;">

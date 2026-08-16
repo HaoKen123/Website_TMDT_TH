@@ -3,6 +3,11 @@ DirectoryIndex index.php index.html
 # Fix Apache stripping Authorization header for SePay Webhook on Shared Hosting
 <IfModule mod_rewrite.c>
 RewriteEngine On
+
+# Tự động chuyển hướng từ http:// sang https://
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
 RewriteCond %{HTTP_AUTHORIZATION} ^(.*)
 RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
 </IfModule>

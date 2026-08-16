@@ -6,32 +6,16 @@ import time
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8')
 
-HOST = "pixelgear.getenjoyment.net"
-USER = "4776587"
-PASSWORD = "thapvi123"
+# Cấu hình FTP InfinityFree
+HOST = "ftpupload.net"
+USER = "if0_42613531"
+PASSWORD = "hqUiibOaHn"
 
-print("=== CONG CU UPLOAD PIXELGEAR STORE ===")
-print("1. Upload riêng tên miền chính: honhathao.id.vn (Nhanh)")
-print("2. Upload riêng tên miền phụ: pixelgear.getenjoyment.net (Nhanh)")
-print("3. Upload đồng bộ cả 2 tên miền")
+print("=== CÔNG CỤ UPLOAD LÊN INFINITYFREE ===")
+print("Đang chuẩn bị upload lên honhathao.id.vn/htdocs ...")
 
-choice = "1"
-if len(sys.argv) > 1:
-    choice = sys.argv[1]
-else:
-    try:
-        user_input = input("\nChon so (1, 2, 3) [Mac dinh: 1]: ").strip()
-        if user_input:
-            choice = user_input
-    except Exception:
-        choice = "1"
-
-if choice == "1":
-    valid_target_dirs = ["honhathao.id.vn"]
-elif choice == "2":
-    valid_target_dirs = ["pixelgear.getenjoyment.net"]
-else:
-    valid_target_dirs = ["honhathao.id.vn", "pixelgear.getenjoyment.net"]
+# Thư mục gốc trên InfinityFree của tên miền
+valid_target_dirs = ["honhathao.id.vn/htdocs"]
 
 def get_ftp():
     for attempt in range(5):
@@ -47,24 +31,20 @@ def get_ftp():
 ftp = get_ftp()
 print("-> Kết nối FTP thành công!")
 
-ignored_names = {".git", "node_modules", "website.zip", "website.txt", "upload.py", "upload_honhathao.py", "upload_pixelgear.py", ".gitignore"}
+ignored_names = {".git", "node_modules", "website.zip", "website.txt", "upload.py", "upload_honhathao.py", "upload_pixelgear.py", ".gitignore", ".agents", ".gemini"}
 
 for target_folder in valid_target_dirs:
     print(f"\n==========================================")
-    print(f"-> ĐANG UPLOAD MÃ NGUỒN CHO TÊN MIỀN: {target_folder}")
+    print(f"-> ĐANG UPLOAD MÃ NGUỒN VÀO: {target_folder}")
     print(f"==========================================")
     
     try:
         ftp.cwd("/")
-        ftp.cwd(target_folder)
-    except Exception:
-        try:
-            ftp.cwd("/")
-            ftp.cwd(f"www.{target_folder}")
-            target_folder = f"www.{target_folder}"
-        except Exception as e:
-            print(f"Bỏ qua thư mục {target_folder}: {e}")
-            continue
+        for part in target_folder.split("/"):
+            ftp.cwd(part)
+    except Exception as e:
+        print(f"Lỗi truy cập thư mục {target_folder}: {e}")
+        continue
 
     def ensure_dir(path):
         parts = path.replace("\\", "/").strip("/").split("/")
@@ -102,20 +82,21 @@ for target_folder in valid_target_dirs:
                     try:
                         ftp = get_ftp()
                         ftp.cwd("/")
-                        ftp.cwd(target_folder)
+                        for part in target_folder.split("/"):
+                            ftp.cwd(part)
                         if rel_dir != ".":
                             ensure_dir(rel_dir)
                     except Exception:
                         pass
 
             if uploaded:
-                print(f"[{target_folder}] Up thành công: {remote_path}")
+                print(f"Up thành công: {remote_path}")
             else:
-                print(f"[{target_folder}] Bỏ qua: {remote_path}")
+                print(f"Bỏ qua (Lỗi): {remote_path}")
 
 try:
     ftp.quit()
 except Exception:
     pass
 
-print("\n🎉 HOÀN TẤT UPLOAD!")
+print("\n🎉 HOÀN TẤT UPLOAD LÊN INFINITYFREE!")

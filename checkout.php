@@ -20,10 +20,27 @@ $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->execute([$_SESSION['user_id']]);
 $user = $stmt->fetch();
 
+// Handle Selected Items from Cart
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['selected_items'])) {
+    $_SESSION['selected_items'] = $_POST['selected_items'];
+} elseif (!isset($_SESSION['selected_items'])) {
+    // Fallback to all items if someone hits checkout.php directly without submitting form
+    $_SESSION['selected_items'] = array_keys($_SESSION['cart']);
+}
+
+// Ensure there are selected items
+if (empty($_SESSION['selected_items'])) {
+    header('Location: cart.php');
+    exit;
+}
+
 $cart_count = 0;
 $total_price = 0;
 $cart_items = [];
-$ids = implode(',', array_map('intval', array_keys($_SESSION['cart'])));
+
+// Filter cart keys to only those selected
+$selected_keys = array_filter($_SESSION['selected_items'], function($k) { return isset($_SESSION['cart'][$k]); });
+$ids = implode(',', array_map('intval', $selected_keys));
 
 if ($ids) {
     $stmt = $pdo->query("SELECT * FROM products WHERE id IN ($ids)");
@@ -39,12 +56,18 @@ if ($ids) {
         $product['subtotal'] = $subtotal;
         $cart_items[] = $product;
     }
+} else {
+    header('Location: cart.php');
+    exit;
 }
+
 $current_region = get_current_region();
 ?>
 <!DOCTYPE html>
 <html lang="<?php echo strtolower($current_region); ?>">
 <head>
+    <link rel="icon" type="image/png" href="favicon.png?v=2">
+    <link rel="shortcut icon" href="favicon.ico?v=2">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thanh Toán 4.0 | PixelGear Shop</title>
@@ -98,8 +121,9 @@ $current_region = get_current_region();
     <header class="site-header">
         <div class="header-container">
             <div class="logo">
-                <a href="index.php" class="logo-link">
-                    <span class="glitch-title" data-text="PIXELGEAR">PIXELGEAR</span>
+                <a href="index.php" class="mc-logo">
+                    <span class="mc-logo__icon" aria-hidden="true"></span>
+                    <span class="mc-logo__text" data-text="PIXELGEAR">PIXELGEAR</span>
                 </a>
             </div>
             <div class="header-icons">
@@ -227,9 +251,37 @@ $current_region = get_current_region();
             </div>
             <?php endforeach; ?>
 
+            <?php 
+            $discount_usd = 0;
+            if (isset($_SESSION['coupon'])) {
+                $coupon = $_SESSION['coupon'];
+                // Only apply if subtotal >= min_order
+                if ($total_price >= ($coupon['min_order'] ?? 0)) {
+                    if ($coupon['discount_type'] === 'percent') {
+                        $discount_usd = ($total_price * $coupon['discount_value']) / 100.0;
+                    } else {
+                        $discount_usd = min($total_price, $coupon['discount_value']);
+                    }
+                } else {
+                    // Invalidated
+                    unset($_SESSION['coupon']);
+                }
+            }
+            $final_total_price = max(0, $total_price - $discount_usd);
+            ?>
+
+            <?php if ($discount_usd > 0): ?>
+            <div class="summary-item" style="color: #16a34a; font-weight: 600;">
+                <div class="summary-item-info">
+                    <div class="summary-item-title"><?php echo $current_region === 'VN' ? 'Giảm giá (' . $_SESSION['coupon']['code'] . ')' : 'Discount'; ?></div>
+                </div>
+                <div class="summary-item-price">-<?php echo format_price($discount_usd); ?></div>
+            </div>
+            <?php endif; ?>
+
             <div class="summary-total">
                 <span><?php echo $current_region === 'VN' ? 'TỔNG CỘNG' : 'TOTAL'; ?></span>
-                <span style="color:var(--primary-color)"><?php echo format_price($total_price); ?></span>
+                <span style="color:var(--primary-color)"><?php echo format_price($final_total_price); ?></span>
             </div>
 
             <button type="submit" form="checkout-form" class="btn btn-primary btn-checkout"><?php echo $current_region === 'VN' ? 'ĐẶT HÀNG & THANH TOÁN' : 'PLACE ORDER & PAY'; ?></button>

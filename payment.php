@@ -27,6 +27,8 @@ unset($_SESSION['momo_error']);
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <link rel="icon" type="image/png" href="favicon.png?v=2">
+    <link rel="shortcut icon" href="favicon.ico?v=2">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cổng Thanh Toán Thực Tế | PixelGear Shop</title>
@@ -177,7 +179,38 @@ unset($_SESSION['momo_error']);
     <script>
         const orderId = <?php echo $order['id']; ?>;
 
-        // Auto-polling payment status every 2.5 seconds
+        function speakPaymentSuccess(callback) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const text = "Cảm ơn quý khách đã mua hàng và thanh toán thành công!";
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'vi-VN';
+                utterance.rate = 1.0;
+                utterance.pitch = 1.0;
+                utterance.volume = 1.0;
+                
+                const voices = window.speechSynthesis.getVoices();
+                const viVoice = voices.find(v => v.lang && (v.lang.includes('vi') || v.lang.includes('VI')));
+                if (viVoice) utterance.voice = viVoice;
+                
+                let called = false;
+                const done = () => {
+                    if (!called) {
+                        called = true;
+                        if (callback) callback();
+                    }
+                };
+                
+                utterance.onend = done;
+                utterance.onerror = done;
+                window.speechSynthesis.speak(utterance);
+                setTimeout(done, 2500);
+            } else {
+                if (callback) callback();
+            }
+        }
+
+        // Auto-polling payment status every 3.5 seconds
         const pollInterval = setInterval(async () => {
             try {
                 const res = await fetch(`api/check_payment_status.php?order_id=${orderId}`);
@@ -192,14 +225,15 @@ unset($_SESSION['momo_error']);
                         banner.style.color = '#15803d';
                         banner.innerHTML = '<i class="fas fa-check-circle" style="font-size:18px;"></i> <strong>ĐÃ NHẬN THANH TOÁN THÀNH CÔNG!</strong> Đang tự động chuyển hướng...';
                     }
-                    setTimeout(() => {
+                    
+                    speakPaymentSuccess(() => {
                         window.location.href = `payment_success.php?order_id=${orderId}`;
-                    }, 1200);
+                    });
                 }
             } catch (err) {
                 console.error('Lỗi tự động kiểm tra thanh toán:', err);
             }
-        }, 2500);
+        }, 3500);
 
 
         // Card formatting

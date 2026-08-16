@@ -143,4 +143,47 @@ function format_price($price) {
         }
     }
 }
+
+$product_translations = [
+    'US' => [
+        'Áo thun Creeper Minecraft' => 'Minecraft Creeper T-Shirt',
+        'Áo thun Roblox' => 'Roblox Graphic T-Shirt',
+        'Áo Hoodie Minecraft Ender Dragon' => 'Ender Dragon Minecraft Hoodie',
+        'Balo Creeper 3D' => 'Creeper 3D Backpack',
+        'Mũ Cap Enderman' => 'Enderman Snapback Cap',
+        'Gấu Bông Steve Minecraft' => 'Steve Plush Toy',
+        'Gấu Bông Creeper' => 'Creeper Plush Toy',
+        'Kiếm Kim Cương Minecraft' => 'Diamond Sword Replica',
+        'Cốc Sứ Minecraft Block' => 'Minecraft Block Ceramic Mug',
+        'Quần Áo' => 'Clothing',
+        'Phụ Kiện' => 'Accessories',
+        'Đồ Chơi & Game' => 'Toys & Games',
+        'Áo Hoodie Minecraft Creeper Zip-Up Xanh Lá' => 'Minecraft Creeper Zip-Up Hoodie Green',
+        'Áo Thun Steve & Alex Adventure Cotton 100%' => 'Steve & Alex Adventure T-Shirt 100% Cotton',
+        'Áo Khoác Bomber Enderman Eyes Glow-In-The-Dark' => 'Enderman Eyes Glow-In-The-Dark Bomber Jacket',
+        'Bộ Cosplay Diamond Armor 3D (Áo + Nón)' => 'Diamond Armor 3D Cosplay Set',
+        'Áo Sweater Nỉ Dệt Minecraft Redstone Dust Unisex' => 'Minecraft Redstone Dust Unisex Sweater',
+        'Áo Thun Nether Portal Graphic Edition' => 'Nether Portal Graphic Edition T-Shirt',
+        'Áo Khoác Dù Minecraft Weatherproof Chống Nước' => 'Minecraft Weatherproof Windbreaker',
+        'Áo Hoodie Ender Dragon Master Edition Thêu Nổi' => 'Ender Dragon Master Edition Embroidered Hoodie'
+    ]
+];
+
+function translate_product_name($name) {
+    global $product_translations;
+    $region = get_current_region();
+    if ($region === 'US' && isset($product_translations['US'][$name])) {
+        return $product_translations['US'][$name];
+    }
+    return $name;
+}
+
+function translate_category($cat) {
+    global $product_translations;
+    $region = get_current_region();
+    if ($region === 'US' && isset($product_translations['US'][$cat])) {
+        return $product_translations['US'][$cat];
+    }
+    return $cat;
+}
 ?>

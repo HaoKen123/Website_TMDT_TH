@@ -13,6 +13,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
+    // Ensure selected items exist
+    if (!isset($_SESSION['selected_items']) || empty($_SESSION['selected_items'])) {
+        header('Location: cart.php');
+        exit;
+    }
+
     $user_id = $_SESSION['user_id'];
     $name = $_POST['name'];
     $phone = $_POST['phone'];
@@ -31,8 +37,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     $payment_status = ($payment_method === 'cod') ? 'Chưa thanh toán' : 'Chưa thanh toán';
 
-    // Calculate total
-    $ids = implode(',', array_map('intval', array_keys($_SESSION['cart'])));
+    // Calculate total from selected items only
+    $selected_keys = array_filter($_SESSION['selected_items'], function($k) { return isset($_SESSION['cart'][$k]); });
+    $ids = implode(',', array_map('intval', $selected_keys));
+    if (!$ids) {
+        header('Location: cart.php');
+        exit;
+    }
+
     $stmt = $pdo->query("SELECT * FROM products WHERE id IN ($ids)");
     $products = $stmt->fetchAll();
     
@@ -45,10 +57,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Apply Coupon Discount if exists
     $discount_amount = 0;
     if (isset($_SESSION['coupon'])) {
-        if ($_SESSION['coupon']['discount_type'] === 'percent') {
-            $discount_amount = ($subtotal_amount * $_SESSION['coupon']['discount_value']) / 100.0;
+        $coupon = $_SESSION['coupon'];
+        if ($subtotal_amount >= ($coupon['min_order'] ?? 0)) {
+            if ($coupon['discount_type'] === 'percent') {
+                $discount_amount = ($subtotal_amount * $coupon['discount_value']) / 100.0;
+            } else {
+                $discount_amount = min($subtotal_amount, $coupon['discount_value']);
+            }
         } else {
-            $discount_amount = min($subtotal_amount, $_SESSION['coupon']['discount_value']);
+            unset($_SESSION['coupon']);
         }
     }
     $total_amount = max(0, $subtotal_amount - $discount_amount);
@@ -74,9 +91,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } catch (Exception $e) {}
     }
 
-    // Clear Cart & Coupon
-    $_SESSION['cart'] = [];
+    // Clear checked items from Cart & remove Coupon
+    foreach ($_SESSION['selected_items'] as $id) {
+        unset($_SESSION['cart'][$id]);
+    }
+    unset($_SESSION['selected_items']);
     unset($_SESSION['coupon']);
+    
+    // Sync cart to DB for this user
+    sync_user_cart_save($pdo, $user_id);
     
     // Redirect based on payment method
     if ($payment_method === 'cod') {

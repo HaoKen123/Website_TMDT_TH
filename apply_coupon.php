@@ -90,6 +90,7 @@ try {
         'code' => strtoupper($coupon['code']),
         'discount_type' => $coupon['discount_type'],
         'discount_value' => $coupon['discount_value'],
+        'min_order' => $coupon['min_order'],
         'discount_usd' => $discount_usd
     ];
 

@@ -11,6 +11,8 @@ $order_id = $_GET['order_id'];
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <link rel="icon" type="image/png" href="favicon.png?v=2">
+    <link rel="shortcut icon" href="favicon.ico?v=2">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đặt hàng thành công | PixelGear</title>
@@ -31,5 +33,31 @@ $order_id = $_GET['order_id'];
             <a href="profile.php" class="btn btn-primary">XEM ĐƠN HÀNG</a>
         </div>
     </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if ('speechSynthesis' in window) {
+            const text = "Cảm ơn quý khách đã mua hàng và thanh toán thành công tại PixelGear!";
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'vi-VN';
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+            
+            const speak = () => {
+                const voices = window.speechSynthesis.getVoices();
+                const viVoice = voices.find(v => v.lang && (v.lang.includes('vi') || v.lang.includes('VI')));
+                if (viVoice) utterance.voice = viVoice;
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(utterance);
+            };
+            
+            speak();
+            if (window.speechSynthesis.onvoiceschanged !== undefined) {
+                window.speechSynthesis.onvoiceschanged = speak;
+            }
+        }
+    });
+    </script>
 </body>
 </html>

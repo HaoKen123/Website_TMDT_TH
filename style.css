@@ -1068,69 +1068,193 @@ ul {
     transform: scale(1.05);
 }
 
-.glitch-title {
-    position: relative;
-    font-family: 'Outfit', sans-serif;
-    font-size: 32px;
-    font-weight: 900;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    color: #ffffff;
-    -webkit-text-stroke: 2px #0a0a0f;
-    text-shadow: 
-        3px 3px 0 #000,
-        -1px -1px 0 #000,  
-        1px -1px 0 #000,
-        -1px 1px 0 #000,
-        1px 1px 0 #000,
-        0 0 20px rgba(34, 181, 115, 0.9);
-    animation: title-float 3s ease-in-out infinite;
-    display: inline-block;
+/* ===================== MINECRAFT PIXEL LOGO (FROM logo_standalone.html) ===================== */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Orbitron:wght@700;900&display=swap');
+
+:root {
+    --mc-green: #22c55e;
+    --mc-green-deep: #16a34a;
+    --mc-cyan: #06b6d4;
+    --mc-dark: #0b1220;
+    --mc-charge: #ff3b3b;
+    --mc-ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.glitch-title::before,
-.glitch-title::after {
+.mc-logo {
+    --px: 4.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    cursor: pointer;
+    position: relative;
+    padding: 6px 10px;
+    animation: logo-float 5s var(--mc-ease) infinite;
+    isolation: isolate;
+}
+@keyframes logo-float {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-4px); }
+}
+
+.mc-logo__icon {
+    --cols: 8;
+    display: grid;
+    grid-template-columns: repeat(var(--cols), var(--px));
+    grid-auto-rows: var(--px);
+    filter: drop-shadow(0 0 8px rgba(34,197,94,0.55));
+    transition: transform .4s var(--mc-ease), filter .4s var(--mc-ease);
+    animation: icon-bob 3.5s ease-in-out infinite;
+}
+@keyframes icon-bob {
+    0%, 100% { transform: translateY(0) rotate(0); }
+    50%      { transform: translateY(-2px) rotate(-2deg); }
+}
+.px { width: var(--px); height: var(--px); }
+.px-g { background: var(--mc-green); box-shadow: inset -1px -1px 0 rgba(0,0,0,0.25), inset 1px 1px 0 rgba(255,255,255,0.18); }
+.px-k { background: #0a0f1a; box-shadow: inset -1px -1px 0 rgba(255,255,255,0.06); transition: background .12s linear, box-shadow .12s linear; }
+.px-e { background: transparent; }
+
+.mc-logo:hover .mc-logo__icon { filter: drop-shadow(0 0 14px rgba(255,59,59,0.7)); transform: scale(1.08); }
+.mc-logo:hover .px-k {
+    background: var(--mc-charge);
+    box-shadow: 0 0 8px var(--mc-charge), inset -1px -1px 0 rgba(0,0,0,0.3);
+}
+
+.mc-logo__text {
+    position: relative;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 20px;
+    line-height: 1.1;
+    letter-spacing: 1.5px;
+    color: transparent;
+    background: linear-gradient(90deg, var(--mc-green) 0%, var(--mc-cyan) 50%, var(--mc-green) 100%);
+    background-size: 220% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    text-shadow: 0 0 12px rgba(34,197,94,0.35);
+    animation: shimmer 4s linear infinite;
+}
+@keyframes shimmer {
+    from { background-position: 220% 0; }
+    to   { background-position: -220% 0; }
+}
+
+.mc-logo__text::before,
+.mc-logo__text::after {
     content: attr(data-text);
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: transparent;
-    color: #fff;
+    inset: 0;
+    background: inherit;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    clip-path: inset(0 0 100% 0);
+    opacity: 0;
+}
+.mc-logo__text::before { text-shadow: -2px 0 #ff00c1; }
+.mc-logo__text::after  { text-shadow:  2px 0 var(--mc-cyan); }
+
+.mc-logo:hover .mc-logo__text { animation: shimmer 4s linear infinite, glitch-skew .4s steps(2) infinite; }
+.mc-logo:hover .mc-logo__text::before { opacity: .9; animation: glitch-top 1.1s steps(8) infinite; }
+.mc-logo:hover .mc-logo__text::after  { opacity: .9; animation: glitch-bot 1.3s steps(8) infinite; }
+
+@keyframes glitch-skew {
+    0%,100% { transform: skewX(0); }
+    50%     { transform: skewX(-4deg); }
+}
+@keyframes glitch-top {
+    0%,100% { clip-path: inset(0 0 78% 0); transform: translateX(-2px); }
+    20% { clip-path: inset(10% 0 55% 0); transform: translateX(2px); }
+    40% { clip-path: inset(35% 0 40% 0); transform: translateX(-1px); }
+    60% { clip-path: inset(5% 0 70% 0);  transform: translateX(3px); }
+    80% { clip-path: inset(50% 0 20% 0); transform: translateX(-2px); }
+}
+@keyframes glitch-bot {
+    0%,100% { clip-path: inset(72% 0 0 0); transform: translateX(2px); }
+    20% { clip-path: inset(55% 0 10% 0); transform: translateX(-2px); }
+    40% { clip-path: inset(40% 0 35% 0); transform: translateX(1px); }
+    60% { clip-path: inset(70% 0 5% 0);  transform: translateX(-3px); }
+    80% { clip-path: inset(20% 0 55% 0); transform: translateX(2px); }
 }
 
-.glitch-title::before {
-    left: 2px;
-    text-shadow: -1px 0 #ff00c1;
-    clip-path: inset(0 0 95% 0);
-    animation: glitch-anim-1 2s infinite;
+.frag {
+    position: fixed;
+    width: 6px; height: 6px;
+    pointer-events: none;
+    z-index: 9999;
+    will-change: transform, opacity;
 }
 
-.glitch-title::after {
-    left: -2px;
-    text-shadow: -1px 0 #00fff9;
-    clip-path: inset(0 0 5% 0);
-    animation: glitch-anim-2 2s infinite;
+.glitch-title {
+    position: relative;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 20px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: transparent;
+    background: linear-gradient(90deg, #22c55e 0%, #06b6d4 50%, #22c55e 100%);
+    background-size: 220% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    display: inline-block;
+    animation: shimmer 4s linear infinite;
 }
 
-@keyframes title-float {
-    0%, 100% { transform: translateY(0); }
-    50%       { transform: translateY(-3px); }
-}
-
-@keyframes glitch-anim-1 {
-    0%,  100% { clip-path: inset(40% 0 60% 0); }
-    20%        { clip-path: inset(90% 0  1% 0); }
-    40%        { clip-path: inset(10% 0 70% 0); }
-    60%        { clip-path: inset(30% 0 40% 0); }
-    80%        { clip-path: inset(60% 0 20% 0); }
-}
-
-@keyframes glitch-anim-2 {
-    0%,  100% { clip-path: inset(10% 0 30% 0); }
-    20%        { clip-path: inset(70% 0 10% 0); }
-    40%        { clip-path: inset(20% 0 60% 0); }
-    60%        { clip-path: inset(80% 0  5% 0); }
-    80%        { clip-path: inset(30% 0 40% 0); }
+/* ==========================================
+   MOBILE RESPONSIVE STYLES (< 768px)
+   ========================================== */
+@media (max-width: 768px) {
+    .header-content {
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 10px 15px;
+    }
+    .logo {
+        margin-right: 0;
+    }
+    .glitch-title {
+        font-size: 22px;
+    }
+    .nav-links {
+        overflow-x: auto;
+        white-space: nowrap;
+        width: 100%;
+        padding-bottom: 5px;
+        justify-content: flex-start;
+    }
+    .search-box {
+        width: 100%;
+        order: 3;
+        margin-top: 5px;
+    }
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+    }
+    .product-card {
+        padding: 8px;
+    }
+    .product-card h3 {
+        font-size: 13px;
+        line-height: 1.3;
+    }
+    .cart-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+    .cart-container {
+        padding: 0 10px;
+    }
+    .payment-container {
+        padding: 0 10px;
+        margin: 15px auto;
+    }
+    .payment-card {
+        padding: 20px 15px;
+    }
+    .hero-title {
+        font-size: 24px !important;
+    }
 }

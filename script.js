@@ -331,4 +331,59 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    // =========================================================
+    // Auto-initialize Minecraft Pixel Logo (from logo_standalone.html)
+    // =========================================================
+    const FACE = [
+        "..GGGG..",
+        ".GGGGGG.",
+        ".KKGGKK.",
+        ".KKGGKK.",
+        "GGGGGGGG",
+        "GGKKKKGG",
+        "GGKKKKGG",
+        ".GGGGGG."
+    ];
+    
+    document.querySelectorAll('.mc-logo__icon').forEach(icon => {
+        if (icon.children.length === 0) {
+            FACE.forEach(row => {
+                [...row].forEach(ch => {
+                    const p = document.createElement('i');
+                    p.className = 'px ' + (ch === 'G' ? 'px-g' : ch === 'K' ? 'px-k' : 'px-e');
+                    icon.appendChild(p);
+                });
+            });
+        }
+    });
+
+    // Block-break particle burst on hover
+    const COLORS = ['#22c55e', '#06b6d4', '#16a34a', '#f9fafb', '#ff3b3b'];
+    document.querySelectorAll('.mc-logo').forEach(logo => {
+        logo.addEventListener('mouseenter', () => {
+            const r = logo.getBoundingClientRect();
+            const cx = r.left + r.width * 0.22;
+            const cy = r.top + r.height * 0.5;
+            for (let i = 0; i < 22; i++) {
+                const f = document.createElement('div');
+                f.className = 'frag';
+                f.style.background = COLORS[i % COLORS.length];
+                f.style.left = cx + 'px';
+                f.style.top = cy + 'px';
+                f.style.boxShadow = '0 0 6px ' + f.style.background;
+                document.body.appendChild(f);
+                const ang = Math.random() * Math.PI * 2;
+                const dist = 30 + Math.random() * 60;
+                const dx = Math.cos(ang) * dist;
+                const dy = Math.sin(ang) * dist * 0.6 - 20;
+                const rot = (Math.random() * 360) | 0;
+                f.animate([
+                    { transform: 'translate(0,0) rotate(0)', opacity: 1 },
+                    { transform: `translate(${dx}px, ${dy + 40}px) rotate(${rot}deg)`, opacity: 0 }
+                ], { duration: 600 + Math.random() * 300, easing: 'cubic-bezier(0.16,1,0.3,1)' })
+                .onfinish = () => f.remove();
+            }
+        });
+    });
 });

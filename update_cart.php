@@ -58,6 +58,11 @@ if ($action === 'increase') {
     }
 }
 
+// Sync with DB if logged in
+if (isset($_SESSION['user_id'])) {
+    sync_user_cart_save($pdo, $_SESSION['user_id']);
+}
+
 // Calculate totals
 $cart_count = 0;
 $total_price = 0;

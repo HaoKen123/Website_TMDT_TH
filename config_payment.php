@@ -12,6 +12,7 @@ define('MOMO_ENDPOINT', 'https://test-payment.momo.vn/v2/gateway/api/create'); /
 define('VIETQR_BANK_ID', 'VCB');             // Mã ngân hàng Vietcombank
 define('VIETQR_ACCOUNT_NO', 'SBSEPAY0HYNZEHCXONI'); // Số tài khoản ngân hàng (VA) SePay
 define('VIETQR_ACCOUNT_NAME', 'HO NHAT HAO'); // Tên chủ tài khoản ngân hàng
-define('SEPAY_API_KEY', '9D0LTOE7KAJ7RRWNYUPZKTX63BQAVEHBSXGNP1MAKDD4RM5JLV8FLFWYULO2MSFW'); // API Key xác thực Webhook SePay
+define('SEPAY_API_KEY', '9D0LTOE7KAJ7RRWNYUPZKTX63BQAVEHBSXGNP1MAKDD4RM5JLV8FLFWYULO2MSFW'); // API Key xác thực Webhook
+define('SEPAY_API_TOKEN', 'YOUR_SEPAY_API_TOKEN_HERE'); // API Token để gọi PULL API (Tích hợp API)
 define('USD_TO_VND_RATE', 25400);            // Tỷ giá quy đổi USD sang VND
 ?>

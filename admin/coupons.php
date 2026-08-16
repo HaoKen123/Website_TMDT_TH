@@ -49,6 +49,8 @@ $subscribers = $pdo->query("SELECT * FROM subscribers ORDER BY id DESC")->fetchA
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <link rel="icon" type="image/png" href="../favicon.png?v=2">
+    <link rel="shortcut icon" href="../favicon.ico?v=2">
     <meta charset="UTF-8">
     <title>Quản Lý Mã Giảm Giá & Email Nhận Tin - Admin PixelGear</title>
     <link rel="stylesheet" href="style.css">

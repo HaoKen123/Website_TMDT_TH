@@ -18,6 +18,8 @@ $recent_orders = $pdo->query("SELECT * FROM orders ORDER BY created_at DESC LIMI
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <link rel="icon" type="image/png" href="../favicon.png?v=2">
+    <link rel="shortcut icon" href="../favicon.ico?v=2">
     <meta charset="UTF-8">
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="style.css">

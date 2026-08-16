@@ -28,6 +28,8 @@ $items = $stmtItems->fetchAll();
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <link rel="icon" type="image/png" href="../favicon.png?v=2">
+    <link rel="shortcut icon" href="../favicon.ico?v=2">
     <meta charset="UTF-8">
     <title>Hóa Đơn Bán Hàng #<?php echo $order['id']; ?> | PixelGear</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">

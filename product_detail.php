@@ -87,6 +87,8 @@ if (isset($_SESSION['cart'])) {
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <link rel="icon" type="image/png" href="favicon.png?v=2">
+    <link rel="shortcut icon" href="favicon.ico?v=2">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($product['name']); ?> | PixelGear</title>
@@ -275,8 +277,9 @@ if (isset($_SESSION['cart'])) {
     <header class="site-header">
         <div class="header-container">
             <div class="logo">
-                <a href="index.php" class="logo-link">
-                    <span class="glitch-title" data-text="PIXELGEAR">PIXELGEAR</span>
+                <a href="index.php" class="mc-logo">
+                    <span class="mc-logo__icon" aria-hidden="true"></span>
+                    <span class="mc-logo__text" data-text="PIXELGEAR">PIXELGEAR</span>
                 </a>
             </div>
             <nav class="main-nav">
@@ -305,12 +308,12 @@ if (isset($_SESSION['cart'])) {
                     echo $cats[$product['category']] ?? $product['category'];
                 ?>
             </a> / 
-            <span><?php echo htmlspecialchars($product['name']); ?></span>
+            <span><?php echo htmlspecialchars(translate_product_name($product['name'])); ?></span>
         </div>
 
         <div class="product-detail-grid">
             <div class="product-detail-media">
-                <img src="<?php echo htmlspecialchars($product['image_url']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="product-detail-img">
+                <img src="<?php echo htmlspecialchars($product['image_url']); ?>" alt="<?php echo htmlspecialchars(translate_product_name($product['name'])); ?>" class="product-detail-img">
             </div>
 
             <div class="product-detail-info">
@@ -320,7 +323,7 @@ if (isset($_SESSION['cart'])) {
                     </span>
                 <?php endif; ?>
 
-                <h1 class="detail-title"><?php echo htmlspecialchars($product['name']); ?></h1>
+                <h1 class="detail-title"><?php echo htmlspecialchars(translate_product_name($product['name'])); ?></h1>
 
                 <div class="rating-summary">
                     <?php 

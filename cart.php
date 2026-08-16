@@ -29,6 +29,8 @@ $current_region = get_current_region();
 <!DOCTYPE html>
 <html lang="<?php echo strtolower($current_region); ?>">
 <head>
+    <link rel="icon" type="image/png" href="favicon.png?v=2">
+    <link rel="shortcut icon" href="favicon.ico?v=2">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Giỏ Hàng | PixelGear Shop</title>
@@ -83,8 +85,9 @@ $current_region = get_current_region();
     <header class="site-header">
         <div class="header-container">
             <div class="logo">
-                <a href="index.php" class="logo-link">
-                    <span class="glitch-title" data-text="PIXELGEAR">PIXELGEAR</span>
+                <a href="index.php" class="mc-logo">
+                    <span class="mc-logo__icon" aria-hidden="true"></span>
+                    <span class="mc-logo__text" data-text="PIXELGEAR">PIXELGEAR</span>
                 </a>
             </div>
             <div class="header-icons">
@@ -129,10 +132,11 @@ $current_region = get_current_region();
             </div>
         <?php else: ?>
             <div id="cartContent">
+                <form id="cartForm" action="checkout.php" method="POST">
                 <table class="cart-table">
                     <thead>
                         <tr>
-                            <th><?php echo $current_region === 'VN' ? 'Sản phẩm' : 'Product'; ?></th>
+                            <th><input type="checkbox" id="selectAll" checked onclick="toggleAll(this)" style="margin-right:8px; transform:scale(1.2);"> <?php echo $current_region === 'VN' ? 'Sản phẩm' : 'Product'; ?></th>
                             <th><?php echo $current_region === 'VN' ? 'Giá' : 'Price'; ?></th>
                             <th><?php echo $current_region === 'VN' ? 'Số lượng' : 'Quantity'; ?></th>
                             <th><?php echo $current_region === 'VN' ? 'Tổng' : 'Subtotal'; ?></th>
@@ -143,6 +147,7 @@ $current_region = get_current_region();
                         <?php foreach ($cart_items as $item): ?>
                         <tr id="cart-row-<?php echo $item['id']; ?>">
                             <td style="display: flex; align-items: center; gap: 15px;">
+                                <input type="checkbox" class="item-checkbox" name="selected_items[]" value="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-qty="<?php echo $item['quantity']; ?>" checked onchange="calcSelectedTotal()" style="transform:scale(1.2);">
                                 <a href="product_detail.php?id=<?php echo $item['id']; ?>">
                                     <img src="<?php echo htmlspecialchars($item['image_url']); ?>" class="cart-item-img" alt="<?php echo htmlspecialchars($item['name']); ?>">
                                 </a>
@@ -155,14 +160,14 @@ $current_region = get_current_region();
                             <td><?php echo format_price($item['price']); ?></td>
                             <td>
                                 <div class="quantity-control">
-                                    <button class="quantity-btn" onclick="updateQty(<?php echo $item['id']; ?>, 'decrease')">-</button>
+                                    <button type="button" class="quantity-btn" onclick="updateQty(<?php echo $item['id']; ?>, 'decrease')">-</button>
                                     <input type="number" class="quantity-input" id="qty-input-<?php echo $item['id']; ?>" value="<?php echo $item['quantity']; ?>" min="1" onchange="updateQty(<?php echo $item['id']; ?>, 'set', this.value)">
-                                    <button class="quantity-btn" onclick="updateQty(<?php echo $item['id']; ?>, 'increase')">+</button>
+                                    <button type="button" class="quantity-btn" onclick="updateQty(<?php echo $item['id']; ?>, 'increase')">+</button>
                                 </div>
                             </td>
                             <td><span id="subtotal-<?php echo $item['id']; ?>"><?php echo format_price($item['subtotal']); ?></span></td>
                             <td>
-                                <button class="remove-btn" onclick="removeItem(<?php echo $item['id']; ?>)"><i class="fas fa-trash"></i> <?php echo $current_region === 'VN' ? 'Xóa' : 'Remove'; ?></button>
+                                <button type="button" class="remove-btn" onclick="removeItem(<?php echo $item['id']; ?>)"><i class="fas fa-trash"></i> <?php echo $current_region === 'VN' ? 'Xóa' : 'Remove'; ?></button>
                             </td>
                         </tr>
                         <?php endforeach; ?>
@@ -215,8 +220,9 @@ $final_total_price = max(0, $total_price - $discount_usd);
                         <span id="cart-total"><?php echo format_price($final_total_price); ?></span>
                     </div>
 
-                    <a href="checkout.php" class="btn btn-primary" style="width: 100%; text-align: center; margin-top: 15px;"><?php echo $current_region === 'VN' ? 'TIẾN HÀNH THANH TOÁN' : 'PROCEED TO CHECKOUT'; ?></a>
+                    <button type="submit" id="btnProceedCheckout" class="btn btn-primary" style="width: 100%; text-align: center; margin-top: 15px; font-size: 16px;"><?php echo $current_region === 'VN' ? 'TIẾN HÀNH THANH TOÁN' : 'PROCEED TO CHECKOUT'; ?></button>
                 </div>
+                </form>
             </div>
         <?php endif; ?>
     </div>
@@ -229,6 +235,90 @@ $final_total_price = max(0, $total_price - $discount_usd);
     </footer>
 
     <script>
+    const currentRegion = '<?php echo $current_region; ?>';
+    const exchangeRate = <?php echo defined('EXCHANGE_RATE_VND') ? EXCHANGE_RATE_VND : 25400; ?>;
+
+    const discountType = '<?php echo isset($_SESSION["coupon"]) ? $_SESSION["coupon"]["discount_type"] : ""; ?>';
+    const discountValue = parseFloat('<?php echo isset($_SESSION["coupon"]) ? $_SESSION["coupon"]["discount_value"] : "0"; ?>');
+    const couponMinOrder = parseFloat('<?php echo isset($_SESSION["coupon"]) ? $_SESSION["coupon"]["min_order"] : "0"; ?>');
+
+    function saveSelectedState() {
+        const checkedIds = [];
+        document.querySelectorAll('.item-checkbox').forEach(cb => {
+            if (cb.checked) checkedIds.push(cb.value);
+        });
+        sessionStorage.setItem('selected_cart_items', JSON.stringify(checkedIds));
+    }
+
+    function restoreSelectedState() {
+        const saved = sessionStorage.getItem('selected_cart_items');
+        if (saved) {
+            try {
+                const checkedIds = JSON.parse(saved);
+                document.querySelectorAll('.item-checkbox').forEach(cb => {
+                    cb.checked = checkedIds.includes(cb.value);
+                });
+            } catch (e) {}
+        }
+    }
+
+    function toggleAll(source) {
+        const checkboxes = document.querySelectorAll('.item-checkbox');
+        for(let i=0; i<checkboxes.length; i++) {
+            checkboxes[i].checked = source.checked;
+        }
+        saveSelectedState();
+        calcSelectedTotal();
+    }
+
+    function calcSelectedTotal() {
+        saveSelectedState();
+        let selectedTotal = 0;
+        let anyChecked = false;
+        const checkboxes = document.querySelectorAll('.item-checkbox');
+        checkboxes.forEach(cb => {
+            if(cb.checked) {
+                anyChecked = true;
+                selectedTotal += parseFloat(cb.getAttribute('data-price')) * parseInt(cb.getAttribute('data-qty'));
+            }
+        });
+        
+        let discount = 0;
+        if (selectedTotal >= couponMinOrder) {
+            if (discountType === 'percent') {
+                discount = (selectedTotal * discountValue) / 100;
+            } else if (discountType === 'fixed') {
+                discount = Math.min(selectedTotal, discountValue);
+            }
+        } else {
+            if (discountType !== '') {
+                const msgEl = document.getElementById('couponMsg');
+                if (msgEl) {
+                    msgEl.style.color = '#dc2626';
+                    msgEl.textContent = '⚠️ Đơn hàng chưa đạt mức tối thiểu của mã giảm giá.';
+                }
+            }
+        }
+        
+        const finalTotal = Math.max(0, selectedTotal - discount);
+        
+        let displayTotal = finalTotal;
+        if (currentRegion === 'VN') {
+            displayTotal = Math.round(finalTotal * exchangeRate);
+            document.getElementById('cart-total').innerHTML = displayTotal.toLocaleString('vi-VN') + ' ₫';
+        } else {
+            document.getElementById('cart-total').innerHTML = '$' + displayTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+        
+        const btn = document.getElementById('btnProceedCheckout');
+        if(!anyChecked) {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+        } else {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+        }
+    }
     async function handleApplyCoupon() {
         const input = document.getElementById('couponInput');
         const msgEl = document.getElementById('couponMsg');
@@ -266,7 +356,7 @@ $final_total_price = max(0, $total_price - $discount_usd);
     async function updateQty(id, action, value = null) {
         let payload = { id: id, action: action };
         if (action === 'set') {
-            payload.quantity = parseInt(value) || 1;
+            payload.quantity = (value !== null && value !== '' && !isNaN(value)) ? parseInt(value) : 0;
         }
 
         try {
@@ -279,19 +369,35 @@ $final_total_price = max(0, $total_price - $discount_usd);
 
             if (data.success) {
                 // Update badge count
-                document.querySelector('.cart-count').textContent = data.cart_count;
+                const countBadge = document.querySelector('.cart-count');
+                if (countBadge) countBadge.textContent = data.cart_count;
 
                 if (data.item_qty <= 0) {
                     const row = document.getElementById('cart-row-' + id);
                     if (row) row.remove();
+                    
+                    // Remove from sessionStorage
+                    const saved = sessionStorage.getItem('selected_cart_items');
+                    if (saved) {
+                        try {
+                            let checkedIds = JSON.parse(saved);
+                            checkedIds = checkedIds.filter(x => String(x) !== String(id));
+                            sessionStorage.setItem('selected_cart_items', JSON.stringify(checkedIds));
+                        } catch(e) {}
+                    }
+                    calcSelectedTotal();
                 } else {
                     const input = document.getElementById('qty-input-' + id);
                     if (input) input.value = data.item_qty;
                     const subtotalEl = document.getElementById('subtotal-' + id);
                     if (subtotalEl) subtotalEl.textContent = data.item_subtotal;
+                    
+                    const cb = document.querySelector('.item-checkbox[value="'+id+'"]');
+                    if (cb) {
+                        cb.setAttribute('data-qty', data.item_qty);
+                        calcSelectedTotal();
+                    }
                 }
-
-                document.getElementById('cart-total').textContent = data.total_price;
 
                 if (data.cart_count === 0) {
                     location.reload();
@@ -307,6 +413,11 @@ $final_total_price = max(0, $total_price - $discount_usd);
             await updateQty(id, 'set', 0);
         }
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        restoreSelectedState();
+        calcSelectedTotal();
+    });
     </script>
 </body>
 </html>

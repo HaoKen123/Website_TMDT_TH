@@ -14,6 +14,15 @@ try {
     $products = $stmt->fetchAll();
 }
 
+// Fetch personalized / recommended products for Homepage
+try {
+    $stmtRec = $pdo->prepare("SELECT * FROM products WHERE (status = 1 OR status IS NULL) ORDER BY RAND() LIMIT 8");
+    $stmtRec->execute();
+    $recommended_products = $stmtRec->fetchAll();
+} catch (Exception $e) {
+    $recommended_products = $products;
+}
+
 // Cart count
 $cart_count = 0;
 if (isset($_SESSION['cart'])) {
@@ -32,7 +41,7 @@ $current_region = get_current_region();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo __('SITE_TITLE'); ?></title>
     <link rel="stylesheet" href="style.css?v=<?php echo time(); ?>">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .search-container {
@@ -64,6 +73,27 @@ $current_region = get_current_region();
         }
         .search-container button:hover {
             color: #f59e0b;
+        }
+        .rec-tab-btn {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .rec-tab-btn:hover {
+            background: #f1f5f9;
+            border-color: #94a3b8;
+        }
+        .rec-tab-btn.active {
+            background: var(--primary-color, #15803d);
+            color: #ffffff;
+            border-color: var(--primary-color, #15803d);
+            box-shadow: 0 4px 10px rgba(21,128,61,0.25);
         }
     </style>
 </head>
@@ -197,6 +227,58 @@ $current_region = get_current_region();
         </div>
     </section>
 
+    <!-- Personalized Recommendation Section -->
+    <section class="recommended-section" style="padding: 60px 0; background: #f8fafc; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+        <div class="container">
+            <div style="text-align: center; margin-bottom: 35px;">
+                <div style="display: inline-block; background: #dcfce7; color: #166534; font-weight: 700; font-size: 12px; padding: 4px 14px; border-radius: 20px; text-transform: uppercase; margin-bottom: 10px; border: 1px solid #bbf7d0;">
+                    <i class="fas fa-sparkles"></i> AI Personalized Suggestions
+                </div>
+                <h2 class="section-title" style="margin-bottom: 10px;">✨ GỢI Ý DÀNH RIÊNG CHO BẠN</h2>
+                <p style="color: #64748b; font-size: 14px;">Khám phá các sản phẩm Minecraft được đề xuất dựa trên xu hướng và sở thích của bạn</p>
+            </div>
+
+            <!-- Recommendation Filter Tabs -->
+            <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; flex-wrap: wrap;" id="recFilterTabs">
+                <button type="button" class="rec-tab-btn active" onclick="filterRecProducts('all', this)">🔥 Tất Cả Gợi Ý</button>
+                <button type="button" class="rec-tab-btn" onclick="filterRecProducts('clothing', this)">👕 Quần Áo</button>
+                <button type="button" class="rec-tab-btn" onclick="filterRecProducts('accessories', this)">🎒 Phụ Kiện</button>
+                <button type="button" class="rec-tab-btn" onclick="filterRecProducts('toys', this)">🧸 Đồ Chơi & Game</button>
+            </div>
+
+            <div class="product-grid" id="recProductGrid">
+                <?php foreach ($recommended_products as $rec): ?>
+                <div class="product-card rec-card" data-cat="<?php echo htmlspecialchars($rec['category']); ?>">
+                    <div class="product-image">
+                        <a href="product_detail.php?id=<?php echo $rec['id']; ?>">
+                            <img src="<?php echo htmlspecialchars($rec['image_url']); ?>" alt="<?php echo htmlspecialchars($rec['name']); ?>">
+                        </a>
+                        <?php if ($rec['badge']): ?>
+                            <div class="product-badge <?php echo $rec['badge'] === 'Giảm giá' ? 'sale' : ''; ?>">
+                                <?php echo htmlspecialchars($rec['badge']); ?>
+                            </div>
+                        <?php endif; ?>
+                        <button class="btn-quick-view" data-id="<?php echo $rec['id']; ?>"><?php echo __('QUICK_VIEW'); ?></button>
+                    </div>
+                    <div class="product-info">
+                        <h3>
+                            <a href="product_detail.php?id=<?php echo $rec['id']; ?>">
+                                <?php echo htmlspecialchars(translate_product_name($rec['name'])); ?>
+                            </a>
+                        </h3>
+                        <p class="price">
+                            <?php if ($rec['old_price']): ?>
+                                <span class="old-price"><?php echo format_price($rec['old_price']); ?></span>
+                            <?php endif; ?>
+                            <?php echo format_price($rec['price']); ?>
+                        </p>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </section>
+
     <!-- Quick View Modal Popup -->
     <div id="quickViewModal" class="quick-view-modal">
         <div class="modal-overlay"></div>
@@ -291,6 +373,21 @@ $current_region = get_current_region();
 
     <script src="script.js?v=<?php echo time(); ?>"></script>
     <script>
+    function filterRecProducts(category, btn) {
+        document.querySelectorAll('#recFilterTabs .rec-tab-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        
+        const cards = document.querySelectorAll('#recProductGrid .rec-card');
+        cards.forEach(card => {
+            const cardCat = card.getAttribute('data-cat') || '';
+            if (category === 'all' || cardCat.toLowerCase() === category.toLowerCase()) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
     async function handleNewsletterSubmit(e, form) {
         if (e) e.preventDefault();
         

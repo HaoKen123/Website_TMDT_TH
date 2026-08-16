@@ -38,23 +38,21 @@ try {
             'role' => 'customer',
             'status' => 1
         ];
+
+        // 2. Gửi Email chào mừng & Tặng voucher cho người dùng đăng nhập Google LẦN ĐẦU TIÊN
+        try {
+            send_voucher_email($email, $fullname);
+            $_SESSION['custom_notice'] = "🎉 Chào mừng bạn gia nhập PixelGear! Bộ đôi Voucher 15% & FREESHIP đã được gửi tới Email " . $email . " của bạn!";
+            
+            // Lưu vào danh sách subscribers
+            $stmtSubIns = $pdo->prepare("INSERT INTO subscribers (email, voucher_sent) VALUES (?, 'WELCOME15') ON DUPLICATE KEY UPDATE voucher_sent='WELCOME15'");
+            $stmtSubIns->execute([$email]);
+        } catch (Exception $ex) {}
     }
 
     if (isset($user['status']) && (int)$user['status'] === 0) {
         echo json_encode(['success' => false, 'message' => 'Tài khoản của bạn đã bị khóa bởi Quản trị viên!']);
         exit;
-    }
-
-    // 2. Automatically send Voucher Email for Google registration (first-time only) & add to subscribers
-    $stmtSub = $pdo->prepare("SELECT id FROM subscribers WHERE email = ?");
-    $stmtSub->execute([$email]);
-    $subExists = $stmtSub->fetch();
-
-    if (!$subExists) {
-        $stmtSubIns = $pdo->prepare("INSERT INTO subscribers (email, voucher_sent) VALUES (?, 'WELCOME15')");
-        $stmtSubIns->execute([$email]);
-        send_voucher_email($email, $fullname);
-        $_SESSION['custom_notice'] = "🎉 Đăng nhập Google thành công! Bộ đôi Voucher 15% & FREESHIP đã được gửi tới Email " . $email . " của bạn!";
     }
 
     $_SESSION['user_id'] = $user['id'];

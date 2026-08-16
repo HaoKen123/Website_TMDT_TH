@@ -84,12 +84,27 @@ $current_region = get_current_region();
     <!-- Header -->
     <header class="site-header">
         <div class="header-container">
+            <div class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </div>
+            
             <div class="logo">
                 <a href="index.php" class="mc-logo">
                     <span class="mc-logo__icon" aria-hidden="true"></span>
                     <span class="mc-logo__text" data-text="PIXELGEAR">PIXELGEAR</span>
                 </a>
             </div>
+
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="index.php"><?php echo __('NAV_HOME'); ?></a></li>
+                    <li><a href="products.php"><?php echo __('NAV_ALL'); ?></a></li>
+                    <li><a href="products.php?category=clothing"><?php echo __('NAV_CLOTHING'); ?></a></li>
+                    <li><a href="products.php?category=accessories"><?php echo __('NAV_ACCESSORIES'); ?></a></li>
+                    <li><a href="products.php?category=toys"><?php echo __('NAV_TOYS'); ?></a></li>
+                </ul>
+            </nav>
+
             <div class="header-icons">
                 <!-- Region Switcher -->
                 <div class="region-switcher-container">
@@ -111,8 +126,18 @@ $current_region = get_current_region();
                     </div>
                 </div>
 
-                <a href="index.php" style="font-size: 14px; font-weight: 600; color: #fff; text-decoration: none;"><?php echo __('NAV_HOME'); ?></a>
-                <a href="cart.php" class="cart-icon">
+                <form action="products.php" method="GET" class="search-container">
+                    <input type="text" name="search" placeholder="<?php echo __('SEARCH_PLACEHOLDER'); ?>">
+                    <button type="submit"><i class="fas fa-search"></i></button>
+                </form>
+
+                <?php if(isset($_SESSION['user_id'])): ?>
+                    <a href="profile.php" title="<?php echo __('PROFILE'); ?>" style="font-size: 14px; font-weight: 600;"><i class="fas fa-user-circle"></i> <?php echo explode(' ', trim($_SESSION['user_name']))[0]; ?></a>
+                <?php else: ?>
+                    <a href="login.php" title="<?php echo __('LOGIN'); ?>"><i class="fas fa-user"></i></a>
+                <?php endif; ?>
+
+                <a href="cart.php" class="cart-icon" title="<?php echo __('CART'); ?>">
                     <i class="fas fa-shopping-cart"></i>
                     <span class="cart-count"><?php echo $cart_count; ?></span>
                 </a>

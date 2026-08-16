@@ -14,6 +14,8 @@ if (!$product) {
     exit;
 }
 
+$current_region = get_current_region();
+
 // Xử lý gửi bình luận & đánh giá
 $comment_msg = '';
 $comment_error = '';
@@ -51,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// Lấy danh sách bình luận đã duyệt (Tự động tạo bảng nếu thiếu)
+// Lấy danh sách bình luận đã duyệt
 $comments_list = [];
 try {
     $stmtComments = $pdo->prepare("SELECT * FROM comments WHERE product_id = ? AND status = 'approved' ORDER BY id DESC");
@@ -65,7 +67,7 @@ try {
         user_name VARCHAR(255) NOT NULL,
         rating INT DEFAULT 5,
         comment TEXT NOT NULL,
-        status ENUM('pending', 'approved', 'rejected') DEFAULT 'approved',
+        status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         INDEX (product_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
@@ -96,43 +98,54 @@ if (isset($_SESSION['cart'])) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="<?php echo strtolower($current_region); ?>">
 <head>
     <link rel="icon" type="image/png" href="favicon.png?v=2">
     <link rel="shortcut icon" href="favicon.ico?v=2">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo htmlspecialchars($product['name']); ?> | PixelGear</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <title><?php echo htmlspecialchars(translate_product_name($product['name'])); ?> | PixelGear Store</title>
+    <link rel="stylesheet" href="style.css?v=<?php echo time(); ?>">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .product-detail-container {
             max-width: 1200px;
-            margin: 40px auto;
+            margin: 30px auto 60px auto;
             padding: 0 20px;
         }
         .breadcrumb {
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             font-size: 14px;
-            color: #666;
+            color: #64748b;
         }
-        .breadcrumb a { color: var(--primary-color); font-weight: 600; }
+        .breadcrumb a { color: var(--primary-color, #15803d); font-weight: 600; text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+
         .product-detail-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 50px;
+            grid-template-columns: 480px 1fr;
+            gap: 40px;
             background: #fff;
-            padding: 30px;
+            padding: 35px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+        .product-detail-media {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8fafc;
             border-radius: 8px;
-            border: 1px solid var(--border-color);
+            padding: 20px;
+            border: 1px solid #e2e8f0;
         }
         .product-detail-img {
             width: 100%;
-            border-radius: 8px;
-            object-fit: cover;
-            border: 1px solid var(--border-color);
-            max-height: 500px;
+            max-height: 420px;
+            object-fit: contain;
+            border-radius: 6px;
         }
         .product-detail-info {
             display: flex;
@@ -140,139 +153,164 @@ if (isset($_SESSION['cart'])) {
         }
         .detail-badge {
             align-self: flex-start;
-            background-color: #ff9800;
+            background-color: #f59e0b;
             color: white;
             padding: 4px 12px;
             border-radius: 4px;
             font-size: 13px;
             font-weight: 700;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
-        .detail-badge.sale { background-color: var(--sale-color); }
+        .detail-badge.sale { background-color: #ef4444; }
         .detail-title {
-            font-size: 32px;
+            font-size: 26px;
             font-weight: 700;
             margin-bottom: 10px;
-            color: var(--text-color-dark);
+            color: #0f172a;
+            line-height: 1.3;
         }
         .rating-summary {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             margin-bottom: 15px;
             font-size: 15px;
             color: #fbbf24;
         }
         .detail-price {
             font-size: 28px;
-            font-weight: 700;
-            color: var(--primary-color);
-            margin-bottom: 20px;
+            font-weight: 800;
+            color: var(--primary-color, #15803d);
+            margin-bottom: 15px;
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
         }
         .detail-old-price {
-            font-size: 20px;
-            color: #999;
+            font-size: 18px;
+            color: #94a3b8;
             text-decoration: line-through;
             font-weight: 400;
         }
-        .detail-description {
-            font-size: 16px;
-            color: #555;
-            line-height: 1.8;
-            margin-bottom: 20px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--border-color);
-        }
         .stock-badge {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
             padding: 6px 12px;
-            background: #e0f2fe;
-            color: #0369a1;
+            background: #f0fdf4;
+            color: #166534;
             font-weight: 700;
             font-size: 13px;
             border-radius: 6px;
             margin-bottom: 20px;
+            align-self: flex-start;
+            border: 1px solid #bbf7d0;
+        }
+        .detail-description {
+            font-size: 15px;
+            color: #475569;
+            line-height: 1.7;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e2e8f0;
         }
         .purchase-action {
             display: flex;
-            gap: 20px;
+            gap: 15px;
             align-items: center;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
         .quantity-control-lg {
             display: inline-flex;
             align-items: center;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
             overflow: hidden;
+            background: #fff;
         }
         .quantity-control-lg button {
-            width: 40px;
+            width: 42px;
             height: 44px;
-            background: #f5f5f5;
+            background: #f1f5f9;
             border: none;
             font-size: 18px;
             font-weight: 700;
             cursor: pointer;
+            color: #334155;
+            transition: background 0.2s;
         }
+        .quantity-control-lg button:hover { background: #e2e8f0; }
         .quantity-control-lg input {
-            width: 60px;
+            width: 55px;
             height: 44px;
             border: none;
             text-align: center;
             font-size: 16px;
             font-weight: 700;
             outline: none;
+            color: #0f172a;
         }
         .btn-add-detail {
             flex: 1;
-            padding: 14px 25px;
-            font-size: 16px;
+            padding: 12px 24px;
+            font-size: 15px;
             font-weight: 700;
-            background-color: var(--primary-color);
+            background-color: var(--primary-color, #15803d);
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 10px rgba(21,128,61,0.25);
         }
         .btn-add-detail:hover {
-            background-color: var(--primary-hover);
+            background-color: #166534;
+            transform: translateY(-1px);
         }
         .product-meta {
-            font-size: 14px;
-            color: #777;
+            font-size: 13px;
+            color: #64748b;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
         }
+        .product-meta p { display: flex; align-items: center; gap: 8px; margin: 0; }
+        .product-meta p + p { margin-top: 8px; }
+
         /* Comments Section */
         .comments-section {
-            margin-top: 50px;
+            margin-top: 40px;
             background: #fff;
             padding: 30px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
         }
         .comment-item {
-            padding: 15px 0;
+            padding: 16px 0;
             border-bottom: 1px dashed #e2e8f0;
         }
+        .comment-item:last-child { border-bottom: none; }
         .comment-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 6px;
         }
-        .comment-user { font-weight: 700; color: #1e293b; font-size: 15px; }
+        .comment-user { font-weight: 700; color: #1e293b; font-size: 14px; }
         .comment-date { font-size: 12px; color: #94a3b8; }
-        .star-rating-select { display: flex; gap: 5px; margin: 10px 0; cursor: pointer; color: #cbd5e1; font-size: 20px; }
+        .star-rating-select { display: flex; gap: 5px; margin: 10px 0; cursor: pointer; color: #cbd5e1; font-size: 22px; }
         .star-rating-select i.active { color: #fbbf24; }
+
         .related-section {
-            margin-top: 60px;
+            margin-top: 50px;
         }
-        @media (max-width: 768px) {
-            .product-detail-grid { grid-template-columns: 1fr; gap: 30px; }
+        @media (max-width: 860px) {
+            .product-detail-grid { grid-template-columns: 1fr; gap: 25px; padding: 20px; }
         }
     </style>
 </head>
@@ -280,29 +318,67 @@ if (isset($_SESSION['cart'])) {
     <!-- Announcement Bar -->
     <div class="announcement-bar">
         <div class="announcement-slider">
-            <p class="slide active"><i class="fas fa-truck"></i> MIỄN PHÍ VẬN CHUYỂN TOÀN QUỐC CHO ĐƠN HÀNG TỪ 500K!</p>
+            <p class="slide active"><i class="fas fa-truck"></i> <?php echo __('ANNOUNCEMENT_2'); ?></p>
         </div>
     </div>
 
-    <!-- Header -->
+    <!-- Header / Navigation -->
     <header class="site-header">
         <div class="header-container">
+            <div class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </div>
+            
             <div class="logo">
                 <a href="index.php" class="mc-logo">
                     <span class="mc-logo__icon" aria-hidden="true"></span>
                     <span class="mc-logo__text" data-text="PIXELGEAR">PIXELGEAR</span>
                 </a>
             </div>
+
             <nav class="main-nav">
                 <ul>
-                    <li><a href="index.php">TẤT CẢ</a></li>
-                    <li><a href="index.php?category=clothing">QUẦN ÁO</a></li>
-                    <li><a href="index.php?category=accessories">PHỤ KIỆN</a></li>
-                    <li><a href="index.php?category=toys">ĐỒ CHƠI & GAME</a></li>
+                    <li><a href="index.php"><?php echo __('NAV_HOME'); ?></a></li>
+                    <li><a href="products.php"><?php echo __('NAV_ALL'); ?></a></li>
+                    <li><a href="products.php?category=clothing" class="<?php echo $product['category']==='clothing'?'active':''; ?>"><?php echo __('NAV_CLOTHING'); ?></a></li>
+                    <li><a href="products.php?category=accessories" class="<?php echo $product['category']==='accessories'?'active':''; ?>"><?php echo __('NAV_ACCESSORIES'); ?></a></li>
+                    <li><a href="products.php?category=toys" class="<?php echo $product['category']==='toys'?'active':''; ?>"><?php echo __('NAV_TOYS'); ?></a></li>
                 </ul>
             </nav>
+
             <div class="header-icons">
-                <a href="cart.php" class="cart-icon">
+                <!-- Region & Currency Switcher -->
+                <div class="region-switcher-container">
+                    <button class="region-btn" type="button">
+                        <?php if ($current_region === 'VN'): ?>
+                            <span class="flag-tag">VN</span> <span>Việt Nam (VNĐ)</span>
+                        <?php else: ?>
+                            <span class="flag-tag">US</span> <span>USA (USD)</span>
+                        <?php endif; ?>
+                        <i class="fas fa-chevron-down" style="font-size: 10px;"></i>
+                    </button>
+                    <div class="region-dropdown">
+                        <a href="?id=<?php echo $id; ?>&region=VN" class="region-option <?php echo $current_region === 'VN' ? 'active' : ''; ?>">
+                            <span class="flag-tag">VN</span> <span>Việt Nam (VNĐ - ₫)</span>
+                        </a>
+                        <a href="?id=<?php echo $id; ?>&region=US" class="region-option <?php echo $current_region === 'US' ? 'active' : ''; ?>">
+                            <span class="flag-tag">US</span> <span>United States (USD - $)</span>
+                        </a>
+                    </div>
+                </div>
+
+                <form action="products.php" method="GET" class="search-container">
+                    <input type="text" name="search" placeholder="<?php echo __('SEARCH_PLACEHOLDER'); ?>">
+                    <button type="submit"><i class="fas fa-search"></i></button>
+                </form>
+
+                <?php if(isset($_SESSION['user_id'])): ?>
+                    <a href="profile.php" title="<?php echo __('PROFILE'); ?>" style="font-size: 14px; font-weight: 600;"><i class="fas fa-user-circle"></i> <?php echo explode(' ', trim($_SESSION['user_name']))[0]; ?></a>
+                <?php else: ?>
+                    <a href="login.php" title="<?php echo __('LOGIN'); ?>"><i class="fas fa-user"></i></a>
+                <?php endif; ?>
+                
+                <a href="cart.php" class="cart-icon" title="<?php echo __('CART'); ?>">
                     <i class="fas fa-shopping-cart"></i>
                     <span class="cart-count"><?php echo $cart_count; ?></span>
                 </a>
@@ -312,8 +388,8 @@ if (isset($_SESSION['cart'])) {
 
     <div class="product-detail-container">
         <div class="breadcrumb">
-            <a href="index.php">Trang chủ</a> / 
-            <a href="index.php?category=<?php echo $product['category']; ?>">
+            <a href="index.php"><?php echo __('NAV_HOME'); ?></a> / 
+            <a href="products.php?category=<?php echo $product['category']; ?>">
                 <?php 
                     $cats = ['clothing' => 'Quần Áo', 'accessories' => 'Phụ Kiện', 'toys' => 'Đồ Chơi & Game'];
                     echo $cats[$product['category']] ?? $product['category'];
@@ -324,11 +400,15 @@ if (isset($_SESSION['cart'])) {
 
         <div class="product-detail-grid">
             <div class="product-detail-media">
-                <img src="<?php echo htmlspecialchars($product['image_url']); ?>" alt="<?php echo htmlspecialchars(translate_product_name($product['name'])); ?>" class="product-detail-img">
+                <?php 
+                    $pImg = $product['image_url'];
+                    $fallbackSvg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300' fill='%23e2e8f0'><rect width='300' height='300' rx='8'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='18' fill='%2364748b'>No Image</text></svg>";
+                ?>
+                <img src="<?php echo htmlspecialchars($pImg); ?>" alt="<?php echo htmlspecialchars(translate_product_name($product['name'])); ?>" class="product-detail-img" onerror="this.onerror=null; this.src='<?php echo $fallbackSvg; ?>'">
             </div>
 
             <div class="product-detail-info">
-                <?php if ($product['badge']): ?>
+                <?php if (!empty($product['badge'])): ?>
                     <span class="detail-badge <?php echo $product['badge'] === 'Giảm giá' ? 'sale' : ''; ?>">
                         <?php echo htmlspecialchars($product['badge']); ?>
                     </span>
@@ -346,14 +426,14 @@ if (isset($_SESSION['cart'])) {
                 </div>
 
                 <div class="detail-price">
-                    <?php if ($product['old_price']): ?>
+                    <?php if (!empty($product['old_price'])): ?>
                         <span class="detail-old-price"><?php echo format_price($product['old_price']); ?></span>
                     <?php endif; ?>
                     <?php echo format_price($product['price']); ?>
                 </div>
 
                 <div class="stock-badge">
-                    <i class="fas fa-boxes" style="margin-right: 5px;"></i> Tồn kho sẵn có: <strong><?php echo intval($product['stock'] ?? 50); ?></strong> sản phẩm
+                    <i class="fas fa-boxes"></i> Tồn kho sẵn có: <strong><?php echo intval($product['stock'] ?? 50); ?></strong> sản phẩm
                 </div>
 
                 <div class="detail-description">
@@ -362,34 +442,36 @@ if (isset($_SESSION['cart'])) {
 
                 <div class="purchase-action">
                     <div class="quantity-control-lg">
-                        <button onclick="adjustDetailQty(-1)">-</button>
+                        <button type="button" onclick="adjustDetailQty(-1)">-</button>
                         <input type="number" id="detailQty" value="1" min="1" max="<?php echo intval($product['stock'] ?? 50); ?>">
-                        <button onclick="adjustDetailQty(1)">+</button>
+                        <button type="button" onclick="adjustDetailQty(1)">+</button>
                     </div>
-                    <button class="btn-add-detail" onclick="addToCartDetailed(<?php echo $product['id']; ?>)">
-                        <i class="fas fa-shopping-cart" style="margin-right: 8px;"></i> THÊM VÀO GIỎ HÀNG
+                    <button type="button" class="btn-add-detail" onclick="addToCartDetailed(<?php echo $product['id']; ?>)">
+                        <i class="fas fa-shopping-cart"></i> THÊM VÀO GIỎ HÀNG
                     </button>
                 </div>
 
                 <div class="product-meta">
-                    <p><i class="fas fa-shield-alt" style="color: var(--primary-color);"></i> Cam kết hàng chính hãng 100% Minecraft</p>
-                    <p style="margin-top: 8px;"><i class="fas fa-shipping-fast" style="color: var(--primary-color);"></i> Giao hàng toàn quốc từ 2-4 ngày</p>
+                    <p><i class="fas fa-shield-alt" style="color: #15803d;"></i> Cam kết hàng chính hãng 100% Minecraft</p>
+                    <p><i class="fas fa-shipping-fast" style="color: #15803d;"></i> Giao hàng toàn quốc từ 2-4 ngày làm việc</p>
                 </div>
             </div>
         </div>
 
-        <!-- Comments & Ratings Section -->
+        <!-- Khối Bình Luận & Đánh Giá -->
         <div class="comments-section">
-            <h2 style="font-size: 22px; margin-bottom: 20px; color: #1e293b;">BÌNH LUẬN & ĐÁNH GIÁ SẢN PHẨM (<?php echo count($comments_list); ?>)</h2>
+            <h2 style="font-size: 20px; font-weight: 700; color: #0f172a; margin-bottom: 20px; border-bottom: 2px solid #15803d; padding-bottom: 8px;">
+                <i class="fas fa-comments" style="color: #15803d; margin-right: 6px;"></i> BÌNH LUẬN & ĐÁNH GIÁ SẢN PHẨM (<?php echo count($comments_list); ?>)
+            </h2>
 
             <?php if (!empty($comment_msg)): ?>
-                <div style="background: #dcfce7; color: #166534; padding: 12px; border-radius: 6px; margin-bottom: 20px; font-weight: 600;">
+                <div style="background: #dcfce7; color: #166534; padding: 12px 18px; border-radius: 6px; margin-bottom: 20px; font-weight: 600;">
                     <i class="fas fa-check-circle"></i> <?php echo $comment_msg; ?>
                 </div>
             <?php endif; ?>
 
             <?php if (!empty($comment_error)): ?>
-                <div style="background: #fee2e2; color: #991b1b; padding: 12px; border-radius: 6px; margin-bottom: 20px; font-weight: 600;">
+                <div style="background: #fee2e2; color: #991b1b; padding: 12px 18px; border-radius: 6px; margin-bottom: 20px; font-weight: 600;">
                     <i class="fas fa-exclamation-circle"></i> <?php echo $comment_error; ?>
                 </div>
             <?php endif; ?>
@@ -400,12 +482,12 @@ if (isset($_SESSION['cart'])) {
                 <input type="hidden" name="action" value="submit_comment">
                 <input type="hidden" name="rating" id="selectedRating" value="5">
 
-                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
-                    <input type="text" name="user_name" value="<?php echo htmlspecialchars($_SESSION['user_name'] ?? ''); ?>" placeholder="Họ và tên của bạn" required readonly style="flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; background: #e2e8f0; color: #475569; font-weight: 600;">
+                <div style="margin-bottom: 12px;">
+                    <input type="text" name="user_name" value="<?php echo htmlspecialchars($_SESSION['user_name'] ?? ''); ?>" placeholder="Họ và tên của bạn" required readonly style="width: 100%; max-width: 320px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; background: #e2e8f0; color: #475569; font-weight: 600; box-sizing: border-box;">
                 </div>
 
-                <div style="margin-bottom: 15px;">
-                    <label style="font-weight: 600; font-size: 14px; color: #475569;">Đánh giá của bạn:</label>
+                <div style="margin-bottom: 12px;">
+                    <label style="font-weight: 600; font-size: 13px; color: #475569;">Đánh giá của bạn:</label>
                     <div class="star-rating-select" id="starRatingSelect">
                         <i class="fas fa-star active" data-val="1"></i>
                         <i class="fas fa-star active" data-val="2"></i>
@@ -420,16 +502,16 @@ if (isset($_SESSION['cart'])) {
                 <button type="submit" style="background: #15803d; color: #fff; border: none; padding: 10px 24px; border-radius: 6px; font-weight: 700; cursor: pointer;">GỬI ĐÁNH GIÁ</button>
             </form>
             <?php else: ?>
-            <div style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 20px; border-radius: 8px; text-align: center; font-size: 15px; margin-bottom: 30px;">
-                <i class="fas fa-lock" style="font-size: 20px; color: #2563eb; margin-right: 8px;"></i>
-                Vui lòng <a href="login.php" style="color: #15803d; font-weight: 700; text-decoration: underline;">Đăng nhập</a> hoặc <a href="register.php" style="color: #15803d; font-weight: 700; text-decoration: underline;">Đăng ký tài khoản</a> để viết bình luận & đánh giá sản phẩm.
+            <div style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 18px; border-radius: 8px; text-align: center; font-size: 14px; margin-bottom: 30px;">
+                <i class="fas fa-lock" style="font-size: 18px; color: #2563eb; margin-right: 6px;"></i>
+                Vui lòng <a href="login.php" style="color: #15803d; font-weight: 700; text-decoration: underline;">Đăng nhập</a> hoặc <a href="register.php" style="color: #15803d; font-weight: 700; text-decoration: underline;">Đăng ký</a> để viết bình luận & đánh giá sản phẩm.
             </div>
             <?php endif; ?>
 
-            <!-- Danh sách bình luận -->
+            <!-- Danh sách bình luận đã duyệt -->
             <div class="comments-list">
                 <?php if (empty($comments_list)): ?>
-                    <p style="color: #94a3b8; font-style: italic;">Chưa có bình luận nào. Hãy là người đầu tiên đánh giá sản phẩm này!</p>
+                    <p style="color: #94a3b8; font-style: italic; text-align: center; padding: 20px 0;">Chưa có bình luận nào. Hãy là người đầu tiên đánh giá sản phẩm này!</p>
                 <?php else: ?>
                     <?php foreach ($comments_list as $c): ?>
                     <div class="comment-item">
@@ -437,30 +519,33 @@ if (isset($_SESSION['cart'])) {
                             <span class="comment-user"><i class="fas fa-user-circle" style="color: #15803d; margin-right: 5px;"></i> <?php echo htmlspecialchars($c['user_name']); ?></span>
                             <span class="comment-date"><?php echo date("d/m/Y H:i", strtotime($c['created_at'])); ?></span>
                         </div>
-                        <div style="color: #fbbf24; font-size: 13px; margin-bottom: 6px;">
+                        <div style="color: #fbbf24; font-size: 12px; margin-bottom: 6px;">
                             <?php for($k = 1; $k <= 5; $k++) { echo $k <= $c['rating'] ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>'; } ?>
                         </div>
-                        <p style="color: #475569; font-size: 14px; line-height: 1.5; margin: 0;"><?php echo htmlspecialchars($c['comment']); ?></p>
+                        <p style="color: #475569; font-size: 14px; line-height: 1.5; margin: 0;"><?php echo nl2br(htmlspecialchars($c['comment'])); ?></p>
                     </div>
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>
         </div>
 
+        <!-- Khối Sản Phẩm Tương Tự (DUY NHẤT 1 KHỐI) -->
         <?php if (!empty($related_products)): ?>
         <div class="related-section">
-            <h2 class="section-title" style="text-align: left; font-size: 24px; margin-bottom: 25px;">SẢN PHẨM TƯƠNG TỰ</h2>
+            <h2 class="section-title" style="text-align: left; font-size: 22px; margin-bottom: 20px; border-bottom: 2px solid #15803d; padding-bottom: 8px;">
+                <i class="fas fa-cubes" style="color: #15803d; margin-right: 6px;"></i> SẢN PHẨM TƯƠNG TỰ
+            </h2>
             <div class="product-grid">
                 <?php foreach ($related_products as $rel): ?>
                 <div class="product-card">
                     <div class="product-image">
                         <a href="product_detail.php?id=<?php echo $rel['id']; ?>">
-                            <img src="<?php echo htmlspecialchars($rel['image_url']); ?>" alt="<?php echo htmlspecialchars($rel['name']); ?>">
+                            <img src="<?php echo htmlspecialchars($rel['image_url']); ?>" alt="<?php echo htmlspecialchars(translate_product_name($rel['name'])); ?>" onerror="this.onerror=null; this.src='<?php echo $fallbackSvg; ?>'">
                         </a>
                     </div>
                     <div class="product-info">
-                        <h3><a href="product_detail.php?id=<?php echo $rel['id']; ?>"><?php echo htmlspecialchars($rel['name']); ?></a></h3>
-                        <p class="price">$<?php echo htmlspecialchars($rel['price']); ?></p>
+                        <h3><a href="product_detail.php?id=<?php echo $rel['id']; ?>"><?php echo htmlspecialchars(translate_product_name($rel['name'])); ?></a></h3>
+                        <p class="price"><?php echo format_price($rel['price']); ?></p>
                     </div>
                 </div>
                 <?php endforeach; ?>
@@ -470,7 +555,34 @@ if (isset($_SESSION['cart'])) {
     </div>
 
     <!-- Footer -->
-    <footer class="site-footer" style="margin-top: 80px;">
+    <footer class="site-footer">
+        <div class="container footer-content">
+            <div class="footer-col">
+                <div class="logo" style="margin-bottom: 15px;">
+                    <a href="index.php" class="mc-logo">
+                        <span class="mc-logo__icon" aria-hidden="true"></span>
+                        <span class="mc-logo__text" data-text="PIXELGEAR">PIXELGEAR</span>
+                    </a>
+                </div>
+                <p style="color: #94a3b8; font-size: 14px; line-height: 1.6;"><?php echo __('FOOTER_ABOUT'); ?></p>
+            </div>
+            <div class="footer-col">
+                <h4><?php echo __('FOOTER_LINKS_TITLE'); ?></h4>
+                <ul>
+                    <li><a href="index.php"><?php echo __('NAV_HOME'); ?></a></li>
+                    <li><a href="products.php"><?php echo __('NAV_ALL'); ?></a></li>
+                    <li><a href="cart.php"><?php echo __('CART'); ?></a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4><?php echo __('FOOTER_SUPPORT_TITLE'); ?></h4>
+                <ul>
+                    <li><a href="#"><?php echo __('FOOTER_SHIPPING_POLICY'); ?></a></li>
+                    <li><a href="#"><?php echo __('FOOTER_RETURN_POLICY'); ?></a></li>
+                    <li><a href="#"><?php echo __('FOOTER_PRIVACY_POLICY'); ?></a></li>
+                </ul>
+            </div>
+        </div>
         <div class="footer-bottom">
             <p>&copy; <?php echo date("Y"); ?> Cửa Hàng PixelGear. Tất cả các quyền được bảo lưu.</p>
         </div>
@@ -511,86 +623,22 @@ if (isset($_SESSION['cart'])) {
     async function addToCartDetailed(productId) {
         const qty = parseInt(document.getElementById('detailQty').value) || 1;
         try {
-            const response = await fetch('update_cart.php', {
+            const response = await fetch('add_to_cart.php', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: productId, action: 'set', quantity: qty })
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'product_id=' + productId + '&quantity=' + qty
             });
             const data = await response.json();
-            if (data.success) {
-                document.querySelector('.cart-count').textContent = data.cart_count;
+            if (data.status === 'success' || data.success) {
+                const countBadge = document.querySelector('.cart-count');
+                if (countBadge) countBadge.textContent = data.cart_count;
                 const toast = document.getElementById('toast');
-                toast.classList.add('show');
-                setTimeout(() => toast.classList.remove('show'), 3000);
-            } else if (data.error) {
-                alert(data.error);
-            }
-        } catch (err) {
-            console.error(err);
-        }
-    }
-    </script>
-</body>
-</html>
-
-        <?php if (!empty($related_products)): ?>
-        <div class="related-section">
-            <h2 class="section-title" style="text-align: left; font-size: 24px; margin-bottom: 25px;">SẢN PHẨM TƯƠNG TỰ</h2>
-            <div class="product-grid">
-                <?php foreach ($related_products as $rel): ?>
-                <div class="product-card">
-                    <div class="product-image">
-                        <a href="product_detail.php?id=<?php echo $rel['id']; ?>">
-                            <img src="<?php echo htmlspecialchars($rel['image_url']); ?>" alt="<?php echo htmlspecialchars($rel['name']); ?>">
-                        </a>
-                    </div>
-                    <div class="product-info">
-                        <h3><a href="product_detail.php?id=<?php echo $rel['id']; ?>"><?php echo htmlspecialchars($rel['name']); ?></a></h3>
-                        <p class="price">$<?php echo htmlspecialchars($rel['price']); ?></p>
-                    </div>
-                </div>
-                <?php endforeach; ?>
-            </div>
-        </div>
-        <?php endif; ?>
-    </div>
-
-    <!-- Footer -->
-    <footer class="site-footer" style="margin-top: 80px;">
-        <div class="footer-bottom">
-            <p>&copy; <?php echo date("Y"); ?> Cửa Hàng PixelGear. Tất cả các quyền được bảo lưu.</p>
-        </div>
-    </footer>
-
-    <!-- Toast Notification -->
-    <div id="toast" class="toast">
-        <i class="fas fa-check-circle"></i> Đã thêm sản phẩm vào giỏ hàng!
-    </div>
-
-    <script src="script.js"></script>
-    <script>
-    function adjustDetailQty(delta) {
-        const input = document.getElementById('detailQty');
-        let current = parseInt(input.value) || 1;
-        current += delta;
-        if (current < 1) current = 1;
-        input.value = current;
-    }
-
-    async function addToCartDetailed(productId) {
-        const qty = parseInt(document.getElementById('detailQty').value) || 1;
-        try {
-            const response = await fetch('update_cart.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: productId, action: 'set', quantity: qty })
-            });
-            const data = await response.json();
-            if (data.success) {
-                document.querySelector('.cart-count').textContent = data.cart_count;
-                const toast = document.getElementById('toast');
-                toast.classList.add('show');
-                setTimeout(() => toast.classList.remove('show'), 3000);
+                if (toast) {
+                    toast.classList.add('show');
+                    setTimeout(() => toast.classList.remove('show'), 3000);
+                }
+            } else if (data.message) {
+                alert(data.message);
             }
         } catch (err) {
             console.error(err);

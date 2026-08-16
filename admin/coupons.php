@@ -70,6 +70,16 @@ if (isset($_GET['delete'])) {
     }
 }
 
+// Handle Delete Subscriber
+if (isset($_GET['delete_subscriber'])) {
+    $s_id = intval($_GET['delete_subscriber']);
+    if ($s_id > 0) {
+        $stmt = $pdo->prepare("DELETE FROM subscribers WHERE id = ?");
+        $stmt->execute([$s_id]);
+        $msg = "Đã xóa email khỏi danh sách nhận bản tin thành công!";
+    }
+}
+
 // Fetch coupons & subscribers
 $coupons = [];
 try {
@@ -261,20 +271,26 @@ try {
                                 <tr>
                                     <th>STT</th>
                                     <th>Email Đăng Ký</th>
-                                    <th>Voucher Gửi</th>
+                                    <th>Voucher</th>
+                                    <th style="width: 50px; text-align: center;">Xóa</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php if (empty($subscribers)): ?>
                                 <tr>
-                                    <td colspan="3" style="text-align: center; color: #888; padding: 20px;">Chưa có email nào đăng ký.</td>
+                                    <td colspan="4" style="text-align: center; color: #888; padding: 20px;">Chưa có email nào đăng ký.</td>
                                 </tr>
                                 <?php else: ?>
                                     <?php foreach ($subscribers as $idx => $s): ?>
                                     <tr>
                                         <td>#<?php echo $idx + 1; ?></td>
-                                        <td style="font-weight: 600; font-size: 13px;"><?php echo htmlspecialchars($s['email']); ?></td>
+                                        <td style="font-weight: 600; font-size: 13px; word-break: break-all;"><?php echo htmlspecialchars($s['email']); ?></td>
                                         <td><span style="font-size: 11px; background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px; font-weight: 700;"><?php echo htmlspecialchars($s['voucher_sent'] ?? 'WELCOME15'); ?></span></td>
+                                        <td style="text-align: center;">
+                                            <a href="coupons.php?delete_subscriber=<?php echo $s['id']; ?>" onclick="return confirm('Bạn có chắc chắn muốn xóa email <?php echo htmlspecialchars(addslashes($s['email'])); ?> khỏi danh sách nhận bản tin?');" class="btn" style="background: #dc2626; color: #fff; padding: 3px 6px; font-size: 11px; text-decoration: none; border-radius: 4px;">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </td>
                                     </tr>
                                     <?php endforeach; ?>
                                 <?php endif; ?>

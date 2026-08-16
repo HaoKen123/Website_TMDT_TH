@@ -154,7 +154,7 @@ $products = $pdo->query("SELECT * FROM products ORDER BY id DESC")->fetchAll();
                                         $pImg = '../' . ltrim($pImg, '/');
                                     }
                                 ?>
-                                <img src="<?php echo htmlspecialchars($pImg); ?>" class="product-img" onerror="this.src='https://via.placeholder.com/50';">
+                                <img src="<?php echo htmlspecialchars($pImg); ?>" class="product-img" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'50\' height=\'50\' viewBox=\'0 0 50 50\' fill=\'%23e2e8f0\'><rect width=\'50\' height=\'50\' rx=\'4\'/><text x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-size=\'10\' fill=\'%2364748b\'>No Img</text></svg>';">
                             </td>
                             <td>
                                 <strong><?php echo htmlspecialchars($p['name']); ?></strong>

@@ -18,7 +18,7 @@ if (!$product) {
 $comment_msg = '';
 $comment_error = '';
 
-// Thêm bình luận mới (RÀNG BUỘC: BẮT BUỘC ĐÃ ĐĂNG NHẬP)
+// Thêm bình luận mới (RÀNG BUỘC: BẮT BUỘC ĐÃ ĐĂNG NHẬP & CHỜ DUYỆT)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'submit_comment') {
     if (!isset($_SESSION['user_id'])) {
         $comment_error = "Bạn phải Đăng nhập tài khoản trước khi viết bình luận!";
@@ -32,10 +32,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $user_name = $_SESSION['user_name'] ?? 'Thành viên';
         }
 
-        if (!empty($comment_text)) {
-            $stmtAdd = $pdo->prepare("INSERT INTO comments (product_id, user_id, user_name, rating, comment, status) VALUES (?, ?, ?, ?, ?, 'approved')");
-            $stmtAdd->execute([$id, $user_id, $user_name, $rating, $comment_text]);
-            $comment_msg = "Cảm ơn bạn đã gửi đánh giá sản phẩm thành công!";
+        // Kiểm tra xem tài khoản người dùng có bị Khóa (status = 0) không
+        try {
+            $stmtUser = $pdo->prepare("SELECT status FROM users WHERE id = ?");
+            $stmtUser->execute([$user_id]);
+            $uData = $stmtUser->fetch();
+            if ($uData && intval($uData['status']) === 0) {
+                $comment_error = "Tài khoản của bạn đã bị Quản trị viên KHÓA quyền gửi bình luận / đánh giá!";
+            } else if (!empty($comment_text)) {
+                // CHỜ DUYỆT (pending) - Không hiển thị ngay mà phải qua Admin duyệt
+                $stmtAdd = $pdo->prepare("INSERT INTO comments (product_id, user_id, user_name, rating, comment, status) VALUES (?, ?, ?, ?, ?, 'pending')");
+                $stmtAdd->execute([$id, $user_id, $user_name, $rating, $comment_text]);
+                $comment_msg = "Cảm ơn bạn đã gửi đánh giá! Bình luận đang CHỜ QUẢN TRỊ VIÊN DUYỆT trước khi hiển thị công khai.";
+            }
+        } catch (Exception $e) {
+            $comment_error = "Lỗi gửi bình luận: " . $e->getMessage();
         }
     }
 }

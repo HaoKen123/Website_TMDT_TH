@@ -43,11 +43,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <title>Admin Login - PixelGear</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        @font-face {
-            font-family: 'Minecraft';
-            src: url('https://db.onlinewebfonts.com/t/6ab539c6fc2b21fd0bdaa090f010b095.woff2') format('woff2');
-        }
         body { 
             font-family: 'Inter', sans-serif; 
             background: url('https://minecraft.wiki/images/Dirt.png') repeat;

@@ -505,10 +505,11 @@ try {
                     const price = parseFloat(it.price) || 0;
                     const qty = parseInt(it.quantity) || 1;
                     const sub = price * qty;
-                    const imgUrl = it.image_url || 'https://via.placeholder.com/44';
+                    const fallbackSvg = "data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'44\' height=\'44\' viewBox=\'0 0 44 44\' fill=\'%23e2e8f0\'><rect width=\'44\' height=\'44\' rx=\'4\'/><text x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-size=\'9\' fill=\'%2364748b\'>No Img</text></svg>";
+                    const imgUrl = it.image_url || fallbackSvg;
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td><img src="${imgUrl}" class="item-thumb" onerror="this.src='https://via.placeholder.com/44'"></td>
+                        <td><img src="${imgUrl}" class="item-thumb" onerror="this.onerror=null; this.src='${fallbackSvg}'"></td>
                         <td><strong>${it.product_name || ('Sản phẩm #' + it.product_id)}</strong></td>
                         <td style="text-align: center;">$${price.toFixed(2)}</td>
                         <td style="text-align: center; font-weight: 700;">${qty}</td>

@@ -1,4 +1,4 @@
-<!-- PixelBot AI Assistant (Steve Minecraft Avatar & Live SQL Integration) -->
+<!-- PixelBot AI Assistant (Steve Minecraft Avatar & Smart SQL Integration) -->
 <style>
     .ai-chat-btn {
         position: fixed;
@@ -29,9 +29,9 @@
         position: fixed;
         bottom: 95px;
         right: 25px;
-        width: 390px;
+        width: 400px;
         max-width: calc(100vw - 30px);
-        height: 530px;
+        height: 540px;
         background: #ffffff;
         border-radius: 16px;
         box-shadow: 0 12px 35px rgba(0,0,0,0.25);
@@ -95,7 +95,7 @@
         gap: 12px;
     }
     .chat-msg {
-        max-width: 88%;
+        max-width: 90%;
         padding: 10px 14px;
         border-radius: 12px;
         font-size: 13px;
@@ -126,7 +126,7 @@
         background: #f1f5f9;
         border: 1px solid #cbd5e1;
         color: #334155;
-        padding: 4px 10px;
+        padding: 5px 10px;
         border-radius: 12px;
         font-size: 11px;
         cursor: pointer;
@@ -192,6 +192,7 @@
         border: 1px solid #cbd5e1;
         border-radius: 4px;
         margin-top: 4px;
+    }
     @media (max-width: 768px) {
         .ai-chat-btn {
             bottom: 15px;
@@ -213,7 +214,7 @@
 </style>
 
 <!-- Floating Steve Chatbot Button -->
-<button class="ai-chat-btn" onclick="toggleAiChat()" title="Trợ lý Steve & Creeper AI Minecraft">
+<button class="ai-chat-btn" onclick="toggleAiChat()" title="Trợ lý Steve AI Minecraft">
     <img src="images/steve_head.png?v=<?php echo time(); ?>" alt="Steve AI Avatar">
 </button>
 
@@ -225,7 +226,7 @@
             <span>Trợ lý AI PixelGear</span>
         </div>
         <div class="controls">
-            <button class="ai-header-icon" id="voiceMuteBtn" onclick="toggleSpeechOutput()" title="Bật/Tắt giọng đọc AI (Loa)">
+            <button class="ai-header-icon" id="voiceMuteBtn" onclick="toggleSpeechOutput()" title="Bật/Tắt giọng đọc tiếng Việt">
                 <i class="fas fa-volume-up"></i>
             </button>
             <button class="ai-header-icon" id="micBtn" onclick="toggleMic()" title="Nói qua Micro 🎤">
@@ -241,32 +242,19 @@
     <!-- Optional API Key Input -->
     <div id="apiKeyBox" class="api-key-box">
         <strong>🔑 Cấu hình Gemini API Key (Tùy chọn):</strong>
-        <input type="text" id="geminiApiKey" placeholder="Dán Gemini API Key tại đây (Để trống dùng AI CSDL SQL)" onchange="saveApiKey()">
+        <input type="text" id="geminiApiKey" placeholder="Dán Gemini API Key (Tùy chọn kết nối AI Google)" onchange="saveApiKey()">
     </div>
     
-    <div id="voiceStatus" class="voice-status-indicator">🎙️ Đang lắng nghe giọng nói của bạn...</div>
+    <div id="voiceStatus" class="voice-status-indicator">🎙️ Đang lắng nghe giọng nói tiếng Việt của bạn...</div>
 
     <div id="aiChatBody" class="ai-chat-body">
         <div class="chat-msg bot">
-            👋 Xin chào! Tôi là <strong>Trợ lý AI của PixelGear</strong>.<br><br>
-            Tôi có thể tìm kiếm sản phẩm nhanh chóng, hỗ trợ đọc mô tả và gợi ý mã giảm giá phù hợp cho bạn!
+            👋 Xin chào! Tôi là <strong>Steve AI – Trợ lý PixelGear</strong>.<br><br>
+            Bạn có thể hỏi tôi về thời gian, chính sách vận chuyển hoặc bấm các danh mục sản phẩm bên dưới để xem gợi ý:
             <div class="ai-quick-prompts">
-                <?php
-                // Fetch dynamic categories for AI chips
-                try {
-                    global $pdo;
-                    $stmtAiCat = $pdo->query("SELECT * FROM categories WHERE status = 1 LIMIT 3");
-                    $aiCats = $stmtAiCat->fetchAll(PDO::FETCH_ASSOC);
-                    $icon_map = ['👕', '🎒', '🧸', '🎮', '🧢', '🎁'];
-                    $i = 0;
-                    foreach ($aiCats as $c) {
-                        $icon = $icon_map[$i % count($icon_map)];
-                        $catName = htmlspecialchars($c['name']);
-                        echo "<span class=\"quick-chip\" onclick=\"sendQuickAiMsg('{$icon} Tìm {$catName}')\">{$icon} {$catName}</span> ";
-                        $i++;
-                    }
-                } catch (Exception $e) {}
-                ?>
+                <span class="quick-chip" onclick="sendQuickAiMsg('👕 Quần áo & Hoodies')">👕 Quần áo & Hoodies</span>
+                <span class="quick-chip" onclick="sendQuickAiMsg('🎒 Phụ kiện Minecraft')">🎒 Phụ kiện Minecraft</span>
+                <span class="quick-chip" onclick="sendQuickAiMsg('🧸 Đồ chơi & Gấu bông')">🧸 Đồ chơi & Gấu bông</span>
                 <span class="quick-chip" onclick="sendQuickAiMsg('🎁 Mã giảm giá')">🎁 Mã giảm giá</span>
             </div>
         </div>
@@ -284,46 +272,51 @@ let isListening = false;
 let recognition = null;
 let synth = window.speechSynthesis;
 
-// Global Quick View Launcher for Chatbot
-window.openQuickViewModal = async function(productId) {
-    const quickViewModal = document.getElementById('quickViewModal');
-    const qvTitle = document.getElementById('qvTitle');
-    const qvPrice = document.getElementById('qvPrice');
-    const qvMainImg = document.getElementById('qvMainImg');
-    const qvThumb1 = document.getElementById('qvThumb1');
-    const qvDescription = document.getElementById('qvDescription');
-    const qvQtyInput = document.getElementById('qvQtyInput');
-
-    if (!quickViewModal) {
-        window.location.href = 'product_detail.php?id=' + productId;
-        return;
+// 1. Voice Output: ALWAYS GUARANTEED VIETNAMESE (Tiếng Việt)
+function speakText(text) {
+    if (!isSpeechEnabled || !synth) return;
+    synth.cancel();
+    const cleanText = text.replace(/<[^>]*>?/gm, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&');
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.lang = 'vi-VN';
+    
+    // Explicitly find Vietnamese Voice from system
+    const voices = synth.getVoices();
+    const viVoice = voices.find(v => (v.lang && (v.lang.toLowerCase().includes('vi') || v.lang.toLowerCase().includes('vn'))) || (v.name && (v.name.toLowerCase().includes('vietnam') || v.name.toLowerCase().includes('vietnamese') || v.name.toLowerCase().includes('hoaimy') || v.name.toLowerCase().includes('namminh') || v.name.toLowerCase().includes('linh') || v.name.toLowerCase().includes('mai'))));
+    if (viVoice) {
+        utterance.voice = viVoice;
     }
+    utterance.rate = 1.05;
+    synth.speak(utterance);
+}
 
+// 2. Global AJAX Add to Cart from Chatbot Card
+window.addFromChatbot = async function(productId) {
     try {
-        const response = await fetch(`get_product.php?id=${productId}`);
-        const data = await response.json();
-
-        if (data.success) {
-            const p = data.product;
-            if (qvTitle) qvTitle.textContent = p.name;
-            if (qvPrice) qvPrice.textContent = p.price_formatted || `$${parseFloat(p.price).toFixed(2)}`;
-            if (qvMainImg) qvMainImg.src = p.image_url;
-            if (qvThumb1) qvThumb1.src = p.image_url;
-            if (qvDescription) qvDescription.textContent = p.description || 'Sản phẩm Minecraft chính hãng.';
-            if (qvQtyInput) qvQtyInput.value = 1;
-
-            quickViewModal.classList.add('active');
-
-            if (window.speakText && p.description) {
-                speakText(`Đang mở xem nhanh sản phẩm ${p.name}. Mô tả: ${p.description}`);
+        const res = await fetch('add_to_cart.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'product_id=' + productId + '&quantity=1'
+        });
+        const data = await res.json();
+        if (data.status === 'success' || data.success) {
+            const countBadges = document.querySelectorAll('.cart-count');
+            countBadges.forEach(b => b.textContent = data.cart_count);
+            const toast = document.getElementById('toast');
+            if (toast) {
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 3000);
             }
+            speakText('Đã thêm sản phẩm vào giỏ hàng thành công!');
+        } else if (data.message) {
+            alert(data.message);
         }
     } catch (err) {
-        console.error('Lỗi Quick View:', err);
+        console.error('Lỗi thêm giỏ hàng:', err);
     }
 };
 
-// Speech Recognition Engine
+// 3. Speech Recognition Engine
 function initVoiceEngine() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
@@ -352,7 +345,7 @@ initVoiceEngine();
 
 function toggleMic() {
     if (!recognition) {
-        if (window.showCustomNotice) showCustomNotice('Trình duyệt chưa hỗ trợ nhận diện giọng nói (Khuyên dùng Chrome/Edge).', 'warning');
+        alert('Trình duyệt của bạn chưa hỗ trợ nhận diện giọng nói (Khuyên dùng Chrome/Edge).');
         return;
     }
     if (isListening) {
@@ -380,16 +373,6 @@ function toggleSpeechOutput() {
         btn.style.color = '#cbd5e1';
         if (synth) synth.cancel();
     }
-}
-
-function speakText(text) {
-    if (!isSpeechEnabled || !synth) return;
-    synth.cancel();
-    const cleanText = text.replace(/<[^>]*>?/gm, '');
-    const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.lang = 'vi-VN';
-    utterance.rate = 1.05;
-    synth.speak(utterance);
 }
 
 function toggleApiKeyBox() {
@@ -445,13 +428,12 @@ async function handleAiSubmit(e) {
     const thinkingDiv = document.createElement('div');
     thinkingDiv.className = 'chat-msg bot';
     thinkingDiv.id = 'aiThinking';
-    thinkingDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Steve AI đang truy vấn CSDL SQL...';
+    thinkingDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Steve AI đang xử lý...';
     chatBody.appendChild(thinkingDiv);
     chatBody.scrollTop = chatBody.scrollHeight;
 
     const apiKey = localStorage.getItem('pixelgear_gemini_key') || '';
     let responseText = "";
-    let autoQuickViewId = null;
 
     try {
         const res = await fetch('ai_api.php', {
@@ -462,7 +444,6 @@ async function handleAiSubmit(e) {
         const data = await res.json();
         if (data.success) {
             responseText = data.reply;
-            autoQuickViewId = data.auto_quick_view_id;
         } else {
             responseText = '⚠️ ' + data.message;
         }
@@ -481,14 +462,7 @@ async function handleAiSubmit(e) {
     chatBody.appendChild(botDiv);
     chatBody.scrollTop = chatBody.scrollHeight;
 
-    // Speak out loud
+    // Speak out loud in Vietnamese
     speakText(responseText);
-
-    // Auto Trigger Quick View if requested!
-    if (autoQuickViewId) {
-        setTimeout(() => {
-            window.openQuickViewModal(autoQuickViewId);
-        }, 800);
-    }
 }
 </script>

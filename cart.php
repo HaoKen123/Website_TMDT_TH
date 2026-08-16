@@ -444,5 +444,7 @@ $final_total_price = max(0, $total_price - $discount_usd);
         calcSelectedTotal();
     });
     </script>
+    <script src="script.js"></script>
+    <?php include_once 'ai_assistant.php'; ?>
 </body>
 </html>

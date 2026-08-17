@@ -622,7 +622,15 @@ if (isset($_SESSION['cart'])) {
     }
 
     async function addToCartDetailed(productId) {
-        const qty = parseInt(document.getElementById('detailQty').value) || 1;
+        const qtyInput = document.getElementById('detailQty');
+        const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1;
+        const btn = document.querySelector('.btn-add-detail');
+        const origHtml = btn ? btn.innerHTML : '';
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG THÊM...';
+            btn.disabled = true;
+        }
+
         try {
             const response = await fetch('add_to_cart.php', {
                 method: 'POST',
@@ -631,18 +639,34 @@ if (isset($_SESSION['cart'])) {
             });
             const data = await response.json();
             if (data.status === 'success' || data.success) {
-                const countBadge = document.querySelector('.cart-count');
-                if (countBadge) countBadge.textContent = data.cart_count;
+                document.querySelectorAll('.cart-count').forEach(el => {
+                    el.textContent = data.cart_count;
+                });
                 const toast = document.getElementById('toast');
                 if (toast) {
                     toast.classList.add('show');
                     setTimeout(() => toast.classList.remove('show'), 3000);
                 }
-            } else if (data.message) {
-                alert(data.message);
+                if (window.showCustomNotice) {
+                    showCustomNotice(data.message || 'Đã thêm sản phẩm vào giỏ hàng!', 'success');
+                }
+            } else {
+                if (window.showCustomNotice) {
+                    showCustomNotice(data.message || 'Không thể thêm vào giỏ hàng!', 'error');
+                } else {
+                    alert(data.message);
+                }
             }
         } catch (err) {
             console.error(err);
+            if (window.showCustomNotice) {
+                showCustomNotice('Lỗi kết nối tới máy chủ!', 'error');
+            }
+        } finally {
+            if (btn) {
+                btn.innerHTML = origHtml;
+                btn.disabled = false;
+            }
         }
     }
     </script>

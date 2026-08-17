@@ -172,113 +172,201 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================
-    // QUICK VIEW MODAL POPUP LOGIC
+    // ROBUST QUICK VIEW MODAL POPUP LOGIC
     // ==========================================
-    const quickViewModal = document.getElementById('quickViewModal');
-    const closeQuickView = document.getElementById('closeQuickView');
-    const modalOverlay = document.querySelector('.modal-overlay');
-    const quickViewBtns = document.querySelectorAll('.btn-quick-view');
-
-    const qvTitle = document.getElementById('qvTitle');
-    const qvPrice = document.getElementById('qvPrice');
-    const qvMainImg = document.getElementById('qvMainImg');
-    const qvThumb1 = document.getElementById('qvThumb1');
-    const qvDescription = document.getElementById('qvDescription');
-    const qvQtyInput = document.getElementById('qvQtyInput');
-    const qvQtyMinus = document.getElementById('qvQtyMinus');
-    const qvQtyPlus = document.getElementById('qvQtyPlus');
-    const qvAddToCartBtn = document.getElementById('qvAddToCartBtn');
-
     let currentActiveProductId = null;
 
-    quickViewBtns.forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-            e.preventDefault();
-            const productId = btn.getAttribute('data-id');
-            currentActiveProductId = productId;
+    // Helper: Tạo động Quick View Modal nếu trang chưa có
+    function getOrCreateQuickViewModal() {
+        let modal = document.getElementById('quickViewModal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'quickViewModal';
+            modal.className = 'quick-view-modal';
+            modal.innerHTML = `
+                <div class="modal-overlay"></div>
+                <div class="modal-container">
+                    <button class="modal-close" id="closeQuickView">&times;</button>
+                    <div class="modal-body">
+                        <div class="modal-left">
+                            <div class="modal-thumbnails">
+                                <img id="qvThumb1" class="thumb active" src="" alt="Thumbnail">
+                            </div>
+                            <div class="modal-main-img">
+                                <img id="qvMainImg" src="" alt="Product Image">
+                            </div>
+                        </div>
+                        <div class="modal-right">
+                            <h2 id="qvTitle" class="qv-title">SẢN PHẨM</h2>
+                            <div id="qvPrice" class="qv-price">$0.00</div>
+                            
+                            <div class="qv-option-group">
+                                <label>Size / Kích thước:</label>
+                                <div class="qv-sizes">
+                                    <span class="size-btn active">Freesize</span>
+                                    <span class="size-btn">M</span>
+                                    <span class="size-btn">L</span>
+                                    <span class="size-btn">XL</span>
+                                </div>
+                            </div>
 
-            try {
-                const response = await fetch(`get_product.php?id=${productId}`);
-                const data = await response.json();
+                            <div class="qv-option-group">
+                                <label>Số lượng (Quantity):</label>
+                                <div class="qv-quantity-picker">
+                                    <button type="button" id="qvQtyMinus">-</button>
+                                    <input type="number" id="qvQtyInput" value="1" min="1">
+                                    <button type="button" id="qvQtyPlus">+</button>
+                                </div>
+                            </div>
 
-                if (data.success) {
-                    const p = data.product;
-                    qvTitle.textContent = p.name;
-                    qvPrice.textContent = p.price_formatted || `$${parseFloat(p.price).toFixed(2)}`;
-                    qvMainImg.src = p.image_url;
-                    qvThumb1.src = p.image_url;
-                    qvDescription.textContent = p.description || 'Sản phẩm Minecraft chính hãng, chất lượng cao với thiết kế độc quyền.';
-                    qvQtyInput.value = 1;
+                            <div class="qv-shipping-note">
+                                <i class="fas fa-truck"></i> Giao hàng tận nơi toàn quốc từ 1-3 ngày.
+                            </div>
 
-                    quickViewModal.classList.add('active');
-                } else {
-                    showCustomNotice(data.message, 'error');
-                }
-            } catch (err) {
-                console.error('Lỗi khi tải chi tiết sản phẩm:', err);
-                showCustomNotice('Không thể tải chi tiết sản phẩm', 'error');
-            }
+                            <button id="qvAddToCartBtn" class="btn-add-to-cart-green">THÊM VÀO GIỎ HÀNG</button>
+
+                            <div class="qv-details">
+                                <h4>Mô tả sản phẩm:</h4>
+                                <p id="qvDescription">Đang tải thông tin chi tiết...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            document.body.appendChild(modal);
+            bindModalEvents(modal);
+        }
+        return modal;
+    }
+
+    function bindModalEvents(modal) {
+        const closeBtn = modal.querySelector('#closeQuickView');
+        const overlay = modal.querySelector('.modal-overlay');
+        const qvQtyMinus = modal.querySelector('#qvQtyMinus');
+        const qvQtyPlus = modal.querySelector('#qvQtyPlus');
+        const qvQtyInput = modal.querySelector('#qvQtyInput');
+        const qvAddToCartBtn = modal.querySelector('#qvAddToCartBtn');
+
+        if (closeBtn) closeBtn.onclick = () => modal.classList.remove('active');
+        if (overlay) overlay.onclick = () => modal.classList.remove('active');
+
+        if (qvQtyMinus && qvQtyInput) {
+            qvQtyMinus.onclick = () => {
+                let val = parseInt(qvQtyInput.value) || 1;
+                if (val > 1) qvQtyInput.value = val - 1;
+            };
+        }
+
+        if (qvQtyPlus && qvQtyInput) {
+            qvQtyPlus.onclick = () => {
+                let val = parseInt(qvQtyInput.value) || 1;
+                qvQtyInput.value = val + 1;
+            };
+        }
+
+        modal.querySelectorAll('.size-btn').forEach(btn => {
+            btn.onclick = () => {
+                modal.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            };
         });
-    });
 
-    function hideQuickViewModal() {
-        if (quickViewModal) {
-            quickViewModal.classList.remove('active');
+        if (qvAddToCartBtn) {
+            qvAddToCartBtn.onclick = async () => {
+                if (!currentActiveProductId) return;
+                const qty = qvQtyInput ? (parseInt(qvQtyInput.value) || 1) : 1;
+                const originalText = qvAddToCartBtn.innerText;
+                qvAddToCartBtn.innerText = 'Đang thêm...';
+                qvAddToCartBtn.disabled = true;
+
+                try {
+                    const response = await fetch('add_to_cart.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: currentActiveProductId, quantity: qty })
+                    });
+                    const data = await response.json();
+
+                    if (data.success || data.status === 'success') {
+                        document.querySelectorAll('.cart-count').forEach(el => {
+                            el.textContent = data.cart_count;
+                        });
+                        modal.classList.remove('active');
+                        if (window.showCustomNotice) {
+                            showCustomNotice('Đã thêm ' + qty + ' sản phẩm vào giỏ hàng!', 'success');
+                        }
+                    } else {
+                        if (window.showCustomNotice) showCustomNotice(data.message || 'Lỗi thêm giỏ hàng', 'error');
+                    }
+                } catch (err) {
+                    if (window.showCustomNotice) showCustomNotice('Không thể kết nối đến máy chủ!', 'error');
+                } finally {
+                    qvAddToCartBtn.innerText = originalText;
+                    qvAddToCartBtn.disabled = false;
+                }
+            };
         }
     }
 
-    if (closeQuickView) closeQuickView.addEventListener('click', hideQuickViewModal);
-    if (modalOverlay) modalOverlay.addEventListener('click', hideQuickViewModal);
-
-    if (qvQtyMinus) {
-        qvQtyMinus.addEventListener('click', () => {
-            let val = parseInt(qvQtyInput.value) || 1;
-            if (val > 1) qvQtyInput.value = val - 1;
-        });
+    // Khởi tạo các sự kiện cho modal có sẵn trên trang
+    const existingModal = document.getElementById('quickViewModal');
+    if (existingModal) {
+        bindModalEvents(existingModal);
     }
 
-    if (qvQtyPlus) {
-        qvQtyPlus.addEventListener('click', () => {
-            let val = parseInt(qvQtyInput.value) || 1;
-            qvQtyInput.value = val + 1;
-        });
-    }
+    // Hàm mở Quick View toàn cục (Global)
+    window.openQuickView = async function(productId) {
+        if (!productId) return;
+        currentActiveProductId = productId;
+        const modal = getOrCreateQuickViewModal();
 
-    const sizeBtns = document.querySelectorAll('.size-btn');
-    sizeBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            sizeBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        });
-    });
+        const qvTitle = modal.querySelector('#qvTitle');
+        const qvPrice = modal.querySelector('#qvPrice');
+        const qvMainImg = modal.querySelector('#qvMainImg');
+        const qvThumb1 = modal.querySelector('#qvThumb1');
+        const qvDescription = modal.querySelector('#qvDescription');
+        const qvQtyInput = modal.querySelector('#qvQtyInput');
 
-    if (qvAddToCartBtn) {
-        qvAddToCartBtn.addEventListener('click', async () => {
-            if (!currentActiveProductId) return;
-            const quantity = parseInt(qvQtyInput.value) || 1;
+        if (qvTitle) qvTitle.textContent = 'Đang tải thông tin sản phẩm...';
+        if (qvPrice) qvPrice.textContent = '...';
+        if (qvDescription) qvDescription.textContent = 'Vui lòng chờ trong giây lát...';
+        if (qvQtyInput) qvQtyInput.value = 1;
 
-            try {
-                const response = await fetch('add_to_cart.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: currentActiveProductId, quantity: quantity })
-                });
+        modal.classList.add('active');
 
-                const data = await response.json();
+        try {
+            const response = await fetch(`get_product.php?id=${productId}`);
+            const data = await response.json();
 
-                if (data.success) {
-                    if (cartCount) cartCount.textContent = data.cart_count;
-                    hideQuickViewModal();
-                    showCustomNotice('Đã thêm sản phẩm vào giỏ hàng!', 'success');
-                } else {
-                    showCustomNotice(data.message, 'error');
-                }
-            } catch (err) {
-                console.error('Fetch error:', err);
-                showCustomNotice('Không thể thêm sản phẩm!', 'error');
+            if (data.success && data.product) {
+                const p = data.product;
+                if (qvTitle) qvTitle.textContent = p.name;
+                if (qvPrice) qvPrice.textContent = p.price_formatted || `$${parseFloat(p.price).toFixed(2)}`;
+                if (qvMainImg) qvMainImg.src = p.image_url;
+                if (qvThumb1) qvThumb1.src = p.image_url;
+                if (qvDescription) qvDescription.textContent = p.description || 'Sản phẩm chính hãng chất lượng cao với thiết kế độc quyền.';
+            } else {
+                if (window.showCustomNotice) showCustomNotice(data.message || 'Không tìm thấy sản phẩm', 'error');
+                modal.classList.remove('active');
             }
-        });
-    }
+        } catch (err) {
+            console.error('Lỗi khi tải chi tiết sản phẩm:', err);
+            if (window.showCustomNotice) showCustomNotice('Không thể tải chi tiết sản phẩm!', 'error');
+            modal.classList.remove('active');
+        }
+    };
+
+    // Bắt sự kiện Click Toàn Cục (Event Delegation) cho tất cả các nút Xem Nhanh
+    document.addEventListener('click', function(e) {
+        const qvBtn = e.target.closest('.btn-quick-view, [data-action="quickview"]');
+        if (qvBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const id = qvBtn.getAttribute('data-id') || qvBtn.dataset.id;
+            if (id) {
+                window.openQuickView(id);
+            }
+        }
+    });
 
     // Newsletter Form Submission Handler
     const newsletterForms = document.querySelectorAll('.newsletter-form');

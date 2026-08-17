@@ -1,7 +1,6 @@
 <?php
 session_start();
 require_once 'db.php';
-
 require_once 'lang.php';
 
 header('Content-Type: application/json');
@@ -16,11 +15,17 @@ if ($id <= 0) {
 try {
     $stmt = $pdo->prepare("SELECT * FROM products WHERE id = ?");
     $stmt->execute([$id]);
-    $product = $stmt->fetch();
+    $product = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($product) {
+        $product['name'] = translate_product_name($product['name']);
         $product['price_formatted'] = format_price($product['price']);
         $product['old_price_formatted'] = !empty($product['old_price']) ? format_price($product['old_price']) : null;
+        
+        if (empty($product['image_url'])) {
+            $product['image_url'] = 'images/favicon.png';
+        }
+        
         echo json_encode(['success' => true, 'product' => $product]);
     } else {
         echo json_encode(['success' => false, 'message' => 'Không tìm thấy sản phẩm.']);

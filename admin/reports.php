@@ -1,10 +1,20 @@
 <?php
-require_once 'auth_check.php';
-require_once '../db.php';
-require_once '../lang.php';
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+require_once __DIR__ . '/../db.php';
+require_once __DIR__ . '/../lang.php';
 
-// Chỉ Quản trị viên mới được xem báo cáo doanh thu tài chính
-require_admin_role();
+if (!isset($_SESSION['admin_id'])) {
+    header('Location: login.php');
+    exit;
+}
+
+// Chỉ Quản trị viên (Admin) mới được xem báo cáo doanh thu tài chính
+if (($_SESSION['admin_role'] ?? 'admin') !== 'admin') {
+    header('Location: index.php?error=no_permission');
+    exit;
+}
 
 $year_filter = isset($_GET['year']) ? intval($_GET['year']) : date('Y');
 $month_filter = isset($_GET['month']) ? intval($_GET['month']) : 0;

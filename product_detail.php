@@ -343,6 +343,7 @@ if (isset($_SESSION['cart'])) {
                     <li><a href="products.php?category=clothing" class="<?php echo $product['category']==='clothing'?'active':''; ?>"><?php echo __('NAV_CLOTHING'); ?></a></li>
                     <li><a href="products.php?category=accessories" class="<?php echo $product['category']==='accessories'?'active':''; ?>"><?php echo __('NAV_ACCESSORIES'); ?></a></li>
                     <li><a href="products.php?category=toys" class="<?php echo $product['category']==='toys'?'active':''; ?>"><?php echo __('NAV_TOYS'); ?></a></li>
+                    <li><a href="products.php?category=decor" class="<?php echo $product['category']==='decor'?'active':''; ?>"><?php echo __('NAV_DECOR'); ?></a></li>
                 </ul>
             </nav>
 

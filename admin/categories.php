@@ -84,7 +84,8 @@ try {
         FROM categories c 
         ORDER BY c.id ASC
     ")->fetchAll();
-} catch (Exception $e) {}
+} catch (Exception $e) {
+}
 
 if (empty($categories)) {
     try {
@@ -117,11 +118,13 @@ if (empty($categories)) {
             FROM categories c 
             ORDER BY c.id ASC
         ")->fetchAll();
-    } catch (Exception $ex) {}
+    } catch (Exception $ex) {
+    }
 }
 ?>
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <link rel="icon" type="image/png" href="../favicon.png?v=2">
     <link rel="shortcut icon" href="../favicon.ico?v=2">
@@ -131,23 +134,115 @@ if (empty($categories)) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .layout-grid { display: grid; grid-template-columns: 320px 1fr; gap: 30px; }
-        .card { background: #fff; padding: 25px; border-radius: 8px; border: 1px solid #cbd5e1; }
-        .card h3 { margin-bottom: 15px; font-size: 18px; color: #1e293b; }
-        .card form label { display: block; font-weight: 600; font-size: 13px; color: #475569; margin-bottom: 5px; }
-        .card form input, .card form select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: 'Inter'; box-sizing: border-box; margin-bottom: 15px; }
-        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
-        .status-show { background: #dcfce7; color: #166534; }
-        .status-hide { background: #fee2e2; color: #991b1b; }
-        .alert-success { background: #dcfce7; color: #166534; padding: 12px 18px; border-radius: 6px; margin-bottom: 20px; font-weight: 600; }
-        .alert-error { background: #fee2e2; color: #991b1b; padding: 12px 18px; border-radius: 6px; margin-bottom: 20px; font-weight: 600; }
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 30px;
+        }
+
+        .card {
+            background: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+        }
+
+        .card h3 {
+            margin-bottom: 15px;
+            font-size: 18px;
+            color: #1e293b;
+        }
+
+        .card form label {
+            display: block;
+            font-weight: 600;
+            font-size: 13px;
+            color: #475569;
+            margin-bottom: 5px;
+        }
+
+        .card form input,
+        .card form select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-family: 'Inter';
+            box-sizing: border-box;
+            margin-bottom: 15px;
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .status-show {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-hide {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .alert-success {
+            background: #dcfce7;
+            color: #166534;
+            padding: 12px 18px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px 18px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
 
         /* Modal styling */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center; }
-        .modal-content { background: #fff; padding: 30px; border-radius: 10px; width: 440px; text-align: left; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        .modal-content input, .modal-content select { width: 100%; padding: 10px; margin: 8px 0 15px 0; border: 1px solid #cbd5e1; border-radius: 6px; font-family: 'Inter'; box-sizing: border-box; }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            width: 440px;
+            text-align: left;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-content input,
+        .modal-content select {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0 15px 0;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-family: 'Inter';
+            box-sizing: border-box;
+        }
     </style>
 </head>
+
 <body>
     <div class="sidebar">
         <h2>PIXELGEAR</h2>
@@ -167,9 +262,10 @@ if (empty($categories)) {
 
     <div class="main-content">
         <h1>Quản Lý Danh Mục Sản Phẩm (<?php echo count($categories); ?>)</h1>
-        
+
         <?php if ($msg || isset($_GET['msg'])): ?>
-            <div class="alert-success"><i class="fas fa-check-circle"></i> <?php echo $msg ? $msg : 'Đã cập nhật danh mục thành công!'; ?></div>
+            <div class="alert-success"><i class="fas fa-check-circle"></i>
+                <?php echo $msg ? $msg : 'Đã cập nhật danh mục thành công!'; ?></div>
         <?php endif; ?>
 
         <?php if ($error): ?>
@@ -187,7 +283,9 @@ if (empty($categories)) {
                     <label>Mã danh mục (Slug/URL)</label>
                     <input type="text" name="slug" placeholder="Ví dụ: ao-khoac (Tự sinh nếu trống)">
 
-                    <button type="submit" class="btn" style="width: 100%; padding: 12px; background: #15803d; color: #fff; border: none; font-weight: 700; border-radius: 6px; cursor: pointer;">THÊM DANH MỤC</button>
+                    <button type="submit" class="btn"
+                        style="width: 100%; padding: 12px; background: #15803d; color: #fff; border: none; font-weight: 700; border-radius: 6px; cursor: pointer;">THÊM
+                        DANH MỤC</button>
                 </form>
             </div>
 
@@ -204,33 +302,46 @@ if (empty($categories)) {
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($categories as $cat): 
+                        <?php foreach ($categories as $cat):
                             $cSt = intval($cat['status']);
-                        ?>
-                        <tr>
-                            <td><strong>#<?php echo $cat['id']; ?></strong></td>
-                            <td><strong style="color: #0f172a; font-size: 15px;"><?php echo htmlspecialchars($cat['name']); ?></strong></td>
-                            <td><code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; color: #0284c7;"><?php echo htmlspecialchars($cat['slug']); ?></code></td>
-                            <td><span class="badge pending" style="background: #e0f2fe; color: #0369a1; font-weight: 700;"><?php echo $cat['product_count']; ?> SP</span></td>
-                            <td>
-                                <?php if ($cSt === 1): ?>
-                                    <span class="status-badge status-show"><i class="fas fa-eye"></i> Hiển thị</span>
-                                <?php else: ?>
-                                    <span class="status-badge status-hide"><i class="fas fa-eye-slash"></i> Đã ẩn</span>
-                                <?php endif; ?>
-                            </td>
-                            <td style="text-align: center;">
-                                <button type="button" class="btn" style="background: #0284c7; color: #fff; padding: 5px 9px; font-size: 12px; border:none; cursor:pointer; border-radius: 4px; font-weight: 700; margin-right: 3px;" onclick="openEditCatModal(<?php echo $cat['id']; ?>, '<?php echo htmlspecialchars(addslashes($cat['name'])); ?>', '<?php echo htmlspecialchars(addslashes($cat['slug'])); ?>', <?php echo $cSt; ?>)">
-                                    <i class="fas fa-edit"></i> Sửa
-                                </button>
-                                <a href="categories.php?toggle_id=<?php echo $cat['id']; ?>" class="btn" style="background: <?php echo $cSt===1?'#64748b':'#16a34a'; ?>; color: #fff; padding: 5px 8px; font-size: 12px; text-decoration: none; border-radius: 4px; font-weight: 700; margin-right: 3px;">
-                                    <i class="fas fa-<?php echo $cSt===1?'eye-slash':'eye'; ?>"></i> <?php echo $cSt===1?'Ẩn':'Hiện'; ?>
-                                </a>
-                                <a href="categories.php?delete_id=<?php echo $cat['id']; ?>" onclick="return confirm('Bạn có chắc chắn muốn xóa danh mục này không?')" class="btn" style="background: #dc2626; color: #fff; padding: 5px 8px; font-size: 12px; text-decoration: none; border-radius: 4px; font-weight: 700;">
-                                    <i class="fas fa-trash"></i> Xóa
-                                </a>
-                            </td>
-                        </tr>
+                            ?>
+                            <tr>
+                                <td><strong>#<?php echo $cat['id']; ?></strong></td>
+                                <td><strong
+                                        style="color: #0f172a; font-size: 15px;"><?php echo htmlspecialchars($cat['name']); ?></strong>
+                                </td>
+                                <td><code
+                                        style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; color: #0284c7;"><?php echo htmlspecialchars($cat['slug']); ?></code>
+                                </td>
+                                <td><span class="badge pending"
+                                        style="background: #e0f2fe; color: #0369a1; font-weight: 700;"><?php echo $cat['product_count']; ?>
+                                        SP</span></td>
+                                <td>
+                                    <?php if ($cSt === 1): ?>
+                                        <span class="status-badge status-show"><i class="fas fa-eye"></i> Hiển thị</span>
+                                    <?php else: ?>
+                                        <span class="status-badge status-hide"><i class="fas fa-eye-slash"></i> Đã ẩn</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td style="text-align: center;">
+                                    <button type="button" class="btn"
+                                        style="background: #0284c7; color: #fff; padding: 5px 9px; font-size: 12px; border:none; cursor:pointer; border-radius: 4px; font-weight: 700; margin-right: 3px;"
+                                        onclick="openEditCatModal(<?php echo $cat['id']; ?>, '<?php echo htmlspecialchars(addslashes($cat['name'])); ?>', '<?php echo htmlspecialchars(addslashes($cat['slug'])); ?>', <?php echo $cSt; ?>)">
+                                        <i class="fas fa-edit"></i> Sửa
+                                    </button>
+                                    <a href="categories.php?toggle_id=<?php echo $cat['id']; ?>" class="btn"
+                                        style="background: <?php echo $cSt === 1 ? '#64748b' : '#16a34a'; ?>; color: #fff; padding: 5px 8px; font-size: 12px; text-decoration: none; border-radius: 4px; font-weight: 700; margin-right: 3px;">
+                                        <i class="fas fa-<?php echo $cSt === 1 ? 'eye-slash' : 'eye'; ?>"></i>
+                                        <?php echo $cSt === 1 ? 'Ẩn' : 'Hiện'; ?>
+                                    </a>
+                                    <a href="categories.php?delete_id=<?php echo $cat['id']; ?>"
+                                        onclick="return confirm('Bạn có chắc chắn muốn xóa danh mục này không?')"
+                                        class="btn"
+                                        style="background: #dc2626; color: #fff; padding: 5px 8px; font-size: 12px; text-decoration: none; border-radius: 4px; font-weight: 700;">
+                                        <i class="fas fa-trash"></i> Xóa
+                                    </a>
+                                </td>
+                            </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
@@ -241,7 +352,8 @@ if (empty($categories)) {
     <!-- Modal Chỉnh Sửa Danh Mục -->
     <div id="editCatModal" class="modal">
         <div class="modal-content">
-            <h3 style="margin-bottom: 15px; color: #0f172a;"><i class="fas fa-edit" style="color: #0284c7;"></i> Chỉnh Sửa Danh Mục</h3>
+            <h3 style="margin-bottom: 15px; color: #0f172a;"><i class="fas fa-edit" style="color: #0284c7;"></i> Chỉnh
+                Sửa Danh Mục</h3>
             <form method="POST">
                 <input type="hidden" name="edit_category" value="1">
                 <input type="hidden" name="cat_id" id="editCatId">
@@ -259,24 +371,29 @@ if (empty($categories)) {
                 </select>
 
                 <div style="display: flex; gap: 10px; margin-top: 15px;">
-                    <button type="submit" class="btn" style="flex: 1; padding: 10px; background: #15803d; color: #fff; border: none; font-weight: 700; border-radius: 6px; cursor: pointer;">LƯU THAY ĐỔI</button>
-                    <button type="button" class="btn" style="flex: 1; padding: 10px; background: #64748b; color: #fff; border: none; font-weight: 700; border-radius: 6px; cursor: pointer;" onclick="closeEditCatModal()">HỦY</button>
+                    <button type="submit" class="btn"
+                        style="flex: 1; padding: 10px; background: #15803d; color: #fff; border: none; font-weight: 700; border-radius: 6px; cursor: pointer;">LƯU
+                        THAY ĐỔI</button>
+                    <button type="button" class="btn"
+                        style="flex: 1; padding: 10px; background: #64748b; color: #fff; border: none; font-weight: 700; border-radius: 6px; cursor: pointer;"
+                        onclick="closeEditCatModal()">HỦY</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
-    function openEditCatModal(id, name, slug, status) {
-        document.getElementById('editCatId').value = id;
-        document.getElementById('editCatName').value = name;
-        document.getElementById('editCatSlug').value = slug;
-        document.getElementById('editCatStatus').value = status;
-        document.getElementById('editCatModal').style.display = 'flex';
-    }
-    function closeEditCatModal() {
-        document.getElementById('editCatModal').style.display = 'none';
-    }
+        function openEditCatModal(id, name, slug, status) {
+            document.getElementById('editCatId').value = id;
+            document.getElementById('editCatName').value = name;
+            document.getElementById('editCatSlug').value = slug;
+            document.getElementById('editCatStatus').value = status;
+            document.getElementById('editCatModal').style.display = 'flex';
+        }
+        function closeEditCatModal() {
+            document.getElementById('editCatModal').style.display = 'none';
+        }
     </script>
 </body>
+
 </html>

@@ -136,23 +136,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label style="font-weight:600;">Tên sản phẩm</label>
                 <input type="text" name="name" value="<?php echo htmlspecialchars($product['name']); ?>" required>
 
-                <label style="font-weight:600;">Danh mục chi tiết</label>
-                <select name="category" required style="padding:10px; font-size:15px;">
-                    <optgroup label="--- QUẦN ÁO (CLOTHING) ---">
-                        <option value="tshirts" <?php if($product['category'] === 'tshirts') echo 'selected'; ?>>Áo Thun & Hoodies (T-Shirts & Hoodies)</option>
-                        <option value="cosplay" <?php if($product['category'] === 'cosplay') echo 'selected'; ?>>Trang Phục Cosplay & Outfit</option>
-                        <option value="clothing" <?php if($product['category'] === 'clothing') echo 'selected'; ?>>Quần Áo Khác</option>
-                    </optgroup>
-                    <optgroup label="--- PHỤ KIỆN (ACCESSORIES) ---">
-                        <option value="hats" <?php if($product['category'] === 'hats') echo 'selected'; ?>>Nón & Phụ Kiện Thời Trang</option>
-                        <option value="keychains" <?php if($product['category'] === 'keychains') echo 'selected'; ?>>Móc Khóa & Trang Sức</option>
-                        <option value="accessories" <?php if($product['category'] === 'accessories') echo 'selected'; ?>>Phụ Kiện Khác</option>
-                    </optgroup>
-                    <optgroup label="--- ĐỒ CHƠI & DECOR (TOYS & GAMES) ---">
-                        <option value="toys_models" <?php if($product['category'] === 'toys_models') echo 'selected'; ?>>Đồ Chơi & Mô Hình Sưu Tầm</option>
-                        <option value="decor" <?php if($product['category'] === 'decor') echo 'selected'; ?>>Đèn & Đồ Trang Trí Phòng Game</option>
-                        <option value="toys" <?php if($product['category'] === 'toys') echo 'selected'; ?>>Đồ Chơi Khác</option>
-                    </optgroup>
+                <label style="font-weight:600;">Danh mục sản phẩm</label>
+                <?php
+                $db_categories = [];
+                try {
+                    $db_categories = $pdo->query("SELECT * FROM categories WHERE status = 1 ORDER BY id ASC")->fetchAll(PDO::FETCH_ASSOC);
+                } catch (Exception $e) {}
+
+                if (empty($db_categories)) {
+                    $db_categories = [
+                        ['slug' => 'clothing', 'name' => 'Quần áo & Hoodies'],
+                        ['slug' => 'accessories', 'name' => 'Phụ kiện Minecraft'],
+                        ['slug' => 'toys', 'name' => 'Đồ chơi & Gấu bông'],
+                        ['slug' => 'decor', 'name' => 'Đèn & Vật dụng']
+                    ];
+                }
+
+                $matchedCategory = false;
+                ?>
+                <select name="category" required style="padding:12px; font-size:15px; border-radius:6px; border:1px solid #cbd5e1; width:100%; margin-bottom:15px;">
+                    <?php foreach ($db_categories as $catItem): 
+                        $isSelected = ($product['category'] === $catItem['slug'] || $product['category'] === $catItem['name']);
+                        if (!$isSelected) {
+                            if ($catItem['slug'] === 'clothing' && in_array($product['category'], ['tshirts', 'cosplay'])) $isSelected = true;
+                            if ($catItem['slug'] === 'accessories' && in_array($product['category'], ['hats', 'keychains'])) $isSelected = true;
+                            if ($catItem['slug'] === 'toys' && in_array($product['category'], ['toys_models', 'plushies'])) $isSelected = true;
+                            if ($catItem['slug'] === 'decor' && in_array($product['category'], ['lights', 'homeware'])) $isSelected = true;
+                        }
+                        if ($isSelected) $matchedCategory = true;
+                    ?>
+                        <option value="<?php echo htmlspecialchars($catItem['slug']); ?>" <?php if($isSelected) echo 'selected'; ?>>
+                            <?php echo htmlspecialchars($catItem['name']); ?> (Mã: <?php echo htmlspecialchars($catItem['slug']); ?>)
+                        </option>
+                    <?php endforeach; ?>
+                    <?php if (!$matchedCategory && !empty($product['category'])): ?>
+                        <option value="<?php echo htmlspecialchars($product['category']); ?>" selected>
+                            <?php echo htmlspecialchars($product['category']); ?> (Khác)
+                        </option>
+                    <?php endif; ?>
                 </select>
 
                 <div style="background:#f8fafc; padding:20px; border-radius:8px; margin:20px 0; border:2px dashed #94a3b8; text-align:center;" id="pasteDropArea">

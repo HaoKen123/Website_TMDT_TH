@@ -17,7 +17,8 @@ try {
     if (!in_array('role', $cols)) {
         $pdo->exec("ALTER TABLE users ADD COLUMN role VARCHAR(20) NOT NULL DEFAULT 'customer' COMMENT 'customer, staff, admin'");
     }
-} catch (Exception $e) {}
+} catch (Exception $e) {
+}
 
 $msg = '';
 $error = '';
@@ -141,6 +142,7 @@ $usersList = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <link rel="icon" type="image/png" href="../favicon.png?v=2">
     <link rel="shortcut icon" href="../favicon.ico?v=2">
@@ -150,8 +152,24 @@ $usersList = $stmt->fetchAll();
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .action-bar { display: flex; gap: 12px; align-items: center; }
-        .btn-add-user { background: #15803d; color: #fff; padding: 9px 18px; border-radius: 6px; border: none; cursor: pointer; font-weight: 700; font-size: 13px; text-decoration: none; }
+        .action-bar {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn-add-user {
+            background: #15803d;
+            color: #fff;
+            padding: 9px 18px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 13px;
+            text-decoration: none;
+        }
+
         .btn-delete-selected {
             background: #dc2626;
             color: #ffffff;
@@ -164,26 +182,122 @@ $usersList = $stmt->fetchAll();
             display: none;
             transition: all 0.2s ease;
         }
-        .btn-delete-selected:hover { background: #b91c1c; }
-        .checkbox-cell { width: 45px; text-align: center; }
-        .checkbox-cell input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: #dc2626; }
-        .search-box { display: flex; gap: 10px; margin-bottom: 20px; }
-        .search-box input { flex: 1; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: 'Inter'; font-size: 14px; }
-        .search-box button { padding: 10px 20px; background: #15803d; color: #fff; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; }
-        
-        .alert-success { background: #dcfce7; color: #166534; padding: 12px 18px; border-radius: 6px; margin-bottom: 20px; font-weight: 600; }
-        .alert-error { background: #fee2e2; color: #991b1b; padding: 12px 18px; border-radius: 6px; margin-bottom: 20px; font-weight: 600; }
-        
-        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
-        .status-active { background: #dcfce7; color: #166534; }
-        .status-blocked { background: #fee2e2; color: #991b1b; }
+
+        .btn-delete-selected:hover {
+            background: #b91c1c;
+        }
+
+        .checkbox-cell {
+            width: 45px;
+            text-align: center;
+        }
+
+        .checkbox-cell input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #dc2626;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-family: 'Inter';
+            font-size: 14px;
+        }
+
+        .search-box button {
+            padding: 10px 20px;
+            background: #15803d;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .alert-success {
+            background: #dcfce7;
+            color: #166534;
+            padding: 12px 18px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px 18px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .status-active {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-blocked {
+            background: #fee2e2;
+            color: #991b1b;
+        }
 
         /* Modal styling */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center; }
-        .modal-content { background: #fff; padding: 30px; border-radius: 10px; width: 480px; max-width: 95vw; max-height: 90vh; overflow-y: auto; text-align: left; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        .modal-content input, .modal-content select { width: 100%; padding: 9px 12px; margin: 6px 0 14px 0; border: 1px solid #cbd5e1; border-radius: 6px; font-family: 'Inter'; box-sizing: border-box; }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            width: 480px;
+            max-width: 95vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            text-align: left;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-content input,
+        .modal-content select {
+            width: 100%;
+            padding: 9px 12px;
+            margin: 6px 0 14px 0;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-family: 'Inter';
+            box-sizing: border-box;
+        }
     </style>
 </head>
+
 <body>
     <div class="sidebar">
         <h2>PIXELGEAR</h2>
@@ -202,18 +316,23 @@ $usersList = $stmt->fetchAll();
     </div>
 
     <div class="main-content">
-        <div class="top-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div class="top-header"
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h1>Quản Lý Người Dùng & Nhân Viên (<?php echo count($usersList); ?>)</h1>
             <div class="action-bar">
-                <button type="button" class="btn-add-user" onclick="openAddModal()"><i class="fas fa-user-plus"></i> Thêm Tài Khoản / Nhân Viên</button>
-                <button type="button" id="btnDeleteSelected" class="btn-delete-selected" onclick="deleteSelectedUsers()">
-                    <i class="fas fa-trash-alt" style="margin-right: 6px;"></i> Xóa đã chọn (<span id="selectedCount">0</span>)
+                <button type="button" class="btn-add-user" onclick="openAddModal()"><i class="fas fa-user-plus"></i>
+                    Thêm Tài Khoản / Nhân Viên</button>
+                <button type="button" id="btnDeleteSelected" class="btn-delete-selected"
+                    onclick="deleteSelectedUsers()">
+                    <i class="fas fa-trash-alt" style="margin-right: 6px;"></i> Xóa đã chọn (<span
+                        id="selectedCount">0</span>)
                 </button>
             </div>
         </div>
 
         <?php if ($msg || isset($_GET['msg'])): ?>
-            <div class="alert-success"><i class="fas fa-check-circle"></i> <?php echo $msg ? $msg : 'Đã cập nhật trạng thái người dùng thành công!'; ?></div>
+            <div class="alert-success"><i class="fas fa-check-circle"></i>
+                <?php echo $msg ? $msg : 'Đã cập nhật trạng thái người dùng thành công!'; ?></div>
         <?php endif; ?>
 
         <?php if ($error): ?>
@@ -222,10 +341,13 @@ $usersList = $stmt->fetchAll();
 
         <!-- Search Box -->
         <form method="GET" class="search-box">
-            <input type="text" name="search" placeholder="Tìm theo Tên, Email, Tên đăng nhập hoặc Số điện thoại..." value="<?php echo htmlspecialchars($search); ?>">
+            <input type="text" name="search" placeholder="Tìm theo Tên, Email, Tên đăng nhập hoặc Số điện thoại..."
+                value="<?php echo htmlspecialchars($search); ?>">
             <button type="submit"><i class="fas fa-search"></i> Tìm kiếm</button>
             <?php if ($search): ?>
-                <a href="users.php" style="padding: 10px 15px; background: #64748b; color: #fff; text-decoration: none; border-radius: 6px; font-weight: 600;">Xóa tìm</a>
+                <a href="users.php"
+                    style="padding: 10px 15px; background: #64748b; color: #fff; text-decoration: none; border-radius: 6px; font-weight: 600;">Xóa
+                    tìm</a>
             <?php endif; ?>
         </form>
 
@@ -248,59 +370,71 @@ $usersList = $stmt->fetchAll();
             </thead>
             <tbody>
                 <?php if (empty($usersList)): ?>
-                <tr>
-                    <td colspan="10" style="text-align: center; padding: 40px; color: #64748b;">
-                        Chưa có người dùng nào.
-                    </td>
-                </tr>
-                <?php else: ?>
-                    <?php foreach ($usersList as $u): 
-                        $uRole = $u['role'] ?? 'customer';
-                        $uStatus = intval($u['status'] ?? 1);
-                    ?>
-                    <tr id="user-row-<?php echo $u['id']; ?>">
-                        <td class="checkbox-cell">
-                            <input type="checkbox" class="user-checkbox" value="<?php echo $u['id']; ?>" onchange="updateSelectedCount()">
-                        </td>
-                        <td><strong>#<?php echo $u['id']; ?></strong></td>
-                        <td><strong style="color: #0284c7;"><?php echo htmlspecialchars($u['username']); ?></strong></td>
-                        <td><strong><?php echo htmlspecialchars($u['fullname']); ?></strong></td>
-                        <td style="font-size: 13px; color: #475569;"><?php echo htmlspecialchars($u['email'] ?? ''); ?></td>
-                        <td>
-                            <form method="POST" style="display:inline;">
-                                <input type="hidden" name="change_role_id" value="<?php echo $u['id']; ?>">
-                                <select name="new_role" onchange="this.form.submit()" style="padding: 4px 8px; border-radius: 4px; font-weight: 700; font-size: 12px; cursor: pointer;">
-                                    <option value="customer" <?php echo $uRole==='customer'?'selected':''; ?>>Khách hàng</option>
-                                    <option value="staff" <?php echo $uRole==='staff'?'selected':''; ?>>Nhân viên</option>
-                                    <option value="admin" <?php echo $uRole==='admin'?'selected':''; ?>>Admin</option>
-                                </select>
-                            </form>
-                        </td>
-                        <td>
-                            <?php if ($uStatus === 1): ?>
-                                <span class="status-badge status-active"><i class="fas fa-check-circle"></i> Hoạt động</span>
-                            <?php else: ?>
-                                <span class="status-badge status-blocked"><i class="fas fa-lock"></i> Đã khóa</span>
-                            <?php endif; ?>
-                        </td>
-                        <td><?php echo htmlspecialchars($u['phone']); ?></td>
-                        <td><span class="badge pending" style="background: #e0f2fe; color: #0369a1; font-weight: 700;"><?php echo $u['order_count']; ?> đơn</span></td>
-                        <td style="text-align: center;">
-                            <button type="button" class="btn" style="background: #0284c7; color: #fff; padding: 5px 8px; font-size: 12px; border:none; cursor:pointer; border-radius: 4px; font-weight: 700; margin-right: 2px;" 
-                                onclick='openEditUserModal(<?php echo json_encode($u, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE); ?>)'>
-                                <i class="fas fa-edit"></i> Sửa
-                            </button>
-                            <a href="users.php?toggle_status_id=<?php echo $u['id']; ?>" class="btn" style="background: <?php echo $uStatus===1?'#ef4444':'#16a34a'; ?>; color: #fff; padding: 5px 8px; font-size: 12px; text-decoration: none; border-radius: 4px; font-weight: 700; margin-right: 2px;">
-                                <i class="fas fa-<?php echo $uStatus===1?'lock':'unlock'; ?>"></i> <?php echo $uStatus===1?'Khóa':'Mở'; ?>
-                            </a>
-                            <button type="button" class="btn" style="background: #f59e0b; color: #fff; padding: 5px 8px; font-size: 12px; border:none; cursor:pointer; border-radius: 4px; font-weight: 700; margin-right: 2px;" onclick="openResetModal(<?php echo $u['id']; ?>, '<?php echo htmlspecialchars($u['username']); ?>')">
-                                <i class="fas fa-key"></i> Pass
-                            </button>
-                            <button type="button" class="btn" style="padding: 5px 8px; font-size: 12px; border:none; cursor:pointer; background: #dc2626; color: #fff; border-radius: 4px; font-weight: 700;" onclick="deleteSingleUser(<?php echo $u['id']; ?>)">
-                                <i class="fas fa-trash"></i> Xóa
-                            </button>
+                    <tr>
+                        <td colspan="10" style="text-align: center; padding: 40px; color: #64748b;">
+                            Chưa có người dùng nào.
                         </td>
                     </tr>
+                <?php else: ?>
+                    <?php foreach ($usersList as $u):
+                        $uRole = $u['role'] ?? 'customer';
+                        $uStatus = intval($u['status'] ?? 1);
+                        ?>
+                        <tr id="user-row-<?php echo $u['id']; ?>">
+                            <td class="checkbox-cell">
+                                <input type="checkbox" class="user-checkbox" value="<?php echo $u['id']; ?>"
+                                    onchange="updateSelectedCount()">
+                            </td>
+                            <td><strong>#<?php echo $u['id']; ?></strong></td>
+                            <td><strong style="color: #0284c7;"><?php echo htmlspecialchars($u['username']); ?></strong></td>
+                            <td><strong><?php echo htmlspecialchars($u['fullname']); ?></strong></td>
+                            <td style="font-size: 13px; color: #475569;"><?php echo htmlspecialchars($u['email'] ?? ''); ?></td>
+                            <td>
+                                <form method="POST" style="display:inline;">
+                                    <input type="hidden" name="change_role_id" value="<?php echo $u['id']; ?>">
+                                    <select name="new_role" onchange="this.form.submit()"
+                                        style="padding: 4px 8px; border-radius: 4px; font-weight: 700; font-size: 12px; cursor: pointer;">
+                                        <option value="customer" <?php echo $uRole === 'customer' ? 'selected' : ''; ?>>Khách hàng
+                                        </option>
+                                        <option value="staff" <?php echo $uRole === 'staff' ? 'selected' : ''; ?>>Nhân viên</option>
+                                        <option value="admin" <?php echo $uRole === 'admin' ? 'selected' : ''; ?>>Admin</option>
+                                    </select>
+                                </form>
+                            </td>
+                            <td>
+                                <?php if ($uStatus === 1): ?>
+                                    <span class="status-badge status-active"><i class="fas fa-check-circle"></i> Hoạt động</span>
+                                <?php else: ?>
+                                    <span class="status-badge status-blocked"><i class="fas fa-lock"></i> Đã khóa</span>
+                                <?php endif; ?>
+                            </td>
+                            <td><?php echo htmlspecialchars($u['phone']); ?></td>
+                            <td><span class="badge pending"
+                                    style="background: #e0f2fe; color: #0369a1; font-weight: 700;"><?php echo $u['order_count']; ?>
+                                    đơn</span></td>
+                            <td style="text-align: center;">
+                                <button type="button" class="btn"
+                                    style="background: #0284c7; color: #fff; padding: 5px 8px; font-size: 12px; border:none; cursor:pointer; border-radius: 4px; font-weight: 700; margin-right: 2px;"
+                                    onclick='openEditUserModal(<?php echo json_encode($u, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE); ?>)'>
+                                    <i class="fas fa-edit"></i> Sửa
+                                </button>
+                                <a href="users.php?toggle_status_id=<?php echo $u['id']; ?>" class="btn"
+                                    style="background: <?php echo $uStatus === 1 ? '#ef4444' : '#16a34a'; ?>; color: #fff; padding: 5px 8px; font-size: 12px; text-decoration: none; border-radius: 4px; font-weight: 700; margin-right: 2px;">
+                                    <i class="fas fa-<?php echo $uStatus === 1 ? 'lock' : 'unlock'; ?>"></i>
+                                    <?php echo $uStatus === 1 ? 'Khóa' : 'Mở'; ?>
+                                </a>
+                                <button type="button" class="btn"
+                                    style="background: #f59e0b; color: #fff; padding: 5px 8px; font-size: 12px; border:none; cursor:pointer; border-radius: 4px; font-weight: 700; margin-right: 2px;"
+                                    onclick="openResetModal(<?php echo $u['id']; ?>, '<?php echo htmlspecialchars($u['username']); ?>')">
+                                    <i class="fas fa-key"></i> Pass
+                                </button>
+                                <button type="button" class="btn"
+                                    style="padding: 5px 8px; font-size: 12px; border:none; cursor:pointer; background: #dc2626; color: #fff; border-radius: 4px; font-weight: 700;"
+                                    onclick="deleteSingleUser(<?php echo $u['id']; ?>)">
+                                    <i class="fas fa-trash"></i> Xóa
+                                </button>
+                            </td>
+                        </tr>
                     <?php endforeach; ?>
                 <?php endif; ?>
             </tbody>
@@ -310,7 +444,8 @@ $usersList = $stmt->fetchAll();
     <!-- Modal Thêm người dùng / Nhân viên -->
     <div id="addModal" class="modal">
         <div class="modal-content">
-            <h3 style="margin-bottom: 15px; color: #0f172a;"><i class="fas fa-user-plus" style="color: #15803d;"></i> Thêm Tài Khoản / Nhân Viên</h3>
+            <h3 style="margin-bottom: 15px; color: #0f172a;"><i class="fas fa-user-plus" style="color: #15803d;"></i>
+                Thêm Tài Khoản / Nhân Viên</h3>
             <form method="POST">
                 <input type="hidden" name="add_user_action" value="1">
                 <label style="font-size: 13px; font-weight: 600;">Tên đăng nhập *</label>
@@ -350,8 +485,12 @@ $usersList = $stmt->fetchAll();
                 </div>
 
                 <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <button type="submit" class="btn" style="flex: 1; padding: 10px; background: #15803d; color: #fff; border: none; font-weight: 700; border-radius: 6px; cursor: pointer;">LƯU TÀI KHOẢN</button>
-                    <button type="button" class="btn" style="flex: 1; padding: 10px; background: #64748b; color: #fff; border: none; font-weight: 700; border-radius: 6px; cursor: pointer;" onclick="closeAddModal()">HỦY</button>
+                    <button type="submit" class="btn"
+                        style="flex: 1; padding: 10px; background: #15803d; color: #fff; border: none; font-weight: 700; border-radius: 6px; cursor: pointer;">LƯU
+                        TÀI KHOẢN</button>
+                    <button type="button" class="btn"
+                        style="flex: 1; padding: 10px; background: #64748b; color: #fff; border: none; font-weight: 700; border-radius: 6px; cursor: pointer;"
+                        onclick="closeAddModal()">HỦY</button>
                 </div>
             </form>
         </div>
@@ -360,12 +499,14 @@ $usersList = $stmt->fetchAll();
     <!-- Modal Chỉnh Sửa Thông Tin Người Dùng -->
     <div id="editUserModal" class="modal">
         <div class="modal-content">
-            <h3 style="margin-bottom: 15px; color: #0f172a;"><i class="fas fa-user-edit" style="color: #0284c7;"></i> Sửa Thông Tin Người Dùng</h3>
+            <h3 style="margin-bottom: 15px; color: #0f172a;"><i class="fas fa-user-edit" style="color: #0284c7;"></i>
+                Sửa Thông Tin Người Dùng</h3>
             <form method="POST">
                 <input type="hidden" name="edit_user_action" value="1">
                 <input type="hidden" name="edit_user_id" id="editUserId">
 
-                <p style="font-size: 13px; color: #64748b; margin-top: 0; margin-bottom: 12px;">Tài khoản: <strong id="editUserUsername" style="color: #0284c7;"></strong></p>
+                <p style="font-size: 13px; color: #64748b; margin-top: 0; margin-bottom: 12px;">Tài khoản: <strong
+                        id="editUserUsername" style="color: #0284c7;"></strong></p>
 
                 <label style="font-size: 13px; font-weight: 600;">Họ và tên *</label>
                 <input type="text" name="fullname" id="editUserFullname" required placeholder="Nhập họ và tên...">
@@ -401,8 +542,12 @@ $usersList = $stmt->fetchAll();
                 <input type="password" name="new_password" placeholder="Nhập mật khẩu mới nếu muốn đổi...">
 
                 <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <button type="submit" class="btn" style="flex: 1; padding: 10px; background: #15803d; color: #fff; border: none; font-weight: 700; border-radius: 6px; cursor: pointer;">LƯU THAY ĐỔI</button>
-                    <button type="button" class="btn" style="flex: 1; padding: 10px; background: #64748b; color: #fff; border: none; font-weight: 700; border-radius: 6px; cursor: pointer;" onclick="closeEditUserModal()">HỦY</button>
+                    <button type="submit" class="btn"
+                        style="flex: 1; padding: 10px; background: #15803d; color: #fff; border: none; font-weight: 700; border-radius: 6px; cursor: pointer;">LƯU
+                        THAY ĐỔI</button>
+                    <button type="button" class="btn"
+                        style="flex: 1; padding: 10px; background: #64748b; color: #fff; border: none; font-weight: 700; border-radius: 6px; cursor: pointer;"
+                        onclick="closeEditUserModal()">HỦY</button>
                 </div>
             </form>
         </div>
@@ -412,117 +557,124 @@ $usersList = $stmt->fetchAll();
     <div id="resetModal" class="modal">
         <div class="modal-content">
             <h3 style="margin-bottom: 10px; color: #0f172a;">Đổi Mật Khẩu Nhanh</h3>
-            <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">Tài khoản: <strong id="modalUsername" style="color: #0284c7;"></strong></p>
-            
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">Tài khoản: <strong id="modalUsername"
+                    style="color: #0284c7;"></strong></p>
+
             <form method="POST">
                 <input type="hidden" name="reset_user_id" id="modalUserId">
-                <input type="text" name="new_password" placeholder="Nhập mật khẩu mới..." required style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #cbd5e1; border-radius:6px;">
+                <input type="text" name="new_password" placeholder="Nhập mật khẩu mới..." required
+                    style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #cbd5e1; border-radius:6px;">
                 <div style="display: flex; gap: 10px;">
-                    <button type="submit" class="btn btn-primary" style="flex: 1; padding: 10px; background: #15803d; border: none; font-weight: 700; cursor:pointer;">CẬP NHẬT</button>
-                    <button type="button" class="btn" style="flex: 1; padding: 10px; background: #64748b; color: #fff; border: none; font-weight: 700; cursor:pointer;" onclick="closeResetModal()">HỦY</button>
+                    <button type="submit" class="btn btn-primary"
+                        style="flex: 1; padding: 10px; background: #15803d; border: none; font-weight: 700; cursor:pointer;">CẬP
+                        NHẬT</button>
+                    <button type="button" class="btn"
+                        style="flex: 1; padding: 10px; background: #64748b; color: #fff; border: none; font-weight: 700; cursor:pointer;"
+                        onclick="closeResetModal()">HỦY</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
-    function openAddModal() {
-        document.getElementById('addModal').style.display = 'flex';
-    }
-    function closeAddModal() {
-        document.getElementById('addModal').style.display = 'none';
-    }
-
-    function openEditUserModal(user) {
-        document.getElementById('editUserId').value = user.id;
-        document.getElementById('editUserUsername').innerText = user.username;
-        document.getElementById('editUserFullname').value = user.fullname || '';
-        document.getElementById('editUserEmail').value = user.email || '';
-        document.getElementById('editUserPhone').value = user.phone || '';
-        document.getElementById('editUserAddress').value = user.address || '';
-        document.getElementById('editUserRole').value = user.role || 'customer';
-        document.getElementById('editUserStatus').value = (user.status !== undefined && user.status !== null) ? user.status : 1;
-        document.getElementById('editUserModal').style.display = 'flex';
-    }
-    function closeEditUserModal() {
-        document.getElementById('editUserModal').style.display = 'none';
-    }
-
-    function openResetModal(id, username) {
-        document.getElementById('modalUserId').value = id;
-        document.getElementById('modalUsername').innerText = username;
-        document.getElementById('resetModal').style.display = 'flex';
-    }
-    function closeResetModal() {
-        document.getElementById('resetModal').style.display = 'none';
-    }
-
-    function toggleSelectAll(master) {
-        const checkboxes = document.querySelectorAll('.user-checkbox');
-        checkboxes.forEach(cb => cb.checked = master.checked);
-        updateSelectedCount();
-    }
-
-    function updateSelectedCount() {
-        const checkboxes = document.querySelectorAll('.user-checkbox');
-        const checked = document.querySelectorAll('.user-checkbox:checked');
-        const count = checked.length;
-        const btn = document.getElementById('btnDeleteSelected');
-        const selectAll = document.getElementById('selectAll');
-        
-        document.getElementById('selectedCount').innerText = count;
-        
-        if (checkboxes.length > 0 && count === checkboxes.length) {
-            selectAll.checked = true;
-        } else {
-            selectAll.checked = false;
+        function openAddModal() {
+            document.getElementById('addModal').style.display = 'flex';
+        }
+        function closeAddModal() {
+            document.getElementById('addModal').style.display = 'none';
         }
 
-        if (count > 0) {
-            btn.style.display = 'inline-block';
-        } else {
-            btn.style.display = 'none';
+        function openEditUserModal(user) {
+            document.getElementById('editUserId').value = user.id;
+            document.getElementById('editUserUsername').innerText = user.username;
+            document.getElementById('editUserFullname').value = user.fullname || '';
+            document.getElementById('editUserEmail').value = user.email || '';
+            document.getElementById('editUserPhone').value = user.phone || '';
+            document.getElementById('editUserAddress').value = user.address || '';
+            document.getElementById('editUserRole').value = user.role || 'customer';
+            document.getElementById('editUserStatus').value = (user.status !== undefined && user.status !== null) ? user.status : 1;
+            document.getElementById('editUserModal').style.display = 'flex';
         }
-    }
+        function closeEditUserModal() {
+            document.getElementById('editUserModal').style.display = 'none';
+        }
 
-    function deleteSingleUser(id) {
-        if (!confirm('Bạn có chắc chắn muốn XÓA tài khoản #' + id + ' không?')) return;
-        fetch('delete_user.php?id=' + id + '&ajax=1')
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    const row = document.getElementById('user-row-' + id);
-                    if (row) row.remove();
-                    updateSelectedCount();
-                    alert('Đã xóa thành công!');
-                } else alert('Lỗi: ' + data.message);
-            });
-    }
+        function openResetModal(id, username) {
+            document.getElementById('modalUserId').value = id;
+            document.getElementById('modalUsername').innerText = username;
+            document.getElementById('resetModal').style.display = 'flex';
+        }
+        function closeResetModal() {
+            document.getElementById('resetModal').style.display = 'none';
+        }
 
-    function deleteSelectedUsers() {
-        const checked = document.querySelectorAll('.user-checkbox:checked');
-        const ids = Array.from(checked).map(cb => cb.value);
-        if (ids.length === 0) return;
-        if (!confirm('Bạn có chắc chắn muốn XÓA ' + ids.length + ' tài khoản đã chọn không?')) return;
+        function toggleSelectAll(master) {
+            const checkboxes = document.querySelectorAll('.user-checkbox');
+            checkboxes.forEach(cb => cb.checked = master.checked);
+            updateSelectedCount();
+        }
 
-        const formData = new FormData();
-        ids.forEach(id => formData.append('ids[]', id));
-        formData.append('ajax', '1');
+        function updateSelectedCount() {
+            const checkboxes = document.querySelectorAll('.user-checkbox');
+            const checked = document.querySelectorAll('.user-checkbox:checked');
+            const count = checked.length;
+            const btn = document.getElementById('btnDeleteSelected');
+            const selectAll = document.getElementById('selectAll');
 
-        fetch('delete_user.php', { method: 'POST', body: formData })
-        .then(res => res.json())
-        .then(data => {
-            if (data.status === 'success') {
-                ids.forEach(id => {
-                    const row = document.getElementById('user-row-' + id);
-                    if (row) row.remove();
+            document.getElementById('selectedCount').innerText = count;
+
+            if (checkboxes.length > 0 && count === checkboxes.length) {
+                selectAll.checked = true;
+            } else {
+                selectAll.checked = false;
+            }
+
+            if (count > 0) {
+                btn.style.display = 'inline-block';
+            } else {
+                btn.style.display = 'none';
+            }
+        }
+
+        function deleteSingleUser(id) {
+            if (!confirm('Bạn có chắc chắn muốn XÓA tài khoản #' + id + ' không?')) return;
+            fetch('delete_user.php?id=' + id + '&ajax=1')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        const row = document.getElementById('user-row-' + id);
+                        if (row) row.remove();
+                        updateSelectedCount();
+                        alert('Đã xóa thành công!');
+                    } else alert('Lỗi: ' + data.message);
                 });
-                document.getElementById('selectAll').checked = false;
-                updateSelectedCount();
-                alert('Đã xóa ' + ids.length + ' tài khoản thành công!');
-            } else alert('Lỗi: ' + data.message);
-        });
-    }
+        }
+
+        function deleteSelectedUsers() {
+            const checked = document.querySelectorAll('.user-checkbox:checked');
+            const ids = Array.from(checked).map(cb => cb.value);
+            if (ids.length === 0) return;
+            if (!confirm('Bạn có chắc chắn muốn XÓA ' + ids.length + ' tài khoản đã chọn không?')) return;
+
+            const formData = new FormData();
+            ids.forEach(id => formData.append('ids[]', id));
+            formData.append('ajax', '1');
+
+            fetch('delete_user.php', { method: 'POST', body: formData })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        ids.forEach(id => {
+                            const row = document.getElementById('user-row-' + id);
+                            if (row) row.remove();
+                        });
+                        document.getElementById('selectAll').checked = false;
+                        updateSelectedCount();
+                        alert('Đã xóa ' + ids.length + ' tài khoản thành công!');
+                    } else alert('Lỗi: ' + data.message);
+                });
+        }
     </script>
 </body>
+
 </html>

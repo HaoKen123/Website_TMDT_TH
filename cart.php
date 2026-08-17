@@ -102,6 +102,7 @@ $current_region = get_current_region();
                     <li><a href="products.php?category=clothing"><?php echo __('NAV_CLOTHING'); ?></a></li>
                     <li><a href="products.php?category=accessories"><?php echo __('NAV_ACCESSORIES'); ?></a></li>
                     <li><a href="products.php?category=toys"><?php echo __('NAV_TOYS'); ?></a></li>
+                    <li><a href="products.php?category=decor"><?php echo __('NAV_DECOR'); ?></a></li>
                 </ul>
             </nav>
 

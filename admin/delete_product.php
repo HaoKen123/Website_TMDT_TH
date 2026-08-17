@@ -16,13 +16,14 @@ if (!isset($_SESSION['admin_id'])) {
 // Handle Bulk Delete via POST (Array of IDs)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ids']) && is_array($_POST['ids'])) {
     $ids = array_map('intval', $_POST['ids']);
-    $ids = array_filter($ids, function($id) { return $id > 0; });
+    $ids = array_filter($ids, function ($id) {
+        return $id > 0; });
 
     if (!empty($ids)) {
         try {
             $pdo->beginTransaction();
-            $in  = implode(',', array_fill(0, count($ids), '?'));
-            
+            $in = implode(',', array_fill(0, count($ids), '?'));
+
             // Delete related order items if exists
             $stmtItems = $pdo->prepare("DELETE FROM order_items WHERE product_id IN ($in)");
             $stmtItems->execute($ids);
@@ -30,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ids']) && is_array($_
             // Delete products
             $stmt = $pdo->prepare("DELETE FROM products WHERE id IN ($in)");
             $stmt->execute($ids);
-            
+
             $pdo->commit();
         } catch (Exception $e) {
             $pdo->rollBack();

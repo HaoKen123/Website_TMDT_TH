@@ -15,7 +15,8 @@ if (!isset($_SESSION['admin_id'])) {
 // Bulk Delete Users
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ids']) && is_array($_POST['ids'])) {
     $ids = array_map('intval', $_POST['ids']);
-    $ids = array_filter($ids, function($id) { return $id > 0; });
+    $ids = array_filter($ids, function ($id) {
+        return $id > 0; });
 
     if (!empty($ids)) {
         try {
@@ -32,7 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ids']) && is_array($_
                 try {
                     $stmtDelSub = $pdo->prepare("DELETE FROM subscribers WHERE email IN ($inEmails)");
                     $stmtDelSub->execute($emails);
-                } catch (Exception $ex) {}
+                } catch (Exception $ex) {
+                }
             }
 
             // 2. Delete user's order items & orders
@@ -53,7 +55,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ids']) && is_array($_
             try {
                 $stmtDelComments = $pdo->prepare("DELETE FROM comments WHERE user_id IN ($in)");
                 $stmtDelComments->execute($ids);
-            } catch (Exception $ex) {}
+            } catch (Exception $ex) {
+            }
 
             // 4. Delete users
             $stmtDelUsers = $pdo->prepare("DELETE FROM users WHERE id IN ($in)");
@@ -85,7 +88,7 @@ $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 if ($id > 0) {
     try {
         $pdo->beginTransaction();
-        
+
         // 1. Get user email to delete from subscribers table
         $stmtEmail = $pdo->prepare("SELECT email FROM users WHERE id = ?");
         $stmtEmail->execute([$id]);
@@ -95,7 +98,8 @@ if ($id > 0) {
             try {
                 $stmtDelSub = $pdo->prepare("DELETE FROM subscribers WHERE email = ?");
                 $stmtDelSub->execute([$uEmail]);
-            } catch (Exception $ex) {}
+            } catch (Exception $ex) {
+            }
         }
 
         // 2. Delete user's orders & order items
@@ -116,7 +120,8 @@ if ($id > 0) {
         try {
             $stmtDelComments = $pdo->prepare("DELETE FROM comments WHERE user_id = ?");
             $stmtDelComments->execute([$id]);
-        } catch (Exception $ex) {}
+        } catch (Exception $ex) {
+        }
 
         // 4. Delete user
         $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");

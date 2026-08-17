@@ -83,11 +83,13 @@ try {
 
     try {
         $shipping_fees = $pdo->query("SELECT * FROM shipping_fees ORDER BY id ASC")->fetchAll();
-    } catch (Exception $ex) {}
+    } catch (Exception $ex) {
+    }
 }
 ?>
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <link rel="icon" type="image/png" href="../favicon.png?v=2">
     <link rel="shortcut icon" href="../favicon.ico?v=2">
@@ -97,20 +99,100 @@ try {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .layout-grid { display: grid; grid-template-columns: 340px 1fr; gap: 30px; }
-        .card { background: #fff; padding: 25px; border-radius: 8px; border: 1px solid #cbd5e1; }
-        .card h3 { margin-bottom: 15px; font-size: 18px; color: #1e293b; display: flex; align-items: center; gap: 8px; }
-        .card form label { display: block; font-weight: 600; font-size: 13px; color: #475569; margin-bottom: 5px; }
-        .card form input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: 'Inter'; box-sizing: border-box; margin-bottom: 15px; }
-        .alert-success { background: #dcfce7; color: #166534; padding: 12px 18px; border-radius: 6px; margin-bottom: 20px; font-weight: 600; }
-        .alert-error { background: #fee2e2; color: #991b1b; padding: 12px 18px; border-radius: 6px; margin-bottom: 20px; font-weight: 600; }
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            gap: 30px;
+        }
+
+        .card {
+            background: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+        }
+
+        .card h3 {
+            margin-bottom: 15px;
+            font-size: 18px;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card form label {
+            display: block;
+            font-weight: 600;
+            font-size: 13px;
+            color: #475569;
+            margin-bottom: 5px;
+        }
+
+        .card form input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-family: 'Inter';
+            box-sizing: border-box;
+            margin-bottom: 15px;
+        }
+
+        .alert-success {
+            background: #dcfce7;
+            color: #166534;
+            padding: 12px 18px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px 18px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
 
         /* Modal styling */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center; }
-        .modal-content { background: #fff; padding: 30px; border-radius: 10px; width: 440px; max-width: 95vw; text-align: left; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        .modal-content input { width: 100%; padding: 10px; margin: 6px 0 15px 0; border: 1px solid #cbd5e1; border-radius: 6px; font-family: 'Inter'; box-sizing: border-box; }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            width: 440px;
+            max-width: 95vw;
+            text-align: left;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 10px;
+            margin: 6px 0 15px 0;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-family: 'Inter';
+            box-sizing: border-box;
+        }
     </style>
 </head>
+
 <body>
     <div class="sidebar">
         <h2>PIXELGEAR</h2>
@@ -130,9 +212,10 @@ try {
 
     <div class="main-content">
         <h1>Quản Lý Phí Vận Chuyển Theo Tỉnh / Thành (<?php echo count($shipping_fees); ?>)</h1>
-        
+
         <?php if ($msg || isset($_GET['msg'])): ?>
-            <div class="alert-success"><i class="fas fa-check-circle"></i> <?php echo $msg ? $msg : 'Đã cập nhật phí vận chuyển thành công!'; ?></div>
+            <div class="alert-success"><i class="fas fa-check-circle"></i>
+                <?php echo $msg ? $msg : 'Đã cập nhật phí vận chuyển thành công!'; ?></div>
         <?php endif; ?>
 
         <?php if ($error): ?>
@@ -150,7 +233,9 @@ try {
                     <label>Phí vận chuyển (VNĐ) *</label>
                     <input type="number" name="fee" required placeholder="Ví dụ: 25000..." step="1000" min="0">
 
-                    <button type="submit" class="btn" style="width: 100%; padding: 12px; background: #15803d; color: #fff; border: none; font-weight: 700; border-radius: 6px; cursor: pointer;">THÊM MỨC PHÍ</button>
+                    <button type="submit" class="btn"
+                        style="width: 100%; padding: 12px; background: #15803d; color: #fff; border: none; font-weight: 700; border-radius: 6px; cursor: pointer;">THÊM
+                        MỨC PHÍ</button>
                 </form>
             </div>
 
@@ -166,23 +251,32 @@ try {
                     </thead>
                     <tbody>
                         <?php foreach ($shipping_fees as $sf): ?>
-                        <tr>
-                            <td><strong>#<?php echo $sf['id']; ?></strong></td>
-                            <td><strong style="color: #0f172a; font-size: 15px;"><?php echo htmlspecialchars($sf['province']); ?></strong></td>
-                            <td>
-                                <strong style="color: #15803d; font-size: 15px;"><?php echo number_format($sf['fee'], 0, ',', '.'); ?> ₫</strong>
-                                <span style="color: #64748b; font-size: 12px; margin-left: 4px;">(~$<?php echo number_format($sf['fee']/25000, 2); ?>)</span>
-                            </td>
-                            <td style="text-align: center;">
-                                <button type="button" class="btn" style="background: #0284c7; color: #fff; padding: 5px 10px; font-size: 12px; border:none; cursor:pointer; border-radius: 4px; font-weight: 700; margin-right: 4px;" 
-                                    onclick="openEditShippingModal(<?php echo $sf['id']; ?>, '<?php echo htmlspecialchars(addslashes($sf['province'])); ?>', <?php echo floatval($sf['fee']); ?>)">
-                                    <i class="fas fa-edit"></i> Sửa
-                                </button>
-                                <a href="shipping.php?delete_id=<?php echo $sf['id']; ?>" onclick="return confirm('Bạn có chắc muốn xóa mức phí cho <?php echo htmlspecialchars($sf['province']); ?>?')" class="btn" style="background: #dc2626; color: #fff; padding: 5px 10px; font-size: 12px; text-decoration: none; border-radius: 4px; font-weight: 700;">
-                                    <i class="fas fa-trash"></i> Xóa
-                                </a>
-                            </td>
-                        </tr>
+                            <tr>
+                                <td><strong>#<?php echo $sf['id']; ?></strong></td>
+                                <td><strong
+                                        style="color: #0f172a; font-size: 15px;"><?php echo htmlspecialchars($sf['province']); ?></strong>
+                                </td>
+                                <td>
+                                    <strong
+                                        style="color: #15803d; font-size: 15px;"><?php echo number_format($sf['fee'], 0, ',', '.'); ?>
+                                        ₫</strong>
+                                    <span
+                                        style="color: #64748b; font-size: 12px; margin-left: 4px;">(~$<?php echo number_format($sf['fee'] / 25000, 2); ?>)</span>
+                                </td>
+                                <td style="text-align: center;">
+                                    <button type="button" class="btn"
+                                        style="background: #0284c7; color: #fff; padding: 5px 10px; font-size: 12px; border:none; cursor:pointer; border-radius: 4px; font-weight: 700; margin-right: 4px;"
+                                        onclick="openEditShippingModal(<?php echo $sf['id']; ?>, '<?php echo htmlspecialchars(addslashes($sf['province'])); ?>', <?php echo floatval($sf['fee']); ?>)">
+                                        <i class="fas fa-edit"></i> Sửa
+                                    </button>
+                                    <a href="shipping.php?delete_id=<?php echo $sf['id']; ?>"
+                                        onclick="return confirm('Bạn có chắc muốn xóa mức phí cho <?php echo htmlspecialchars($sf['province']); ?>?')"
+                                        class="btn"
+                                        style="background: #dc2626; color: #fff; padding: 5px 10px; font-size: 12px; text-decoration: none; border-radius: 4px; font-weight: 700;">
+                                        <i class="fas fa-trash"></i> Xóa
+                                    </a>
+                                </td>
+                            </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
@@ -193,7 +287,8 @@ try {
     <!-- Modal Chỉnh Sửa Phí Vận Chuyển -->
     <div id="editShippingModal" class="modal">
         <div class="modal-content">
-            <h3 style="margin-bottom: 15px; color: #0f172a;"><i class="fas fa-edit" style="color: #0284c7;"></i> Sửa Phí Vận Chuyển</h3>
+            <h3 style="margin-bottom: 15px; color: #0f172a;"><i class="fas fa-edit" style="color: #0284c7;"></i> Sửa Phí
+                Vận Chuyển</h3>
             <form method="POST">
                 <input type="hidden" name="edit_shipping" value="1">
                 <input type="hidden" name="fee_id" id="editFeeId">
@@ -202,27 +297,33 @@ try {
                 <input type="text" name="province" id="editProvince" required placeholder="Tên tỉnh / thành phố...">
 
                 <label style="font-size: 13px; font-weight: 600;">Mức phí vận chuyển (VNĐ) *</label>
-                <input type="number" name="fee" id="editFeeAmount" required placeholder="Ví dụ: 30000..." step="1000" min="0">
+                <input type="number" name="fee" id="editFeeAmount" required placeholder="Ví dụ: 30000..." step="1000"
+                    min="0">
 
                 <div style="display: flex; gap: 10px; margin-top: 15px;">
-                    <button type="submit" class="btn" style="flex: 1; padding: 10px; background: #15803d; color: #fff; border: none; font-weight: 700; border-radius: 6px; cursor: pointer;">LƯU THAY ĐỔI</button>
-                    <button type="button" class="btn" style="flex: 1; padding: 10px; background: #64748b; color: #fff; border: none; font-weight: 700; border-radius: 6px; cursor: pointer;" onclick="closeEditShippingModal()">HỦY</button>
+                    <button type="submit" class="btn"
+                        style="flex: 1; padding: 10px; background: #15803d; color: #fff; border: none; font-weight: 700; border-radius: 6px; cursor: pointer;">LƯU
+                        THAY ĐỔI</button>
+                    <button type="button" class="btn"
+                        style="flex: 1; padding: 10px; background: #64748b; color: #fff; border: none; font-weight: 700; border-radius: 6px; cursor: pointer;"
+                        onclick="closeEditShippingModal()">HỦY</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
-    function openEditShippingModal(id, province, fee) {
-        document.getElementById('editFeeId').value = id;
-        document.getElementById('editProvince').value = province;
-        document.getElementById('editFeeAmount').value = fee;
-        document.getElementById('editShippingModal').style.display = 'flex';
-    }
+        function openEditShippingModal(id, province, fee) {
+            document.getElementById('editFeeId').value = id;
+            document.getElementById('editProvince').value = province;
+            document.getElementById('editFeeAmount').value = fee;
+            document.getElementById('editShippingModal').style.display = 'flex';
+        }
 
-    function closeEditShippingModal() {
-        document.getElementById('editShippingModal').style.display = 'none';
-    }
+        function closeEditShippingModal() {
+            document.getElementById('editShippingModal').style.display = 'none';
+        }
     </script>
 </body>
+
 </html>

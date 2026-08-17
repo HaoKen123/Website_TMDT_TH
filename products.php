@@ -17,7 +17,9 @@ if ($category) {
     } else if ($category === 'accessories') {
         $whereClauses[] = "(category IN ('accessories', 'hats', 'keychains'))";
     } else if ($category === 'toys') {
-        $whereClauses[] = "(category IN ('toys', 'toys_models', 'decor'))";
+        $whereClauses[] = "(category IN ('toys', 'toys_models', 'plushies'))";
+    } else if ($category === 'decor') {
+        $whereClauses[] = "(category IN ('decor', 'lights', 'homeware'))";
     } else {
         $whereClauses[] = 'category = :category';
         $params[':category'] = $category;
@@ -160,6 +162,7 @@ $current_region = get_current_region();
                     <li><a href="products.php?category=clothing" class="<?php echo $category === 'clothing' ? 'active' : ''; ?>"><?php echo __('NAV_CLOTHING'); ?></a></li>
                     <li><a href="products.php?category=accessories" class="<?php echo $category === 'accessories' ? 'active' : ''; ?>"><?php echo __('NAV_ACCESSORIES'); ?></a></li>
                     <li><a href="products.php?category=toys" class="<?php echo $category === 'toys' ? 'active' : ''; ?>"><?php echo __('NAV_TOYS'); ?></a></li>
+                    <li><a href="products.php?category=decor" class="<?php echo $category === 'decor' ? 'active' : ''; ?>"><?php echo __('NAV_DECOR'); ?></a></li>
                 </ul>
             </nav>
 
@@ -218,7 +221,8 @@ $current_region = get_current_region();
                         $cat_names = [
                             'clothing' => ($current_region === 'VN' ? 'QUẦN ÁO & THỜI TRANG' : 'CLOTHING & APPAREL'),
                             'accessories' => ($current_region === 'VN' ? 'PHỤ KIỆN & GEAR CAO CẤP' : 'PREMIUM ACCESSORIES & GEAR'),
-                            'toys' => ($current_region === 'VN' ? 'ĐỒ CHƠI & QUÀ TẶNG SƯU TẦM' : 'TOYS & COLLECTIBLES')
+                            'toys' => ($current_region === 'VN' ? 'ĐỒ CHƠI & GẤU BÔNG' : 'TOYS & COLLECTIBLES'),
+                            'decor' => ($current_region === 'VN' ? 'ĐÈN & VẬT DỤNG TRANG TRÍ' : 'LIGHTS & ROOM DECOR')
                         ];
                         echo $cat_names[$category] ?? __('COLLECTION_BANNER_TITLE');
                     } else {

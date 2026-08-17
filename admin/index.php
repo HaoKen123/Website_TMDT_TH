@@ -17,6 +17,7 @@ $recent_orders = $pdo->query("SELECT * FROM orders ORDER BY created_at DESC LIMI
 ?>
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <link rel="icon" type="image/png" href="../favicon.png?v=2">
     <link rel="shortcut icon" href="../favicon.ico?v=2">
@@ -26,6 +27,7 @@ $recent_orders = $pdo->query("SELECT * FROM orders ORDER BY created_at DESC LIMI
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+
 <body>
     <div class="sidebar">
         <h2>PIXELGEAR</h2>
@@ -46,7 +48,9 @@ $recent_orders = $pdo->query("SELECT * FROM orders ORDER BY created_at DESC LIMI
     <div class="main-content">
         <div class="top-header">
             <h1>Bảng Điều Khiển (Dashboard)</h1>
-            <div>Xin chào, <strong style="color:#15803d;"><?php echo htmlspecialchars($_SESSION['admin_username'] ?? 'Quản trị viên'); ?></strong> (<?php echo strtoupper($_SESSION['admin_role'] ?? 'ADMIN'); ?>)</div>
+            <div>Xin chào, <strong
+                    style="color:#15803d;"><?php echo htmlspecialchars($_SESSION['admin_username'] ?? 'Quản trị viên'); ?></strong>
+                (<?php echo strtoupper($_SESSION['admin_role'] ?? 'ADMIN'); ?>)</div>
         </div>
 
         <div class="stats-grid">
@@ -78,21 +82,22 @@ $recent_orders = $pdo->query("SELECT * FROM orders ORDER BY created_at DESC LIMI
             </thead>
             <tbody>
                 <?php foreach ($recent_orders as $order): ?>
-                <tr>
-                    <td>#<?php echo $order['id']; ?></td>
-                    <td><?php echo htmlspecialchars($order['customer_name']); ?></td>
-                    <td>$<?php echo number_format($order['total_amount'], 2); ?></td>
-                    <td><?php echo htmlspecialchars($order['payment_method']); ?></td>
-                    <td><?php echo date('d/m/Y H:i', strtotime($order['created_at'])); ?></td>
-                    <td>
-                        <span class="badge <?php echo $order['status'] == 'Đang xử lý' ? 'pending' : 'success'; ?>">
-                            <?php echo $order['status']; ?>
-                        </span>
-                    </td>
-                </tr>
+                    <tr>
+                        <td>#<?php echo $order['id']; ?></td>
+                        <td><?php echo htmlspecialchars($order['customer_name']); ?></td>
+                        <td>$<?php echo number_format($order['total_amount'], 2); ?></td>
+                        <td><?php echo htmlspecialchars($order['payment_method']); ?></td>
+                        <td><?php echo date('d/m/Y H:i', strtotime($order['created_at'])); ?></td>
+                        <td>
+                            <span class="badge <?php echo $order['status'] == 'Đang xử lý' ? 'pending' : 'success'; ?>">
+                                <?php echo $order['status']; ?>
+                            </span>
+                        </td>
+                    </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
     </div>
 </body>
+
 </html>

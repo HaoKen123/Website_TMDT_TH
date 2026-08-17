@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_selected') {
     if (!empty($_POST['selected_orders']) && is_array($_POST['selected_orders'])) {
         $ids = array_map('intval', $_POST['selected_orders']);
-        $in  = implode(',', array_fill(0, count($ids), '?'));
+        $in = implode(',', array_fill(0, count($ids), '?'));
         $stmt = $pdo->prepare("DELETE FROM orders WHERE id IN ($in)");
         $stmt->execute($ids);
         $stmtItem = $pdo->prepare("DELETE FROM order_items WHERE order_id IN ($in)");
@@ -50,7 +50,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 $all_products = [];
 try {
     $all_products = $pdo->query("SELECT id, name FROM products ORDER BY name ASC")->fetchAll();
-} catch (Exception $e) {}
+} catch (Exception $e) {
+}
 
 // Filters logic
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
@@ -113,10 +114,12 @@ try {
         }
         $order_items_map[$oid][] = $it;
     }
-} catch (Exception $e) {}
+} catch (Exception $e) {
+}
 ?>
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <link rel="icon" type="image/png" href="../favicon.png?v=2">
     <link rel="shortcut icon" href="../favicon.ico?v=2">
@@ -132,26 +135,31 @@ try {
             border-radius: 8px;
             padding: 18px 20px;
             margin-bottom: 25px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
         }
+
         .filter-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 12px;
             align-items: flex-end;
         }
+
         .filter-group {
             display: flex;
             flex-direction: column;
             gap: 5px;
         }
+
         .filter-group label {
             font-size: 12px;
             font-weight: 700;
             color: #475569;
             text-transform: uppercase;
         }
-        .filter-group input, .filter-group select {
+
+        .filter-group input,
+        .filter-group select {
             padding: 8px 12px;
             border: 1px solid #cbd5e1;
             border-radius: 6px;
@@ -160,11 +168,14 @@ try {
             width: 100%;
             box-sizing: border-box;
         }
+
         .filter-actions {
             display: flex;
             gap: 8px;
         }
-        .filter-actions button, .filter-actions a {
+
+        .filter-actions button,
+        .filter-actions a {
             padding: 8px 16px;
             font-size: 13px;
             font-weight: 700;
@@ -179,32 +190,151 @@ try {
             height: 38px;
             box-sizing: border-box;
         }
-        .btn-filter { background: #15803d; color: #fff; }
-        .btn-filter:hover { background: #166534; }
-        .btn-reset { background: #64748b; color: #fff; }
-        .btn-reset:hover { background: #475569; }
+
+        .btn-filter {
+            background: #15803d;
+            color: #fff;
+        }
+
+        .btn-filter:hover {
+            background: #166534;
+        }
+
+        .btn-reset {
+            background: #64748b;
+            color: #fff;
+        }
+
+        .btn-reset:hover {
+            background: #475569;
+        }
 
         /* Order details modal */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.55); z-index: 9999; justify-content: center; align-items: center; }
-        .modal-content { background: #fff; padding: 25px; border-radius: 12px; width: 680px; max-width: 95vw; max-height: 90vh; overflow-y: auto; text-align: left; box-shadow: 0 15px 35px rgba(0,0,0,0.25); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 18px; }
-        .modal-header h3 { margin: 0; color: #0f172a; font-size: 18px; display: flex; align-items: center; gap: 8px; }
-        .modal-close { background: none; border: none; font-size: 20px; color: #64748b; cursor: pointer; }
-        
-        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
-        .detail-item { font-size: 13px; line-height: 1.6; }
-        .detail-item strong { color: #1e293b; }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
 
-        .items-table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 13px; }
-        .items-table th { background: #f1f5f9; padding: 10px; text-align: left; border-bottom: 2px solid #cbd5e1; }
-        .items-table td { padding: 10px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
-        .item-thumb { width: 44px; height: 44px; border-radius: 6px; object-fit: cover; background: #f1f5f9; }
+        .modal-content {
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            width: 680px;
+            max-width: 95vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            text-align: left;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+        }
 
-        .summary-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px 16px; margin-top: 15px; }
-        .summary-line { display: flex; justify-content: space-between; font-size: 13px; margin: 4px 0; }
-        .summary-line.total { font-weight: 800; font-size: 16px; color: #15803d; border-top: 1px solid #86efac; padding-top: 8px; margin-top: 8px; }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 12px;
+            margin-bottom: 18px;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #0f172a;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #64748b;
+            cursor: pointer;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 15px;
+        }
+
+        .detail-item {
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .detail-item strong {
+            color: #1e293b;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 13px;
+        }
+
+        .items-table th {
+            background: #f1f5f9;
+            padding: 10px;
+            text-align: left;
+            border-bottom: 2px solid #cbd5e1;
+        }
+
+        .items-table td {
+            padding: 10px;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: middle;
+        }
+
+        .item-thumb {
+            width: 44px;
+            height: 44px;
+            border-radius: 6px;
+            object-fit: cover;
+            background: #f1f5f9;
+        }
+
+        .summary-box {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-top: 15px;
+        }
+
+        .summary-line {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin: 4px 0;
+        }
+
+        .summary-line.total {
+            font-weight: 800;
+            font-size: 16px;
+            color: #15803d;
+            border-top: 1px solid #86efac;
+            padding-top: 8px;
+            margin-top: 8px;
+        }
     </style>
 </head>
+
 <body>
     <div class="sidebar">
         <h2>PIXELGEAR</h2>
@@ -223,7 +353,8 @@ try {
     </div>
 
     <div class="main-content">
-        <div class="top-header" style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 20px;">
+        <div class="top-header"
+            style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 20px;">
             <h1>Quản Lý Đơn Hàng (<?php echo count($orders); ?>)</h1>
             <div>
                 <button type="button" class="btn btn-danger" style="padding: 10px 18px;" onclick="submitBulkDelete();">
@@ -237,18 +368,23 @@ try {
             <form method="GET" class="filter-grid">
                 <div class="filter-group" style="grid-column: span 1;">
                     <label><i class="fas fa-search"></i> Từ khóa tìm kiếm</label>
-                    <input type="text" name="search" placeholder="Mã đơn, Tên khách, SĐT, Địa chỉ..." value="<?php echo htmlspecialchars($search); ?>">
+                    <input type="text" name="search" placeholder="Mã đơn, Tên khách, SĐT, Địa chỉ..."
+                        value="<?php echo htmlspecialchars($search); ?>">
                 </div>
 
                 <div class="filter-group">
                     <label><i class="fas fa-tasks"></i> Trạng thái đơn</label>
                     <select name="status">
                         <option value="">-- Tất cả trạng thái --</option>
-                        <option value="Chờ xác nhận" <?php echo $status_filter==='Chờ xác nhận'?'selected':''; ?>>1. Chờ xác nhận</option>
-                        <option value="Đã xác nhận" <?php echo $status_filter==='Đã xác nhận'?'selected':''; ?>>2. Đã xác nhận</option>
-                        <option value="Đang giao" <?php echo $status_filter==='Đang giao'?'selected':''; ?>>3. Đang giao</option>
-                        <option value="Hoàn thành" <?php echo $status_filter==='Hoàn thành'?'selected':''; ?>>4. Hoàn thành</option>
-                        <option value="Đã hủy" <?php echo $status_filter==='Đã hủy'?'selected':''; ?>>❌ Đã hủy</option>
+                        <option value="Chờ xác nhận" <?php echo $status_filter === 'Chờ xác nhận' ? 'selected' : ''; ?>>1. Chờ
+                            xác nhận</option>
+                        <option value="Đã xác nhận" <?php echo $status_filter === 'Đã xác nhận' ? 'selected' : ''; ?>>2. Đã
+                            xác nhận</option>
+                        <option value="Đang giao" <?php echo $status_filter === 'Đang giao' ? 'selected' : ''; ?>>3. Đang giao
+                        </option>
+                        <option value="Hoàn thành" <?php echo $status_filter === 'Hoàn thành' ? 'selected' : ''; ?>>4. Hoàn
+                            thành</option>
+                        <option value="Đã hủy" <?php echo $status_filter === 'Đã hủy' ? 'selected' : ''; ?>>❌ Đã hủy</option>
                     </select>
                 </div>
 
@@ -256,8 +392,9 @@ try {
                     <label><i class="fas fa-credit-card"></i> Thanh toán</label>
                     <select name="payment_status">
                         <option value="">-- Tất cả thanh toán --</option>
-                        <option value="Đã thanh toán" <?php echo $payment_filter==='Đã thanh toán'?'selected':''; ?>>Đã thanh toán</option>
-                        <option value="Chưa thanh toán" <?php echo $payment_filter==='Chưa thanh toán'?'selected':''; ?>>Chưa thanh toán</option>
+                        <option value="Đã thanh toán" <?php echo $payment_filter === 'Đã thanh toán' ? 'selected' : ''; ?>>Đã
+                            thanh toán</option>
+                        <option value="Chưa thanh toán" <?php echo $payment_filter === 'Chưa thanh toán' ? 'selected' : ''; ?>>Chưa thanh toán</option>
                     </select>
                 </div>
 
@@ -266,7 +403,7 @@ try {
                     <select name="product_id">
                         <option value="0">-- Tất cả sản phẩm --</option>
                         <?php foreach ($all_products as $p): ?>
-                            <option value="<?php echo $p['id']; ?>" <?php echo $product_filter===$p['id']?'selected':''; ?>>
+                            <option value="<?php echo $p['id']; ?>" <?php echo $product_filter === $p['id'] ? 'selected' : ''; ?>>
                                 <?php echo htmlspecialchars($p['name']); ?>
                             </option>
                         <?php endforeach; ?>
@@ -299,7 +436,8 @@ try {
                 <thead>
                     <tr>
                         <th style="width: 40px; text-align:center;">
-                            <input type="checkbox" id="selectAll" style="width:18px; height:18px; cursor:pointer; margin:0;">
+                            <input type="checkbox" id="selectAll"
+                                style="width:18px; height:18px; cursor:pointer; margin:0;">
                         </th>
                         <th>Mã ĐH</th>
                         <th>Khách hàng</th>
@@ -312,84 +450,102 @@ try {
                 </thead>
                 <tbody>
                     <?php if (empty($orders)): ?>
-                    <tr>
-                        <td colspan="8" style="text-align:center; padding: 40px; color: #777;">
-                            Không tìm thấy đơn hàng nào phù hợp với bộ lọc.
-                        </td>
-                    </tr>
-                    <?php else: ?>
-                        <?php foreach ($orders as $order): 
-                            $orderItems = $order_items_map[$order['id']] ?? [];
-                        ?>
                         <tr>
-                            <td style="text-align:center;">
-                                <input type="checkbox" name="selected_orders[]" value="<?php echo $order['id']; ?>" class="order-checkbox" style="width:18px; height:18px; cursor:pointer; margin:0;">
-                            </td>
-                            <td><strong>#<?php echo $order['id']; ?></strong></td>
-                            <td>
-                                <strong><?php echo htmlspecialchars($order['customer_name']); ?></strong><br>
-                                <span style="font-size:12px; color:#666;"><?php echo htmlspecialchars($order['customer_phone']); ?></span>
-                            </td>
-                            <td style="font-weight:700; color:#15803d;">$<?php echo number_format($order['total_amount'], 2); ?></td>
-                            <td>
-                                <span class="badge <?php echo $order['payment_status'] == 'Đã thanh toán' ? 'success' : 'danger'; ?>">
-                                    <?php echo $order['payment_status']; ?>
-                                </span><br>
-                                <span style="font-size:11px;"><?php echo htmlspecialchars($order['payment_method']); ?></span>
-                            </td>
-                            <td>
-                                <span class="badge <?php echo $order['status'] == 'Đã hủy' ? 'danger' : ($order['status'] == 'Hoàn thành' ? 'success' : 'pending'); ?>">
-                                    <?php echo $order['status']; ?>
-                                </span>
-                            </td>
-                            <td>
-                                <?php if ($order['status'] == 'Chờ xác nhận'): ?>
-                                <div style="display:flex; gap:6px;">
-                                    <select id="status_<?php echo $order['id']; ?>" style="width:130px; margin-bottom:0; padding:5px; font-size:12px;">
-                                        <option value="Chờ xác nhận" selected>1. Chờ xác nhận</option>
-                                        <option value="Đã xác nhận">2. Đã xác nhận</option>
-                                        <option value="Đang giao">3. Đang giao</option>
-                                        <option value="Đã hủy">❌ Hủy đơn</option>
-                                    </select>
-                                    <button type="button" class="btn btn-primary" style="padding:5px 8px; font-size:12px;" onclick="updateOrderStatus(<?php echo $order['id']; ?>)">Lưu</button>
-                                </div>
-                                <?php elseif ($order['status'] == 'Đã xác nhận'): ?>
-                                <div style="display:flex; gap:6px;">
-                                    <select id="status_<?php echo $order['id']; ?>" style="width:130px; margin-bottom:0; padding:5px; font-size:12px;">
-                                        <option value="Đã xác nhận" selected>2. Đã xác nhận</option>
-                                        <option value="Đang giao">3. Đang giao</option>
-                                        <option value="Đã hủy">❌ Hủy đơn</option>
-                                    </select>
-                                    <button type="button" class="btn btn-primary" style="padding:5px 8px; font-size:12px;" onclick="updateOrderStatus(<?php echo $order['id']; ?>)">Lưu</button>
-                                </div>
-                                <?php elseif ($order['status'] == 'Đang giao'): ?>
-                                <div style="display:flex; gap:6px;">
-                                    <select id="status_<?php echo $order['id']; ?>" style="width:130px; margin-bottom:0; padding:5px; font-size:12px;">
-                                        <option value="Đang giao" selected>3. Đang giao</option>
-                                        <option value="Hoàn thành">4. Hoàn thành</option>
-                                        <option value="Đã hủy">❌ Hủy đơn</option>
-                                    </select>
-                                    <button type="button" class="btn btn-primary" style="padding:5px 8px; font-size:12px;" onclick="updateOrderStatus(<?php echo $order['id']; ?>)">Lưu</button>
-                                </div>
-                                <?php elseif ($order['status'] == 'Hoàn thành'): ?>
-                                    <strong style="color:#15803d; font-size:13px;"><i class="fas fa-check-circle"></i> Hoàn thành</strong>
-                                <?php else: ?>
-                                    <em style="color:#dc2626; font-size:13px;"><i class="fas fa-times-circle"></i> Đã hủy</em>
-                                <?php endif; ?>
-                            </td>
-                            <td style="text-align:center;">
-                                <button type="button" class="btn" style="background:#0284c7; color:#fff; padding:5px 8px; font-size:12px; border:none; cursor:pointer; border-radius:4px; font-weight:700; margin-right:3px;" 
-                                    onclick='viewOrderDetails(<?php echo json_encode($order, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE); ?>, <?php echo json_encode($orderItems, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE); ?>)' title="Xem chi tiết đơn hàng">
-                                    <i class="fas fa-eye"></i> Chi tiết
-                                </button>
-                                <a href="print_order.php?id=<?php echo $order['id']; ?>" target="_blank" class="btn" style="background:#15803d; color:#fff; padding:5px 8px; font-size:12px; text-decoration:none; border-radius:4px; font-weight:700; margin-right:3px;" title="In hóa đơn">
-                                    <i class="fas fa-print"></i> In đơn
-                                </a>
-                                <button type="button" class="btn btn-danger" style="padding:5px 8px; font-size:12px;" onclick="deleteSingleOrder(<?php echo $order['id']; ?>)" title="Xóa đơn">
-                                    <i class="fas fa-trash"></i>
-                                </button>
+                            <td colspan="8" style="text-align:center; padding: 40px; color: #777;">
+                                Không tìm thấy đơn hàng nào phù hợp với bộ lọc.
                             </td>
                         </tr>
+                    <?php else: ?>
+                        <?php foreach ($orders as $order):
+                            $orderItems = $order_items_map[$order['id']] ?? [];
+                            ?>
+                            <tr>
+                                <td style="text-align:center;">
+                                    <input type="checkbox" name="selected_orders[]" value="<?php echo $order['id']; ?>"
+                                        class="order-checkbox" style="width:18px; height:18px; cursor:pointer; margin:0;">
+                                </td>
+                                <td><strong>#<?php echo $order['id']; ?></strong></td>
+                                <td>
+                                    <strong><?php echo htmlspecialchars($order['customer_name']); ?></strong><br>
+                                    <span
+                                        style="font-size:12px; color:#666;"><?php echo htmlspecialchars($order['customer_phone']); ?></span>
+                                </td>
+                                <td style="font-weight:700; color:#15803d;">
+                                    $<?php echo number_format($order['total_amount'], 2); ?></td>
+                                <td>
+                                    <span
+                                        class="badge <?php echo $order['payment_status'] == 'Đã thanh toán' ? 'success' : 'danger'; ?>">
+                                        <?php echo $order['payment_status']; ?>
+                                    </span><br>
+                                    <span
+                                        style="font-size:11px;"><?php echo htmlspecialchars($order['payment_method']); ?></span>
+                                </td>
+                                <td>
+                                    <span
+                                        class="badge <?php echo $order['status'] == 'Đã hủy' ? 'danger' : ($order['status'] == 'Hoàn thành' ? 'success' : 'pending'); ?>">
+                                        <?php echo $order['status']; ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <?php if ($order['status'] == 'Chờ xác nhận'): ?>
+                                        <div style="display:flex; gap:6px;">
+                                            <select id="status_<?php echo $order['id']; ?>"
+                                                style="width:130px; margin-bottom:0; padding:5px; font-size:12px;">
+                                                <option value="Chờ xác nhận" selected>1. Chờ xác nhận</option>
+                                                <option value="Đã xác nhận">2. Đã xác nhận</option>
+                                                <option value="Đang giao">3. Đang giao</option>
+                                                <option value="Đã hủy">❌ Hủy đơn</option>
+                                            </select>
+                                            <button type="button" class="btn btn-primary" style="padding:5px 8px; font-size:12px;"
+                                                onclick="updateOrderStatus(<?php echo $order['id']; ?>)">Lưu</button>
+                                        </div>
+                                    <?php elseif ($order['status'] == 'Đã xác nhận'): ?>
+                                        <div style="display:flex; gap:6px;">
+                                            <select id="status_<?php echo $order['id']; ?>"
+                                                style="width:130px; margin-bottom:0; padding:5px; font-size:12px;">
+                                                <option value="Đã xác nhận" selected>2. Đã xác nhận</option>
+                                                <option value="Đang giao">3. Đang giao</option>
+                                                <option value="Đã hủy">❌ Hủy đơn</option>
+                                            </select>
+                                            <button type="button" class="btn btn-primary" style="padding:5px 8px; font-size:12px;"
+                                                onclick="updateOrderStatus(<?php echo $order['id']; ?>)">Lưu</button>
+                                        </div>
+                                    <?php elseif ($order['status'] == 'Đang giao'): ?>
+                                        <div style="display:flex; gap:6px;">
+                                            <select id="status_<?php echo $order['id']; ?>"
+                                                style="width:130px; margin-bottom:0; padding:5px; font-size:12px;">
+                                                <option value="Đang giao" selected>3. Đang giao</option>
+                                                <option value="Hoàn thành">4. Hoàn thành</option>
+                                                <option value="Đã hủy">❌ Hủy đơn</option>
+                                            </select>
+                                            <button type="button" class="btn btn-primary" style="padding:5px 8px; font-size:12px;"
+                                                onclick="updateOrderStatus(<?php echo $order['id']; ?>)">Lưu</button>
+                                        </div>
+                                    <?php elseif ($order['status'] == 'Hoàn thành'): ?>
+                                        <strong style="color:#15803d; font-size:13px;"><i class="fas fa-check-circle"></i> Hoàn
+                                            thành</strong>
+                                    <?php else: ?>
+                                        <em style="color:#dc2626; font-size:13px;"><i class="fas fa-times-circle"></i> Đã hủy</em>
+                                    <?php endif; ?>
+                                </td>
+                                <td style="text-align:center;">
+                                    <button type="button" class="btn"
+                                        style="background:#0284c7; color:#fff; padding:5px 8px; font-size:12px; border:none; cursor:pointer; border-radius:4px; font-weight:700; margin-right:3px;"
+                                        onclick='viewOrderDetails(<?php echo json_encode($order, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE); ?>, <?php echo json_encode($orderItems, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE); ?>)'
+                                        title="Xem chi tiết đơn hàng">
+                                        <i class="fas fa-eye"></i> Chi tiết
+                                    </button>
+                                    <a href="print_order.php?id=<?php echo $order['id']; ?>" target="_blank" class="btn"
+                                        style="background:#15803d; color:#fff; padding:5px 8px; font-size:12px; text-decoration:none; border-radius:4px; font-weight:700; margin-right:3px;"
+                                        title="In hóa đơn">
+                                        <i class="fas fa-print"></i> In đơn
+                                    </a>
+                                    <button type="button" class="btn btn-danger" style="padding:5px 8px; font-size:12px;"
+                                        onclick="deleteSingleOrder(<?php echo $order['id']; ?>)" title="Xóa đơn">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </tbody>
@@ -409,7 +565,8 @@ try {
     <div id="orderDetailsModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3><i class="fas fa-receipt" style="color: #15803d;"></i> Chi Tiết Đơn Hàng #<span id="modalOrderNum"></span></h3>
+                <h3><i class="fas fa-receipt" style="color: #15803d;"></i> Chi Tiết Đơn Hàng #<span
+                        id="modalOrderNum"></span></h3>
                 <button type="button" class="modal-close" onclick="closeOrderModal()">&times;</button>
             </div>
 
@@ -422,12 +579,15 @@ try {
                 <div class="detail-item">
                     <p style="margin: 0 0 6px 0;"><strong>Ngày đặt hàng:</strong> <span id="mOrderDate"></span></p>
                     <p style="margin: 0 0 6px 0;"><strong>Phương thức:</strong> <span id="mPaymentMethod"></span></p>
-                    <p style="margin: 0 0 6px 0;"><strong>Thanh toán:</strong> <span id="mPaymentStatus" class="badge"></span></p>
-                    <p style="margin: 0 0 6px 0;"><strong>Trạng thái:</strong> <span id="mOrderStatus" class="badge"></span></p>
+                    <p style="margin: 0 0 6px 0;"><strong>Thanh toán:</strong> <span id="mPaymentStatus"
+                            class="badge"></span></p>
+                    <p style="margin: 0 0 6px 0;"><strong>Trạng thái:</strong> <span id="mOrderStatus"
+                            class="badge"></span></p>
                 </div>
             </div>
 
-            <h4 style="margin: 15px 0 8px 0; color: #1e293b; font-size: 14px;"><i class="fas fa-box"></i> Danh Sách Sản Phẩm Trong Đơn</h4>
+            <h4 style="margin: 15px 0 8px 0; color: #1e293b; font-size: 14px;"><i class="fas fa-box"></i> Danh Sách Sản
+                Phẩm Trong Đơn</h4>
             <div style="max-height: 220px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 6px;">
                 <table class="items-table" style="margin: 0;">
                     <thead>
@@ -451,23 +611,29 @@ try {
             </div>
 
             <!-- Quick Status Change inside Modal -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid #e2e8f0;">
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid #e2e8f0;">
                 <div style="display: flex; gap: 8px; align-items: center;">
                     <label style="font-size: 13px; font-weight: 700; color: #475569;">Đổi trạng thái:</label>
-                    <select id="modalQuickStatus" style="padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px; width: 140px;">
+                    <select id="modalQuickStatus"
+                        style="padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px; width: 140px;">
                         <option value="Chờ xác nhận">Chờ xác nhận</option>
                         <option value="Đã xác nhận">Đã xác nhận</option>
                         <option value="Đang giao">Đang giao</option>
                         <option value="Hoàn thành">Hoàn thành</option>
                         <option value="Đã hủy">Đã hủy</option>
                     </select>
-                    <button type="button" class="btn btn-primary" style="padding: 6px 14px; font-size: 13px;" onclick="applyModalStatusChange()">Cập nhật</button>
+                    <button type="button" class="btn btn-primary" style="padding: 6px 14px; font-size: 13px;"
+                        onclick="applyModalStatusChange()">Cập nhật</button>
                 </div>
                 <div style="display: flex; gap: 8px;">
-                    <a id="modalPrintLink" href="#" target="_blank" class="btn" style="background: #15803d; color: #fff; padding: 7px 14px; font-size: 13px; text-decoration: none; border-radius: 6px; font-weight: 700;">
+                    <a id="modalPrintLink" href="#" target="_blank" class="btn"
+                        style="background: #15803d; color: #fff; padding: 7px 14px; font-size: 13px; text-decoration: none; border-radius: 6px; font-weight: 700;">
                         <i class="fas fa-print"></i> In đơn hàng
                     </a>
-                    <button type="button" class="btn" style="background: #64748b; color: #fff; padding: 7px 14px; font-size: 13px; border: none; border-radius: 6px; font-weight: 700; cursor: pointer;" onclick="closeOrderModal()">Đóng</button>
+                    <button type="button" class="btn"
+                        style="background: #64748b; color: #fff; padding: 7px 14px; font-size: 13px; border: none; border-radius: 6px; font-weight: 700; cursor: pointer;"
+                        onclick="closeOrderModal()">Đóng</button>
                 </div>
             </div>
         </div>
@@ -484,7 +650,7 @@ try {
             document.getElementById('mCustomerAddress').innerText = order.customer_address || 'N/A';
             document.getElementById('mOrderDate').innerText = order.created_at || 'N/A';
             document.getElementById('mPaymentMethod').innerText = order.payment_method || 'COD';
-            
+
             const paySt = document.getElementById('mPaymentStatus');
             paySt.innerText = order.payment_status || 'Chưa thanh toán';
             paySt.className = 'badge ' + (order.payment_status === 'Đã thanh toán' ? 'success' : 'danger');
@@ -551,7 +717,7 @@ try {
         }
 
         if (selectAll) {
-            selectAll.addEventListener('change', function() {
+            selectAll.addEventListener('change', function () {
                 orderCheckboxes.forEach(cb => cb.checked = selectAll.checked);
                 updateCount();
             });
@@ -590,4 +756,5 @@ try {
         }
     </script>
 </body>
+
 </html>

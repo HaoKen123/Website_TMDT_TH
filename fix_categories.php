@@ -14,7 +14,7 @@ try {
         (1, 'Quần áo & Hoodies', 'clothing', 1),
         (2, 'Phụ kiện Minecraft', 'accessories', 1),
         (3, 'Đồ chơi & Gấu bông', 'toys', 1),
-        (4, 'Đèn & Trang trí', 'decor', 1)
+        (4, 'Đèn & Vật dụng', 'decor', 1)
         ON DUPLICATE KEY UPDATE name=VALUES(name), status=1;
     ");
 

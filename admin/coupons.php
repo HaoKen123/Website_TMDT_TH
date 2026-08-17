@@ -1,10 +1,18 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require_once '../db.php';
 require_once '../lang.php';
 
 if (!isset($_SESSION['admin_id'])) {
     header('Location: login.php');
+    exit;
+}
+
+// Chỉ Quản trị viên mới được quản lý mã giảm giá & email
+if (($_SESSION['admin_role'] ?? 'admin') !== 'admin') {
+    header('Location: index.php?error=no_permission');
     exit;
 }
 
@@ -227,21 +235,7 @@ try {
 </head>
 
 <body>
-    <div class="sidebar">
-        <h2>PIXELGEAR</h2>
-        <ul>
-            <li><a href="index.php"><i class="fas fa-home"></i> Tổng quan</a></li>
-            <li><a href="orders.php"><i class="fas fa-shopping-cart"></i> Đơn hàng</a></li>
-            <li><a href="products.php"><i class="fas fa-box"></i> Sản phẩm</a></li>
-            <li><a href="categories.php"><i class="fas fa-list"></i> Danh mục</a></li>
-            <li><a href="coupons.php" class="active"><i class="fas fa-ticket-alt"></i> Mã giảm giá</a></li>
-            <li><a href="shipping.php"><i class="fas fa-truck"></i> Phí vận chuyển</a></li>
-            <li><a href="comments.php"><i class="fas fa-comments"></i> Bình luận</a></li>
-            <li><a href="users.php"><i class="fas fa-users"></i> Khách hàng & Nhân viên</a></li>
-            <li><a href="reports.php"><i class="fas fa-chart-bar"></i> Thống kê báo cáo</a></li>
-            <li><a href="logout.php"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
-        </ul>
-    </div>
+    <?php include 'sidebar.php'; ?>
 
     <div class="main-content">
         <div class="top-header">

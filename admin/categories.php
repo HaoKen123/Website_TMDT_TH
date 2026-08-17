@@ -1,10 +1,18 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require_once '../db.php';
 require_once '../lang.php';
 
 if (!isset($_SESSION['admin_id'])) {
     header('Location: login.php');
+    exit;
+}
+
+// Chỉ Quản trị viên mới được quản lý danh mục
+if (($_SESSION['admin_role'] ?? 'admin') !== 'admin') {
+    header('Location: index.php?error=no_permission');
     exit;
 }
 

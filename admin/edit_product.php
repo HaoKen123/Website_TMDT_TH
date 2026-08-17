@@ -108,16 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="sidebar">
-        <h2>PIXELGEAR</h2>
-        <ul>
-            <li><a href="index.php"><i class="fas fa-home"></i> Tổng quan</a></li>
-            <li><a href="orders.php"><i class="fas fa-shopping-cart"></i> Đơn hàng</a></li>
-            <li><a href="products.php" class="active"><i class="fas fa-box"></i> Sản phẩm</a></li>
-            <li><a href="coupons.php"><i class="fas fa-ticket-alt"></i> Mã giảm giá & Email</a></li>
-            <li><a href="logout.php"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
-        </ul>
-    </div>
+    <?php include 'sidebar.php'; ?>
 
     <div class="main-content">
         <div class="top-header">

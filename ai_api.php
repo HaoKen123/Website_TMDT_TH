@@ -101,60 +101,111 @@ try {
     }
 
     // -------------------------------------------------------------
-    // 1. INTENT: Weather & Casual Daily Questions (e.g. "Thời tiết đẹp k", "thời tiết hôm nay", "mưa không")
+    // 1. INTENT: Date, Time & Calendar Questions (e.g. "hôm nay là thứ mấy", "ngày mấy", "mấy giờ rồi")
     // -------------------------------------------------------------
     if (empty($aiResponse)) {
-        $weatherKeywords = ['thời tiết', 'trời đẹp', 'trời mưa', 'nắng không', 'trời hôm nay', 'nhiệt độ', 'thời tiết đẹp'];
-        foreach ($weatherKeywords as $wk) {
-            if (strpos($qLower, $wk) !== false) {
-                $aiResponse = "☀️ <strong>Dự báo hôm nay thời tiết rất đẹp và thoáng mát!</strong><br><br>Cực kỳ lý tưởng để bạn diện những mẫu <strong>Áo Hoodie / Áo thun Minecraft</strong> năng động dạo phố, hoặc thư giãn trải nghiệm thế giới pixel cùng bạn bè. Bạn muốn Steve AI gợi ý mẫu áo thun hay balo nào phù hợp với hôm nay không?";
-                break;
-            }
+        $isDateQuery = (
+            strpos($qLower, 'hôm nay') !== false ||
+            strpos($qLower, 'thứ mấy') !== false ||
+            strpos($qLower, 'ngày mấy') !== false ||
+            strpos($qLower, 'ngày bao nhiêu') !== false ||
+            strpos($qLower, 'mấy giờ') !== false ||
+            strpos($qLower, 'bây giờ') !== false ||
+            strpos($qLower, 'thời gian') !== false ||
+            strpos($qLower, 'năm nay') !== false
+        );
+
+        if ($isDateQuery) {
+            $days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+            $dayOfWeek = $days[date('w')];
+            $currentDate = date('d/m/Y');
+            $currentTime = date('H:i');
+            $aiResponse = "📅 <strong>Thông tin thời gian hôm nay:</strong><br>• Hôm nay là <strong>{$dayOfWeek}, ngày {$currentDate}</strong>.<br>• Thời gian hiện tại: <strong>{$currentTime}</strong>.<br><br>Chúc bạn một ngày tràn đầy niềm vui và mua sắm thú vị tại PixelGear Store!";
         }
     }
 
     // -------------------------------------------------------------
-    // 2. INTENT: Date & Time Questions (e.g. "hôm nay là ngày mấy", "mấy giờ rồi")
+    // 2. INTENT: Weather & Casual Daily Questions (e.g. "Thời tiết đẹp k", "thời tiết hôm nay", "mưa không")
     // -------------------------------------------------------------
     if (empty($aiResponse)) {
-        $dateKeywords = ['hôm nay là ngày', 'hôm nay ngày', 'mấy giờ', 'hôm nay thứ mấy', 'ngày bao nhiêu', 'năm nay là năm', 'bây giờ là mấy giờ'];
-        foreach ($dateKeywords as $dk) {
-            if (strpos($qLower, $dk) !== false) {
-                $days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
-                $dayOfWeek = $days[date('w')];
-                $currentDate = date('d/m/Y');
-                $currentTime = date('H:i');
-                $aiResponse = "📅 <strong>Thông tin thời gian hôm nay:</strong><br>• Hôm nay là <strong>{$dayOfWeek}, ngày {$currentDate}</strong>.<br>• Thời gian hiện tại: <strong>{$currentTime}</strong>.<br><br>Chúc bạn một ngày tràn đầy niềm vui và mua sắm thú vị tại PixelGear Store!";
-                break;
-            }
+        $isWeather = (
+            strpos($qLower, 'thời tiết') !== false ||
+            strpos($qLower, 'trời mưa') !== false ||
+            strpos($qLower, 'trời nắng') !== false ||
+            strpos($qLower, 'trời đẹp') !== false ||
+            strpos($qLower, 'nhiệt độ') !== false ||
+            strpos($qLower, 'nắng không') !== false ||
+            strpos($qLower, 'mưa không') !== false
+        );
+
+        if ($isWeather) {
+            $aiResponse = "☀️ <strong>Dự báo thời tiết hôm nay rất đẹp và dễ chịu!</strong><br><br>Rất thích hợp để diện những mẫu <strong>Áo Hoodie / Áo thun Minecraft</strong> cá tính dạo phố, hoặc sưu tầm các mô hình độc đáo. Bạn có muốn Steve AI gợi ý mẫu đồ chơi hoặc phụ kiện nào đang hot hôm nay không?";
         }
     }
 
     // -------------------------------------------------------------
-    // 3. INTENT: Greetings, Thanks & Casual Chit-chat
+    // 3. INTENT: Best / Top / Most Popular Products (e.g. "Sản phẩm nào là ngon nhất", "sản phẩm nào hot nhất", "bán chạy nhất", "nên mua gì")
     // -------------------------------------------------------------
     if (empty($aiResponse)) {
-        $chatKeywords = ['chào bạn', 'xin chào', 'hello', 'hi bạn', 'alo', 'hả bạn', 'hả bot', 'bạn là ai', 'bạn tên gì', 'bot ơi', 'chào shop', 'bạn khỏe không', 'bạn làm được gì', 'giúp tôi', 'tư vấn'];
-        foreach ($chatKeywords as $ck) {
-            if ($qLower === $ck || strpos($qLower, $ck) !== false) {
-                $aiResponse = "👋 <strong>Chào bạn! Tôi là Steve AI – Trợ lý tư vấn sản phẩm của PixelGear.</strong><br><br>Tôi có thể giúp bạn:<br>• Tìm kiếm <strong>👕 Quần áo</strong>, <strong>🎒 Phụ kiện</strong>, <strong>🧸 Đồ chơi Minecraft</strong>.<br>• Tra cứu <strong>🎁 Mã giảm giá</strong> & giải đáp thắc mắc mua sắm.<br><br>Bạn muốn tôi tư vấn món đồ nào hôm nay?";
-                break;
+        $isBestQuery = (
+            strpos($qLower, 'ngon nhất') !== false ||
+            strpos($qLower, 'tốt nhất') !== false ||
+            strpos($qLower, 'hot nhất') !== false ||
+            strpos($qLower, 'bán chạy') !== false ||
+            strpos($qLower, 'được thích nhất') !== false ||
+            strpos($qLower, 'được chuộng') !== false ||
+            strpos($qLower, 'nên mua gì') !== false ||
+            strpos($qLower, 'gợi ý mua') !== false ||
+            strpos($qLower, 'đẹp nhất') !== false ||
+            strpos($qLower, 'nổi bật nhất') !== false
+        );
+
+        if ($isBestQuery) {
+            // Pick featured or top priced/popular products
+            $bestProds = array_filter($products, function($p) {
+                return (!empty($p['badge']) || in_array($p['id'], [1, 2, 5, 8, 12, 18, 20]));
+            });
+            if (empty($bestProds)) {
+                $bestProds = array_slice($products, 0, 4);
             }
+            $aiResponse = renderProductCards(array_values($bestProds), "🔥 <strong>Top những sản phẩm ĐƯỢC YÊU THÍCH & ĐÁNH GIÁ CAO NHẤT tại PixelGear:</strong>");
         }
     }
 
+    // -------------------------------------------------------------
+    // 4. INTENT: Greetings, Introduction & Store Info
+    // -------------------------------------------------------------
     if (empty($aiResponse)) {
-        $thanksKeywords = ['cảm ơn', 'thank', 'tuyệt vời', 'hay quá', 'ok', 'oke', 'tạm biệt', 'bye'];
-        foreach ($thanksKeywords as $tk) {
-            if ($qLower === $tk || strpos($qLower, $tk) !== false) {
-                $aiResponse = "😊 Rất vui được hỗ trợ bạn! Hãy nhắn cho Steve AI bất cứ khi nào bạn cần thêm thông tin hoặc tư vấn món đồ Minecraft yêu thích nhé!";
-                break;
-            }
+        $isGreeting = (
+            $qLower === 'chào' || $qLower === 'xin chào' || $qLower === 'hello' || $qLower === 'hi' ||
+            strpos($qLower, 'chào bạn') !== false || strpos($qLower, 'chào shop') !== false ||
+            strpos($qLower, 'bạn là ai') !== false || strpos($qLower, 'bạn tên gì') !== false ||
+            strpos($qLower, 'shop ở đâu') !== false || strpos($qLower, 'địa chỉ') !== false ||
+            strpos($qLower, 'liên hệ') !== false
+        );
+
+        if ($isGreeting) {
+            $aiResponse = "👋 <strong>Xin chào! Tôi là Steve AI – Trợ lý bán hàng thông minh của PixelGear Store.</strong><br><br>Tôi có thể giúp bạn:<br>• Tra cứu & tư vấn <strong>🧸 Đồ chơi</strong>, <strong>🎒 Phụ kiện</strong>, <strong>👕 Quần áo</strong>.<br>• Tìm kiếm <strong>🎁 Mã giảm giá</strong> & giải đáp thắc mắc mua hàng.<br><br>Bạn muốn tôi tư vấn món đồ nào hôm nay?";
         }
     }
 
     // -------------------------------------------------------------
-    // 4. INTENT: Shipping & Delivery
+    // 5. INTENT: Thanks & Casual Goodbyes
+    // -------------------------------------------------------------
+    if (empty($aiResponse)) {
+        $isThanks = (
+            strpos($qLower, 'cảm ơn') !== false || strpos($qLower, 'thank') !== false ||
+            strpos($qLower, 'tuyệt vời') !== false || strpos($qLower, 'tạm biệt') !== false ||
+            $qLower === 'ok' || $qLower === 'oke'
+        );
+
+        if ($isThanks) {
+            $aiResponse = "😊 Rất vui được hỗ trợ bạn! Chúc bạn có những phút giây mua sắm tuyệt vời tại PixelGear Store!";
+        }
+    }
+
+    // -------------------------------------------------------------
+    // 6. INTENT: Shipping & Delivery
     // -------------------------------------------------------------
     if (empty($aiResponse)) {
         if (strpos($qLower, 'phí ship') !== false || strpos($qLower, 'giao hàng') !== false || strpos($qLower, 'vận chuyển') !== false || strpos($qLower, 'ship') !== false) {
@@ -163,7 +214,7 @@ try {
     }
 
     // -------------------------------------------------------------
-    // 5. INTENT: Coupons & Vouchers
+    // 7. INTENT: Coupons & Vouchers
     // -------------------------------------------------------------
     if (empty($aiResponse)) {
         if (strpos($qLower, 'mã giảm giá') !== false || strpos($qLower, 'voucher') !== false || strpos($qLower, 'khuyến mãi') !== false || strpos($qLower, 'ưu đãi') !== false || $qLower === 'mã' || $qLower === 'coupon') {
@@ -172,7 +223,7 @@ try {
     }
 
     // -------------------------------------------------------------
-    // 6. INTENT: CATEGORY SEARCH (STRICT FILTERING - BẮT BUỘC CHÍNH XÁC)
+    // 8. INTENT: CATEGORY SEARCH (STRICT FILTERING - BẮT BUỘC CHÍNH XÁC)
     // -------------------------------------------------------------
     if (empty($aiResponse)) {
         // A. Category: Accessories (Phụ kiện)
@@ -194,7 +245,7 @@ try {
             }
         }
         // C. Category: Toys (Đồ chơi & Gấu bông)
-        elseif (strpos($qLower, 'đồ chơi') !== false || strpos($qLower, 'toys') !== false || strpos($qLower, 'gấu bông') !== false || strpos($qLower, 'thú nhồi bông') !== false || strpos($qLower, 'mô hình') !== false || strpos($qLower, 'figure') !== false || strpos($qLower, 'warden') !== false || strpos($qLower, 'axolotl') !== false || strpos($qLower, 'dragon') !== false) {
+        elseif (strpos($qLower, 'đồ chơi') !== false || strpos($qLower, 'toys') !== false || strpos($qLower, 'gấu bông') !== false || strpos($qLower, 'thú nhồi bông') !== false || strpos($qLower, 'mô hình') !== false || strpos($qLower, 'figure') !== false || strpos($qLower, 'warden') !== false || strpos($qLower, 'axolotl') !== false || strpos($qLower, 'dragon') !== false || strpos($qLower, 'kiếm') !== false || strpos($qLower, 'nỏ') !== false) {
             $toyProds = array_filter($products, function($p) {
                 return (strtolower($p['category']) === 'toys' || stripos($p['category_name'] ?? '', 'đồ chơi') !== false);
             });
@@ -205,14 +256,14 @@ try {
     }
 
     // -------------------------------------------------------------
-    // 7. INTENT: SPECIFIC PRODUCT KEYWORD SEARCH (CHỈ KÍCH HOẠT KHI THỰC SỰ TÌM SẢN PHẨM)
+    // 9. INTENT: SPECIFIC PRODUCT KEYWORD SEARCH
     // -------------------------------------------------------------
     if (empty($aiResponse)) {
         // Explicit product trigger keywords
         $explicitProductTriggers = [
             'áo', 'quần', 'hoodie', 'bomber', 'sweater', 'cosplay', 'mũ', 'nón', 'balo', 'túi', 'đèn', 'khiên', 'đồng hồ',
             'gấu bông', 'thú nhồi bông', 'mô hình', 'figure', 'kiếm', 'nỏ', 'tnt', 'creeper', 'enderman', 'steve', 'warden',
-            'axolotl', 'diamond', 'redstone', 'giáp', 'gối', 'thảm', 'mua', 'giá', 'tìm sản phẩm', 'bán gì'
+            'axolotl', 'diamond', 'redstone', 'giáp', 'gối', 'thảm', 'mua', 'giá', 'tìm sản phẩm', 'bán gì', 'sản phẩm'
         ];
 
         $hasProductIntent = false;
@@ -256,17 +307,17 @@ try {
 
                 if (!empty($matched)) {
                     usort($matched, function($a, $b) { return $b['_score'] - $a['_score']; });
-                    $aiResponse = renderProductCards($matched, "🔍 <strong>Đã tìm thấy " . count($matched) . " sản phẩm phù hợp với yêu cầu:</strong>");
+                    $aiResponse = renderProductCards($matched, "🔍 <strong>Đã tìm thấy " . count($matched) . " sản phẩm phù hợp với yêu cầu của bạn:</strong>");
                 }
             }
         }
     }
 
     // -------------------------------------------------------------
-    // 8. FINAL FRIENDLY CONVERSATIONAL FALLBACK (KHÔNG DUMP SẢN PHẨM BẬY BẠ)
+    // 10. FINAL CONVERSATIONAL FALLBACK (Nếu không khớp từ khóa nào)
     // -------------------------------------------------------------
     if (empty($aiResponse)) {
-        $aiResponse = "💡 <strong>Steve AI sẵn sàng hỗ trợ bạn!</strong><br><br>Bạn có thể hỏi tôi về thông tin thời gian, chính sách vận chuyển, hoặc chọn nhanh các danh mục sản phẩm bên dưới để xem gợi ý chi tiết:<br><br>
+        $aiResponse = "💡 <strong>Steve AI sẵn sàng hỗ trợ bạn!</strong><br><br>Bạn có thể hỏi tôi về thông tin thời gian, thời tiết, các sản phẩm hot nhất hoặc chọn nhanh danh mục bên dưới:<br><br>
         • <strong>👕 Quần áo & Hoodies</strong><br>
         • <strong>🎒 Phụ kiện Minecraft</strong><br>
         • <strong>🧸 Đồ chơi & Gấu bông</strong><br>
@@ -285,13 +336,16 @@ try {
 function callGeminiAPI($userQuery, $catalogContext, $apiKey) {
     $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" . urlencode($apiKey);
     
-    $prompt = "Bạn là Steve AI - Trợ lý Minecraft thông minh của cửa hàng PixelGear Store.
+    $prompt = "Bạn là Steve AI - Trợ lý bán hàng thông minh của cửa hàng PixelGear Store.
 Danh sách sản phẩm trong kho:
 {$catalogContext}
 
-Yêu cầu:
-1. Nếu khách hỏi câu hỏi giao tiếp đời sống (thời tiết, ngày tháng, thời gian, chào hỏi, chúc mừng, hỏi chuyện vui), hãy trả lời thông minh, tự nhiên, vui vẻ bằng tiếng Việt chuẩn.
-2. Nếu khách hỏi mua hoặc tìm kiếm sản phẩm, hãy tư vấn chính xác tên sản phẩm và giá tiền trong danh sách trên.
+Yêu cầu trả lời:
+1. Trả lời bằng tiếng Việt chuẩn, súc tích, tự nhiên, thân thiện.
+2. Nếu khách hỏi câu hỏi giao tiếp đời sống (thời gian, thứ ngày, thời tiết, chào hỏi, chúc mừng, hỏi thăm), hãy trả lời ngay ngắn gọn, không spam quảng cáo.
+3. Nếu khách hỏi sản phẩm nào ngon/tốt/hot nhất hoặc tìm đồ, hãy gợi ý tên sản phẩm và giá tiền cụ thể.
+4. Trả lời dưới dạng văn bản HTML đơn giản (sử dụng <strong>, <br>), không dùng Markdown phức tạp.
+
 Khách hỏi: \"{$userQuery}\"";
 
     $payload = [
@@ -313,7 +367,11 @@ Khách hỏi: \"{$userQuery}\"";
     if ($result) {
         $json = json_decode($result, true);
         if (isset($json['candidates'][0]['content']['parts'][0]['text'])) {
-            return nl2br($json['candidates'][0]['content']['parts'][0]['text']);
+            $txt = $json['candidates'][0]['content']['parts'][0]['text'];
+            // Convert any remaining markdown to clean HTML
+            $txt = preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $txt);
+            $txt = preg_replace('/\[(.*?)\]\((.*?)\)/', '<a href="$2" target="_blank">$1</a>', $txt);
+            return nl2br($txt);
         }
     }
     return null;

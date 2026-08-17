@@ -497,12 +497,25 @@ function toggleSettingsPanel() {
     }
 }
 
-// 4. Phát âm giọng đọc tiếng Việt theo đúng Voice đã chọn
+// 4. Phát âm giọng đọc tiếng Việt theo đúng Voice đã chọn (Lọc sạch các nút Xem Mua Nghe và URL)
 function speakText(text) {
     if (!isSpeechEnabled || !synth) return;
     synth.cancel();
 
-    const cleanText = text.replace(/<[^>]*>?/gm, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&');
+    // Lọc bỏ thẻ button, link, markdown, url để giọng đọc chỉ đọc nội dung thuần
+    let cleanText = text
+        .replace(/<button[^>]*>[\s\S]*?<\/button>/gi, '')
+        .replace(/<a[^>]*>[\s\S]*?<\/a>/gi, '')
+        .replace(/<[^>]*>?/gm, '')
+        .replace(/https?:\/\/\S+/gi, '')
+        .replace(/\[.*?\]\(.*?\)/gi, '')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&amp;/g, '&')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    if (!cleanText) return;
+
     const utterance = new SpeechSynthesisUtterance(cleanText);
     
     // Đọc theo tốc độ lưu

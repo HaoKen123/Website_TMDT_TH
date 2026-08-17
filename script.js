@@ -378,12 +378,49 @@ document.addEventListener('DOMContentLoaded', () => {
                 const dx = Math.cos(ang) * dist;
                 const dy = Math.sin(ang) * dist * 0.6 - 20;
                 const rot = (Math.random() * 360) | 0;
-                f.animate([
-                    { transform: 'translate(0,0) rotate(0)', opacity: 1 },
-                    { transform: `translate(${dx}px, ${dy + 40}px) rotate(${rot}deg)`, opacity: 0 }
-                ], { duration: 600 + Math.random() * 300, easing: 'cubic-bezier(0.16,1,0.3,1)' })
-                .onfinish = () => f.remove();
+    // Global Newsletter Submit Handler
+    window.handleNewsletterSubmit = async function(event, form) {
+        if (event) event.preventDefault();
+        const emailInput = form.querySelector('input[name="email"]');
+        const email = emailInput ? emailInput.value.trim() : '';
+        if (!email) return false;
+
+        const btn = form.querySelector('button');
+        const originalText = btn ? btn.innerText : 'ĐĂNG KÝ';
+        if (btn) {
+            btn.innerText = 'Đang xử lý...';
+            btn.disabled = true;
+        }
+
+        try {
+            const response = await fetch('subscribe_newsletter.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'email=' + encodeURIComponent(email)
+            });
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                if (window.showCustomNotice) showCustomNotice(data.message, 'success', 6000);
+                if (emailInput) emailInput.value = '';
+            } else if (data.status === 'already_registered') {
+                if (window.showCustomNotice) showCustomNotice(data.message, 'info', 6000);
+            } else if (data.status === 'not_registered') {
+                if (window.showCustomNotice) showCustomNotice(data.message, 'info', 4000);
+                setTimeout(() => {
+                    window.location.href = data.redirect;
+                }, 1500);
+            } else {
+                if (window.showCustomNotice) showCustomNotice('Lỗi: ' + data.message, 'error');
             }
-        });
-    });
+        } catch (err) {
+            if (window.showCustomNotice) showCustomNotice('Lỗi kết nối kiểm tra email!', 'error');
+        } finally {
+            if (btn) {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+        return false;
+    };
 });

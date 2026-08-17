@@ -64,6 +64,13 @@ $dictionary = [
         'FOOTER_SUPPORT' => 'HỖ TRỢ',
         'FOOTER_NEWSLETTER' => 'KẾT NỐI VỚI CHÚNG TÔI',
         'FOOTER_SUBSCRIBE' => 'ĐĂNG KÝ',
+        'FOOTER_ABOUT' => 'Cửa hàng bán đồ chơi, phụ kiện và trang phục chính hãng PixelGear Store.',
+        'FOOTER_LINKS_TITLE' => 'LIÊN KẾT NHANH',
+        'FOOTER_SUPPORT_TITLE' => 'HỖ TRỢ KHÁCH HÀNG',
+        'FOOTER_SHIPPING_POLICY' => 'Chính sách vận chuyển',
+        'FOOTER_RETURN_POLICY' => 'Chính sách đổi trả',
+        'FOOTER_PRIVACY_POLICY' => 'Chính sách bảo mật',
+        'FOOTER_COPYRIGHT' => 'Cửa Hàng PixelGear. Tất cả các quyền được bảo lưu.',
     ],
     'US' => [
         'SITE_TITLE' => 'PixelGear | Exclusive Fashion, Accessories & Toys Store',
@@ -101,14 +108,21 @@ $dictionary = [
         
         'ADD_TO_CART' => 'ADD TO CART',
         'SEARCH_PLACEHOLDER' => 'Search products...',
-        'LOGIN' => 'Sign In',
-        'PROFILE' => 'My Account',
+        'LOGIN' => 'Login',
+        'PROFILE' => 'Profile',
         'CART' => 'Cart',
         
         'FOOTER_SHOP' => 'SHOP',
         'FOOTER_SUPPORT' => 'SUPPORT',
         'FOOTER_NEWSLETTER' => 'STAY CONNECTED',
         'FOOTER_SUBSCRIBE' => 'SUBSCRIBE',
+        'FOOTER_ABOUT' => 'PixelGear Store - Premium gear, accessories & toys.',
+        'FOOTER_LINKS_TITLE' => 'QUICK LINKS',
+        'FOOTER_SUPPORT_TITLE' => 'CUSTOMER SERVICE',
+        'FOOTER_SHIPPING_POLICY' => 'Shipping Policy',
+        'FOOTER_RETURN_POLICY' => 'Return Policy',
+        'FOOTER_PRIVACY_POLICY' => 'Privacy Policy',
+        'FOOTER_COPYRIGHT' => 'PixelGear Store. All rights reserved.',
     ]
 ];
 

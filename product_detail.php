@@ -556,35 +556,36 @@ if (isset($_SESSION['cart'])) {
 
     <!-- Footer -->
     <footer class="site-footer">
-        <div class="container footer-content">
-            <div class="footer-col">
-                <div class="logo" style="margin-bottom: 15px;">
-                    <a href="index.php" class="mc-logo">
-                        <span class="mc-logo__icon" aria-hidden="true"></span>
-                        <span class="mc-logo__text" data-text="PIXELGEAR">PIXELGEAR</span>
-                    </a>
-                </div>
-                <p style="color: #94a3b8; font-size: 14px; line-height: 1.6;"><?php echo __('FOOTER_ABOUT'); ?></p>
-            </div>
-            <div class="footer-col">
-                <h4><?php echo __('FOOTER_LINKS_TITLE'); ?></h4>
+        <div class="container footer-grid">
+            <div class="footer-column">
+                <h3><?php echo __('FOOTER_SHOP'); ?></h3>
                 <ul>
-                    <li><a href="index.php"><?php echo __('NAV_HOME'); ?></a></li>
+                    <li><a href="products.php?category=clothing"><?php echo __('NAV_CLOTHING'); ?></a></li>
+                    <li><a href="products.php?category=accessories"><?php echo __('NAV_ACCESSORIES'); ?></a></li>
+                    <li><a href="products.php?category=toys"><?php echo __('NAV_TOYS'); ?></a></li>
                     <li><a href="products.php"><?php echo __('NAV_ALL'); ?></a></li>
-                    <li><a href="cart.php"><?php echo __('CART'); ?></a></li>
                 </ul>
             </div>
-            <div class="footer-col">
-                <h4><?php echo __('FOOTER_SUPPORT_TITLE'); ?></h4>
+            <div class="footer-column">
+                <h3><?php echo __('FOOTER_SUPPORT'); ?></h3>
                 <ul>
+                    <li><a href="#">FAQ</a></li>
                     <li><a href="#"><?php echo __('FOOTER_SHIPPING_POLICY'); ?></a></li>
                     <li><a href="#"><?php echo __('FOOTER_RETURN_POLICY'); ?></a></li>
                     <li><a href="#"><?php echo __('FOOTER_PRIVACY_POLICY'); ?></a></li>
                 </ul>
             </div>
+            <div class="footer-column newsletter">
+                <h3><?php echo __('FOOTER_NEWSLETTER'); ?></h3>
+                <p><?php echo __('ANNOUNCEMENT_1'); ?></p>
+                <form class="newsletter-form" onsubmit="handleNewsletterSubmit(event, this); return false;">
+                    <input type="email" name="email" placeholder="Email" required>
+                    <button type="submit"><?php echo __('FOOTER_SUBSCRIBE'); ?></button>
+                </form>
+            </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; <?php echo date("Y"); ?> Cửa Hàng PixelGear. Tất cả các quyền được bảo lưu.</p>
+            <p>&copy; <?php echo date("Y"); ?> PixelGear Store. All rights reserved.</p>
         </div>
     </footer>
 

@@ -176,7 +176,7 @@ $products = $pdo->query("SELECT * FROM products ORDER BY id DESC")->fetchAll();
                                 <a href="products.php?toggle_status_id=<?php echo $p['id']; ?>" class="btn" style="background: <?php echo $pSt===1?'#64748b':'#16a34a'; ?>; color:#fff; padding: 5px 9px; font-size: 12px; font-weight:700; text-decoration:none; border-radius:4px;">
                                     <i class="fas fa-<?php echo $pSt===1?'eye-slash':'eye'; ?>"></i> <?php echo $pSt===1?'Ẩn':'Hiện'; ?>
                                 </a>
-                                <a href="edit_product.php?id=<?php echo $p['id']; ?>" class="btn" style="background:#f59e0b; color:#fff; padding: 5px 9px; font-size: 12px; font-weight:700; text-decoration:none; border-radius:4px;"><i class="fas fa-edit"></i> Sửa</a>
+                                <a href="edit_product.php?id=<?php echo $p['id']; ?>" onclick="sessionStorage.setItem('admin_product_scroll_id', <?php echo $p['id']; ?>)" class="btn" style="background:#f59e0b; color:#fff; padding: 5px 9px; font-size: 12px; font-weight:700; text-decoration:none; border-radius:4px;"><i class="fas fa-edit"></i> Sửa</a>
                                 <button type="button" class="btn" style="padding: 5px 9px; font-size: 12px; border:none; cursor:pointer; background:#dc2626; color:#fff; font-weight:700; border-radius:4px;" onclick="quickDeleteProduct(<?php echo $p['id']; ?>)">
                                     <i class="fas fa-trash-alt"></i> Xóa
                                 </button>
@@ -307,6 +307,32 @@ $products = $pdo->query("SELECT * FROM products ORDER BY id DESC")->fetchAll();
             totalEl.innerText = Math.max(0, curr + delta);
         }
     }
+
+    // Tự động cuộn đến sản phẩm vừa chỉnh sửa sau khi lưu
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const updatedId = urlParams.get('updated_id') || sessionStorage.getItem('admin_product_scroll_id');
+        
+        if (updatedId) {
+            sessionStorage.removeItem('admin_product_scroll_id');
+            const targetRow = document.getElementById('product-row-' + updatedId);
+            if (targetRow) {
+                setTimeout(() => {
+                    targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    targetRow.style.transition = 'all 0.5s ease';
+                    targetRow.style.backgroundColor = '#dcfce7';
+                    targetRow.style.boxShadow = '0 0 15px rgba(22, 163, 74, 0.4)';
+                    
+                    showToast('✨ Đã lưu cập nhật sản phẩm #' + updatedId + ' thành công!');
+                    
+                    setTimeout(() => {
+                        targetRow.style.backgroundColor = '';
+                        targetRow.style.boxShadow = '';
+                    }, 3500);
+                }, 300);
+            }
+        }
+    });
     </script>
 </body>
 </html>

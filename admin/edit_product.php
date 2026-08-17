@@ -91,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($error)) {
         $stmt = $pdo->prepare("UPDATE products SET category=?, name=?, image_url=?, price=?, old_price=?, badge=?, description=? WHERE id=?");
         $stmt->execute([$category, $name, $image_url, $price, $old_price, $badge, $description, $id]);
-        header('Location: products.php');
+        header('Location: products.php?updated_id=' . $id);
         exit;
     }
 }

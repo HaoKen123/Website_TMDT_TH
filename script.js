@@ -447,6 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Block-break particle burst on hover
+    // Block-break particle burst on hover
     const COLORS = ['#22c55e', '#06b6d4', '#16a34a', '#f9fafb', '#ff3b3b'];
     document.querySelectorAll('.mc-logo').forEach(logo => {
         logo.addEventListener('mouseenter', () => {
@@ -466,6 +467,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const dx = Math.cos(ang) * dist;
                 const dy = Math.sin(ang) * dist * 0.6 - 20;
                 const rot = (Math.random() * 360) | 0;
+                f.animate([
+                    { transform: 'translate(0,0) rotate(0deg) scale(1)', opacity: 1 },
+                    { transform: `translate(${dx}px, ${dy}px) rotate(${rot}deg) scale(0.3)`, opacity: 0 }
+                ], { duration: 600 + Math.random() * 300, easing: 'cubic-bezier(0, .9, .57, 1)', fill: 'forwards' });
+                setTimeout(() => f.remove(), 1000);
+            }
+        });
+    });
+
     // Global Newsletter Submit Handler
     window.handleNewsletterSubmit = async function(event, form) {
         if (event) event.preventDefault();
